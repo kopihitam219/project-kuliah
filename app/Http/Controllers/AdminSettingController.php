@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Setting;
 use App\Support\Brand;
 use App\Support\BookingRules;
+use App\Support\Security;
+use App\Support\WhatsApp;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,18 +24,32 @@ class AdminSettingController extends Controller
         'appearance' => ['label' => 'Tampilan',              'ready' => true],
         'booking'    => ['label' => 'Booking & Jadwal',      'ready' => true],
         'payment'    => ['label' => 'Pembayaran',            'ready' => true],
-        'whatsapp'   => ['label' => 'Notifikasi & WhatsApp', 'ready' => false, 'stage' => 'Tahap 3'],
-        'security'   => ['label' => 'Keamanan',              'ready' => false, 'stage' => 'Tahap 3'],
+        'whatsapp'   => ['label' => 'Notifikasi & WhatsApp', 'ready' => true],
+        'security'   => ['label' => 'Keamanan',              'ready' => true],
         'account'    => ['label' => 'Akun Admin',            'ready' => true],
     ];
 
+    /** Tab lanjutan (Tahap 3) yang bisa disembunyikan dari menu Settings */
+    public const ADVANCED_TABS = ['whatsapp', 'security'];
+
+    public static function showAdvanced(): bool
+    {
+        return Setting::get('show_advanced_settings', '1') === '1';
+    }
+
     public function index(Request $request): View
     {
-        $tab = array_key_exists((string) $request->query('tab'), self::TABS) ? $request->query('tab') : 'general';
+        $tabs = self::TABS;
+
+        if (! self::showAdvanced()) {
+            $tabs = array_diff_key($tabs, array_flip(self::ADVANCED_TABS));
+        }
+
+        $tab = array_key_exists((string) $request->query('tab'), $tabs) ? $request->query('tab') : 'general';
 
         return view('admin.settings.index', [
             'tab'  => $tab,
-            'tabs' => self::TABS,
+            'tabs' => $tabs,
             'user' => $request->user(),
         ]);
     }
@@ -48,6 +65,7 @@ class AdminSettingController extends Controller
             'logo'                => ['nullable', 'file', 'mimes:png,webp', 'max:1024'],
             'favicon'             => ['nullable', 'file', 'mimes:png', 'max:512'],
             'maintenance'         => ['nullable', 'boolean'],
+            'show_advanced_settings' => ['nullable', 'boolean'],
             'maintenance_message' => ['nullable', 'string', 'max:300'],
         ], [
             'site_name.required' => 'Nama usaha wajib diisi.',
@@ -62,6 +80,7 @@ class AdminSettingController extends Controller
             'tagline'             => trim((string) $request->input('tagline')),
             'maintenance'         => $request->boolean('maintenance') ? '1' : '0',
             'maintenance_message' => trim((string) $request->input('maintenance_message')),
+            'show_advanced_settings' => $request->boolean('show_advanced_settings') ? '1' : '0',
         ]);
 
         $this->handleImage($request, 'logo', 'logo', 'settings/brand');
@@ -234,6 +253,133 @@ class AdminSettingController extends Controller
         return redirect()
             ->route('admin.settings.index', ['tab' => 'payment'])
             ->with('success', 'Pengaturan pembayaran disimpan. Harga baru berlaku untuk tagihan berikutnya.');
+    }
+
+    /* ---------------------------------------------------------------
+     | NOTIFIKASI & WHATSAPP
+     * --------------------------------------------------------------- */
+    public function updateWhatsapp(Request $request): RedirectResponse
+    {
+        $rules = [
+            'wa_provider'      => ['required', Rule::in(array_keys(WhatsApp::PROVIDERS))],
+            'wa_wablas_url'    => ['nullable', 'url', 'max:200', 'required_if:wa_provider,wablas'],
+            'wa_token'         => ['nullable', 'string', 'max:500'],
+            'wa_secret'        => ['nullable', 'string', 'max:200'],
+            'wa_admin_numbers' => ['nullable', 'string', 'max:300', 'regex:/^[0-9+,;\s\-]*$/'],
+            'wa_template'      => ['nullable', 'string', 'max:1000'],
+        ];
+
+        foreach (array_keys(WhatsApp::ADMIN_EVENTS) as $event) {
+            $rules["wa_admin_{$event}"] = ['nullable', 'boolean'];
+        }
+
+        $request->validate($rules, [
+            'wa_wablas_url.required_if' => 'URL server Wablas wajib diisi, misalnya https://solo.wablas.com.',
+            'wa_wablas_url.url'         => 'URL server Wablas tidak valid.',
+            'wa_admin_numbers.regex'    => 'Nomor WhatsApp admin hanya boleh berisi angka, dipisahkan koma.',
+        ]);
+
+        $provider = $request->input('wa_provider');
+
+        if ($provider !== 'off' && ! $request->filled('wa_token') && ! WhatsApp::hasToken()) {
+            return back()->withInput()->withErrors(['wa_token' => 'Token API wajib diisi untuk mengaktifkan WhatsApp.']);
+        }
+
+        if ($provider !== 'off' && trim((string) $request->input('wa_admin_numbers')) === '') {
+            return back()->withInput()->withErrors(['wa_admin_numbers' => 'Isi minimal satu nomor WhatsApp admin.']);
+        }
+
+        $values = [
+            'wa_provider'      => $provider,
+            'wa_wablas_url'    => trim((string) $request->input('wa_wablas_url')),
+            'wa_admin_numbers' => trim((string) $request->input('wa_admin_numbers')),
+            'wa_template'      => trim((string) $request->input('wa_template')) ?: WhatsApp::DEFAULT_TEMPLATE,
+        ];
+
+        foreach (array_keys(WhatsApp::ADMIN_EVENTS) as $event) {
+            $values["wa_admin_{$event}"] = $request->boolean("wa_admin_{$event}") ? '1' : '0';
+        }
+
+        // Token & secret disimpan terenkripsi; kosong = tidak diubah
+        if ($request->filled('wa_token')) {
+            $values['wa_token'] = Crypt::encryptString(trim($request->input('wa_token')));
+        }
+
+        if ($request->filled('wa_secret')) {
+            $values['wa_secret'] = Crypt::encryptString(trim($request->input('wa_secret')));
+        }
+
+        if ($request->boolean('remove_wa_token')) {
+            $values['wa_token']    = null;
+            $values['wa_secret']   = null;
+            $values['wa_provider'] = 'off';
+        }
+
+        Setting::put($values);
+
+        return redirect()
+            ->route('admin.settings.index', ['tab' => 'whatsapp'])
+            ->with('success', 'Pengaturan WhatsApp disimpan. Gunakan tombol "Kirim pesan uji" untuk mengecek koneksi.');
+    }
+
+    public function testWhatsapp(): RedirectResponse
+    {
+        $result = WhatsApp::send(
+            WhatsApp::adminNumbers(),
+            WhatsApp::format('Pesan uji', 'Koneksi WhatsApp dari ' . Brand::name() . ' berhasil. Notifikasi booking akan dikirim ke nomor ini.', null)
+        );
+
+        Setting::put([
+            'wa_last_test' => json_encode([
+                'ok'     => $result['ok'],
+                'detail' => $result['detail'],
+                'at'     => now()->toDateTimeString(),
+            ]),
+        ]);
+
+        return redirect()
+            ->route('admin.settings.index', ['tab' => 'whatsapp'])
+            ->with($result['ok'] ? 'success' : 'error', $result['ok'] ? 'Pesan uji terkirim. Cek WhatsApp admin.' : $result['detail']);
+    }
+
+    /* ---------------------------------------------------------------
+     | KEAMANAN
+     * --------------------------------------------------------------- */
+    public function updateSecurity(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'login_max_attempts' => ['required', Rule::in(['3', '5', '10'])],
+            'login_lock_minutes' => ['required', Rule::in(['1', '5', '15', '60'])],
+            'admin_idle_minutes' => ['required', Rule::in(['0', '15', '30', '120', '480'])],
+            'require_admin_2fa'  => ['nullable', 'boolean'],
+        ]);
+
+        // Cegah admin terkunci: 2FA wajib hanya boleh diaktifkan jika admin ini sudah memakai 2FA
+        if ($request->boolean('require_admin_2fa')) {
+            if (! Security::twoFactorRoute()) {
+                return back()->withInput()->withErrors(['require_admin_2fa' => 'Halaman pengaturan 2FA tidak ditemukan di aplikasi ini.']);
+            }
+
+            if (empty($request->user()->two_factor_confirmed_at)) {
+                return back()->withInput()->withErrors([
+                    'require_admin_2fa' => 'Aktifkan 2FA di akun Anda sendiri terlebih dahulu (tombol "Atur 2FA"), baru wajibkan untuk semua admin.',
+                ]);
+            }
+        }
+
+        Setting::put([
+            'login_max_attempts' => $request->input('login_max_attempts'),
+            'login_lock_minutes' => $request->input('login_lock_minutes'),
+            'admin_idle_minutes' => $request->input('admin_idle_minutes'),
+            'require_admin_2fa'  => $request->boolean('require_admin_2fa') ? '1' : '0',
+        ]);
+
+        // Mulai hitung waktu aktif dari sekarang
+        $request->session()->put('admin_last_activity', time());
+
+        return redirect()
+            ->route('admin.settings.index', ['tab' => 'security'])
+            ->with('success', 'Pengaturan keamanan disimpan.');
     }
 
     /* ---------------------------------------------------------------

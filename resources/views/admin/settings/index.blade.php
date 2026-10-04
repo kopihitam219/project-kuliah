@@ -7,6 +7,8 @@
     use App\Models\Setting;
     use App\Support\BookingRules;
     use App\Support\Brand;
+    use App\Support\Security;
+    use App\Support\WhatsApp;
 
     $hero = Brand::hero();
 @endphp
@@ -101,6 +103,25 @@
         .st-hero-preview h3 span { color: var(--lime); }
         .st-hero-preview p { margin-top: 8px; max-width: 460px; color: rgba(255, 255, 255, .78); font-size: 12px; line-height: 1.5; }
 
+        .st-check { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+        .st-check:last-child { border-bottom: 0; }
+        .st-check strong { display: block; font-size: 13px; }
+        .st-check small { display: block; margin-top: 2px; color: var(--text-muted); font-size: 11px; line-height: 1.5; }
+        .st-badge { flex: 0 0 auto; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 900; white-space: nowrap; }
+        .st-badge.ok { background: rgba(156, 255, 0, .16); color: var(--lime); }
+        .st-badge.warn { background: rgba(255, 120, 130, .16); color: #ff9aa6; }
+        .st-badge.muted { background: rgba(255, 255, 255, .08); color: var(--text-soft); }
+        .st-row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .st-mini-btn {
+            height: 32px; padding: 0 12px; display: inline-flex; align-items: center;
+            border: 1px solid var(--line); border-radius: 7px; background: transparent;
+            color: var(--text-soft); font-size: 11px; font-weight: 800; text-decoration: none; cursor: pointer;
+        }
+        .st-mini-btn:hover { border-color: rgba(156, 255, 0, .45); color: var(--lime); }
+        .st-mini-btn.danger:hover { border-color: rgba(216, 35, 61, .7); color: #ff7a8c; }
+        .st-disabled { opacity: .55; }
+        .st-code { font-family: Consolas, Menlo, monospace; font-size: 11px; color: var(--lime); }
+
         @media (max-width: 1050px) { .st-grid-3 { grid-template-columns: 1fr; } }
         @media (max-width: 760px) { .st-grid-2 { grid-template-columns: 1fr; } }
     </style>
@@ -110,7 +131,7 @@
     <section class="page-head">
         <div>
             <h1>Settings</h1>
-            <p>Atur identitas usaha, tampilan, aturan booking, pembayaran, dan akun admin. Perubahan langsung berlaku setelah disimpan.</p>
+            <p>Atur identitas usaha, tampilan, aturan booking, pembayaran, WhatsApp, keamanan, dan akun admin. Perubahan langsung berlaku setelah disimpan.</p>
         </div>
     </section>
 
@@ -232,6 +253,21 @@
                     <label for="sMaintMsg">Pesan yang ditampilkan</label>
                     <textarea name="maintenance_message" id="sMaintMsg" class="input" maxlength="300">{{ old('maintenance_message', Brand::maintenanceMessage()) }}</textarea>
                 </div>
+            </section>
+
+            <section class="st-card">
+                <h2>Menu lanjutan</h2>
+                <p class="st-sub">Sembunyikan tab Notifikasi & WhatsApp serta Keamanan dari menu Settings, misalnya saat presentasi. Fiturnya tetap terpasang dan bisa dimunculkan lagi kapan saja dari sini.</p>
+
+                <input type="hidden" name="show_advanced_settings" value="0">
+                <label class="st-toggle st-box">
+                    <span>
+                        <strong>Tampilkan tab Notifikasi & WhatsApp dan Keamanan</strong>
+                        <small>Matikan untuk menyembunyikan kedua tab tersebut. Pengaturan yang sudah disimpan tetap berlaku.</small>
+                    </span>
+                    <input type="checkbox" name="show_advanced_settings" value="1"
+                           @checked(old('show_advanced_settings', \App\Http\Controllers\AdminSettingController::showAdvanced() ? '1' : '0') === '1')>
+                </label>
             </section>
 
             <div class="st-actions">
@@ -557,6 +593,323 @@
         </form>
     @endif
 
+    {{-- ================= NOTIFIKASI & WHATSAPP ================= --}}
+    @if ($tab === 'whatsapp')
+        @php
+            $waProvider = old('wa_provider', WhatsApp::provider());
+            $lastTest   = json_decode((string) Setting::get('wa_last_test'), true);
+        @endphp
+
+        <form method="POST" action="{{ route('admin.settings.whatsapp') }}">
+            @csrf
+            @method('PUT')
+
+            <section class="st-card">
+                <h2>Konfigurasi API WhatsApp</h2>
+                <p class="st-sub">
+                    Lonceng notifikasi di aplikasi selalu aktif. WhatsApp dikirim sebagai tambahan ke nomor admin setelah konfigurasi di bawah diisi.
+                    Daftar ke <strong>Fonnte</strong> (fonnte.com) atau <strong>Wablas</strong> (wablas.com), hubungkan nomor WhatsApp bisnis, lalu salin token API-nya ke sini.
+                </p>
+
+                <div class="st-grid-2">
+                    <div class="field">
+                        <label for="waProvider">Layanan</label>
+                        <select name="wa_provider" id="waProvider" class="input">
+                            @foreach (WhatsApp::PROVIDERS as $value => $label)
+                                <option value="{{ $value }}" @selected($waProvider === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="field" data-provider-only="wablas">
+                        <label for="waUrl">URL server Wablas</label>
+                        <input type="url" name="wa_wablas_url" id="waUrl" class="input" maxlength="200"
+                               value="{{ old('wa_wablas_url', WhatsApp::wablasUrl()) }}" placeholder="https://solo.wablas.com">
+                        <p class="field-hint">Lihat di dashboard Wablas, bagian device / API.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="waToken">Token API</label>
+                        <input type="password" name="wa_token" id="waToken" class="input" maxlength="500" autocomplete="off"
+                               placeholder="{{ WhatsApp::hasToken() ? '•••••••• (tersimpan, kosongkan jika tidak diganti)' : 'Tempel token dari Fonnte / Wablas' }}">
+                        <p class="field-hint">Disimpan terenkripsi dan tidak pernah ditampilkan ulang.</p>
+                        @if (WhatsApp::hasToken())
+                            <label class="st-remove"><input type="checkbox" name="remove_wa_token" value="1"> Hapus token & nonaktifkan WhatsApp</label>
+                        @endif
+                    </div>
+
+                    <div class="field" data-provider-only="wablas">
+                        <label for="waSecret">Secret key Wablas (opsional)</label>
+                        <input type="password" name="wa_secret" id="waSecret" class="input" maxlength="200" autocomplete="off"
+                               placeholder="{{ WhatsApp::secret() ? '•••••••• (tersimpan)' : 'Kosongkan jika tidak memakai secret key' }}">
+                    </div>
+
+                    <div class="field">
+                        <label for="waAdmin">Nomor WhatsApp admin (penerima)</label>
+                        <input type="text" name="wa_admin_numbers" id="waAdmin" class="input" maxlength="300" inputmode="tel"
+                               value="{{ old('wa_admin_numbers', Setting::get('wa_admin_numbers')) }}" placeholder="0858 8680 3126, 0812 xxxx xxxx">
+                        <p class="field-hint">Pisahkan dengan koma untuk lebih dari satu admin.</p>
+                    </div>
+                </div>
+
+                <div class="st-box" style="display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap">
+                    <div>
+                        <strong style="font-size: 13px">Status koneksi</strong>
+                        <p class="field-hint" style="margin-top: 3px">
+                            @if (! WhatsApp::enabled())
+                                Belum aktif. Pilih layanan, isi token & nomor admin, lalu simpan.
+                            @elseif ($lastTest)
+                                Uji terakhir {{ \Carbon\Carbon::parse($lastTest['at'])->locale('id')->diffForHumans() }}: {{ $lastTest['detail'] }}
+                            @else
+                                Tersimpan. Klik "Kirim pesan uji" untuk memastikan koneksi berhasil.
+                            @endif
+                        </p>
+                    </div>
+                    @if (! WhatsApp::enabled())
+                        <span class="st-badge muted">Nonaktif</span>
+                    @elseif ($lastTest)
+                        <span class="st-badge {{ $lastTest['ok'] ? 'ok' : 'warn' }}">{{ $lastTest['ok'] ? 'Terhubung' : 'Gagal' }}</span>
+                    @else
+                        <span class="st-badge muted">Belum diuji</span>
+                    @endif
+                </div>
+            </section>
+
+            <section class="st-card">
+                <h2>Kirim WhatsApp ke admin saat</h2>
+                <p class="st-sub">Pesan sama dengan notifikasi di lonceng, ditambah link untuk membuka dashboard.</p>
+
+                <div class="st-grid-2">
+                    @foreach (WhatsApp::ADMIN_EVENTS as $event => $label)
+                        <input type="hidden" name="wa_admin_{{ $event }}" value="0">
+                        <label class="st-toggle st-box">
+                            <span><strong>{{ $label }}</strong></span>
+                            <input type="checkbox" name="wa_admin_{{ $event }}" value="1" @checked(old("wa_admin_{$event}", WhatsApp::adminEventEnabled($event) ? '1' : '0') === '1')>
+                        </label>
+                    @endforeach
+                </div>
+
+                <div class="field" style="margin-top: 16px">
+                    <label for="waTemplate">Template pesan</label>
+                    <textarea name="wa_template" id="waTemplate" class="input" style="height: 110px; font-family: Consolas, Menlo, monospace" maxlength="1000">{{ old('wa_template', WhatsApp::template()) }}</textarea>
+                    <p class="field-hint">
+                        Kata berikut diganti otomatis:
+                        <span class="st-code">{judul}</span>, <span class="st-code">{pesan}</span>,
+                        <span class="st-code">{link}</span>, <span class="st-code">{usaha}</span>.
+                        Teks di antara bintang (*seperti ini*) tampil tebal di WhatsApp.
+                    </p>
+                </div>
+            </section>
+
+            <section class="st-card st-disabled">
+                <h2>Kirim WhatsApp ke customer</h2>
+                <p class="st-sub" style="margin-bottom: 0">
+                    Belum tersedia: akun customer belum menyimpan nomor WhatsApp (form registrasi hanya meminta nama, email, dan password).
+                    Fitur ini bisa diaktifkan setelah kolom nomor WhatsApp ditambahkan ke registrasi & profil customer.
+                    Sementara itu, customer tetap menerima notifikasi di lonceng.
+                </p>
+            </section>
+
+            <div class="st-actions" style="justify-content: space-between">
+                <span></span>
+                <button type="submit" class="btn btn-primary">Simpan pengaturan WhatsApp</button>
+            </div>
+        </form>
+
+        @if (WhatsApp::enabled())
+            <form method="POST" action="{{ route('admin.settings.whatsapp.test') }}" style="margin-top: -6px">
+                @csrf
+                <button type="submit" class="btn btn-outline">Kirim pesan uji ke {{ implode(', ', WhatsApp::adminNumbers()) }}</button>
+            </form>
+        @endif
+    @endif
+
+    {{-- ================= KEAMANAN ================= --}}
+    @if ($tab === 'security')
+        @php
+            $twoFactorRoute = Security::twoFactorRoute();
+            $sessions = Security::usesDatabaseSessions()
+                ? \Illuminate\Support\Facades\DB::table(config('session.table', 'sessions'))
+                    ->where('user_id', $user->id)
+                    ->orderByDesc('last_activity')
+                    ->get()
+                : collect();
+
+            $device = function (?string $agent) {
+                $agent = (string) $agent;
+                $browser = match (true) {
+                    str_contains($agent, 'Edg/')    => 'Edge',
+                    str_contains($agent, 'OPR/')    => 'Opera',
+                    str_contains($agent, 'Chrome/') => 'Chrome',
+                    str_contains($agent, 'Firefox/') => 'Firefox',
+                    str_contains($agent, 'Safari/') => 'Safari',
+                    default                          => 'Browser',
+                };
+                $os = match (true) {
+                    str_contains($agent, 'Windows')   => 'Windows',
+                    str_contains($agent, 'iPhone')    => 'iPhone',
+                    str_contains($agent, 'iPad')      => 'iPad',
+                    str_contains($agent, 'Android')   => 'Android',
+                    str_contains($agent, 'Mac OS')    => 'macOS',
+                    str_contains($agent, 'Linux')     => 'Linux',
+                    default                           => 'Perangkat',
+                };
+                return "{$browser} · {$os}";
+            };
+        @endphp
+
+        <form method="POST" action="{{ route('admin.settings.security') }}" class="st-card">
+            @csrf
+            @method('PUT')
+
+            <h2>Login & sesi admin</h2>
+            <p class="st-sub">Melindungi akun dari tebak-tebakan password dan dari perangkat yang lupa ditinggal login.</p>
+
+            <div class="st-grid-3">
+                <div class="field">
+                    <label for="sAttempts">Batas percobaan login</label>
+                    <select name="login_max_attempts" id="sAttempts" class="input">
+                        @foreach (['3' => '3 kali', '5' => '5 kali', '10' => '10 kali'] as $value => $label)
+                            <option value="{{ $value }}" @selected((string) old('login_max_attempts', Security::loginAttempts()) === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <p class="field-hint">Berlaku untuk semua akun (admin & customer).</p>
+                </div>
+                <div class="field">
+                    <label for="sLock">Lama dikunci setelah gagal</label>
+                    <select name="login_lock_minutes" id="sLock" class="input">
+                        @foreach (['1' => '1 menit', '5' => '5 menit', '15' => '15 menit', '60' => '1 jam'] as $value => $label)
+                            <option value="{{ $value }}" @selected((string) old('login_lock_minutes', Security::lockMinutes()) === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="sIdle">Admin keluar otomatis jika tidak aktif</label>
+                    <select name="admin_idle_minutes" id="sIdle" class="input">
+                        @foreach (['0' => 'Tidak pernah', '15' => '15 menit', '30' => '30 menit', '120' => '2 jam', '480' => '8 jam'] as $value => $label)
+                            <option value="{{ $value }}" @selected((string) old('admin_idle_minutes', Security::adminIdleMinutes()) === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <input type="hidden" name="require_admin_2fa" value="0">
+            <label class="st-toggle st-box">
+                <span>
+                    <strong>Wajibkan verifikasi 2 langkah (2FA) untuk admin</strong>
+                    <small>
+                        Admin harus memasukkan kode dari aplikasi authenticator (Google Authenticator, dsb.) setiap login.
+                        Admin yang belum mengaktifkan 2FA akan diarahkan ke halaman pengaturan 2FA.
+                        @if ($user->two_factor_confirmed_at)
+                            <strong style="color: var(--lime)">2FA akun Anda sudah aktif.</strong>
+                        @else
+                            Aktifkan dulu 2FA di akun Anda sendiri.
+                        @endif
+                    </small>
+                </span>
+                <input type="checkbox" name="require_admin_2fa" value="1" @checked(old('require_admin_2fa', Security::requireAdmin2fa() ? '1' : '0') === '1')>
+            </label>
+
+            <div class="st-actions" style="justify-content: space-between; flex-wrap: wrap">
+                @if ($twoFactorRoute)
+                    <a href="{{ route($twoFactorRoute) }}" class="btn btn-outline">Atur 2FA akun saya</a>
+                @else
+                    <span class="field-hint">Halaman pengaturan 2FA tidak ditemukan.</span>
+                @endif
+                <button type="submit" class="btn btn-primary">Simpan pengaturan keamanan</button>
+            </div>
+        </form>
+
+        <section class="st-card">
+            <div class="section-card-head" style="margin-bottom: 8px">
+                <div>
+                    <h2>Perangkat yang sedang login</h2>
+                    <p class="st-sub" style="margin: 4px 0 0">Akun admin Anda: {{ $user->email }}</p>
+                </div>
+                @if ($sessions->count() > 1)
+                    <form method="POST" action="{{ route('admin.settings.sessions.others') }}" data-confirm="Keluarkan semua perangkat lain dari akun ini?">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="st-mini-btn danger">Keluarkan semua perangkat lain</button>
+                    </form>
+                @endif
+            </div>
+
+            @if (! Security::usesDatabaseSessions())
+                <p class="field-hint">Daftar perangkat hanya tersedia jika SESSION_DRIVER=database di file .env.</p>
+            @elseif ($sessions->isEmpty())
+                <p class="field-hint">Tidak ada data sesi.</p>
+            @else
+                @foreach ($sessions as $session)
+                    @php $isCurrent = $session->id === session()->getId(); @endphp
+                    <div class="st-check">
+                        <div>
+                            <strong>
+                                {{ $device($session->user_agent) }}
+                                @if ($isCurrent) <span class="st-badge ok" style="margin-left: 6px">Perangkat ini</span> @endif
+                            </strong>
+                            <small>
+                                IP {{ $session->ip_address ?? '-' }} ·
+                                aktif {{ \Carbon\Carbon::createFromTimestamp($session->last_activity)->locale('id')->diffForHumans() }}
+                            </small>
+                        </div>
+                        @unless ($isCurrent)
+                            <form method="POST" action="{{ route('admin.settings.sessions.destroy', $session->id) }}" data-confirm="Keluarkan perangkat ini?">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="st-mini-btn danger">Keluarkan</button>
+                            </form>
+                        @endunless
+                    </div>
+                @endforeach
+            @endif
+        </section>
+
+        <section class="st-card">
+            <div class="section-card-head" style="margin-bottom: 8px">
+                <div>
+                    <h2>Backup database</h2>
+                    <p class="st-sub" style="margin: 4px 0 0">Menyimpan salinan seluruh data (booking, pembayaran, customer, pengaturan). 14 backup terakhir disimpan.</p>
+                </div>
+                @if (Security::backupSupported())
+                    <form method="POST" action="{{ route('admin.settings.backups.store') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-outline">Buat backup sekarang</button>
+                    </form>
+                @endif
+            </div>
+
+            @if (! Security::backupSupported())
+                <p class="field-hint">
+                    Database Anda memakai <span class="st-code">{{ config('database.default') }}</span>.
+                    Backup dari aplikasi hanya untuk SQLite. Untuk MySQL, gunakan fitur backup di hosting atau phpMyAdmin.
+                </p>
+            @elseif (empty(Security::backups()))
+                <p class="field-hint">Belum ada backup.</p>
+            @else
+                @foreach (Security::backups() as $backup)
+                    <div class="st-check">
+                        <div>
+                            <strong>{{ $backup['name'] }}</strong>
+                            <small>
+                                {{ \Carbon\Carbon::createFromTimestamp($backup['time'])->locale('id')->translatedFormat('d M Y, H:i') }} ·
+                                {{ number_format($backup['size'] / 1024, 0, ',', '.') }} KB
+                            </small>
+                        </div>
+                        <div class="st-row-actions">
+                            <a href="{{ route('admin.settings.backups.download', $backup['name']) }}" class="st-mini-btn">Unduh</a>
+                            <form method="POST" action="{{ route('admin.settings.backups.destroy', $backup['name']) }}" data-confirm="Hapus backup {{ $backup['name'] }}?">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="st-mini-btn danger">Hapus</button>
+                            </form>
+                        </div>
+                    </div>
+                @endforeach
+            @endif
+        </section>
+    @endif
+
     {{-- ================= TAB TAHAP BERIKUTNYA ================= --}}
     @if (! ($tabs[$tab]['ready'] ?? false))
         <section class="st-card st-soon">
@@ -629,15 +982,38 @@
                 @if ($user->two_factor_confirmed_at ?? null)
                     <strong style="color: var(--lime)">Aktif.</strong> Akun admin terlindungi kode dari aplikasi authenticator.
                 @else
-                    Belum aktif. Pengaturan 2FA akan tersedia di tab Keamanan (Tahap 3).
+                    Belum aktif. Aktifkan agar akun admin tetap aman walaupun password diketahui orang lain.
                 @endif
             </p>
+            @if (Security::twoFactorRoute())
+                <div style="margin-top: 14px">
+                    <a href="{{ route(Security::twoFactorRoute()) }}" class="btn btn-outline">Atur 2FA</a>
+                </div>
+            @endif
         </section>
     @endif
 @endsection
 
 @push('scripts')
     <script>
+        // Field khusus Wablas
+        (() => {
+            const provider = document.getElementById('waProvider');
+            if (!provider) return;
+            const sync = () => document.querySelectorAll('[data-provider-only]').forEach((el) => {
+                el.hidden = el.dataset.providerOnly !== provider.value;
+            });
+            provider.addEventListener('change', sync);
+            sync();
+        })();
+
+        // Konfirmasi aksi berbahaya
+        document.querySelectorAll('form[data-confirm]').forEach((form) => {
+            form.addEventListener('submit', (event) => {
+                if (!confirm(form.dataset.confirm)) event.preventDefault();
+            });
+        });
+
         // Pratinjau harga
         (() => {
             const price = document.getElementById('pPrice');

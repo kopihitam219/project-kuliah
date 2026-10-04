@@ -3,6 +3,7 @@
 
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminSettingController;
+use App\Http\Controllers\AdminSecurityController;
 use App\Http\Controllers\AdminBookingRescheduleController;
 use App\Http\Controllers\AdminGalleryController;
 use App\Http\Controllers\AdminEventController;
@@ -296,6 +297,30 @@ Route::middleware([
 
     Route::put('/admin/settings/payment', [AdminSettingController::class, 'updatePayment'])
         ->name('admin.settings.payment');
+
+    Route::put('/admin/settings/whatsapp', [AdminSettingController::class, 'updateWhatsapp'])
+        ->name('admin.settings.whatsapp');
+
+    Route::post('/admin/settings/whatsapp/test', [AdminSettingController::class, 'testWhatsapp'])
+        ->name('admin.settings.whatsapp.test');
+
+    Route::put('/admin/settings/security', [AdminSettingController::class, 'updateSecurity'])
+        ->name('admin.settings.security');
+
+    Route::delete('/admin/settings/sessions', [AdminSecurityController::class, 'destroyOtherSessions'])
+        ->name('admin.settings.sessions.others');
+
+    Route::delete('/admin/settings/sessions/{session}', [AdminSecurityController::class, 'destroySession'])
+        ->name('admin.settings.sessions.destroy');
+
+    Route::post('/admin/settings/backups', [AdminSecurityController::class, 'createBackup'])
+        ->name('admin.settings.backups.store');
+
+    Route::get('/admin/settings/backups/{file}', [AdminSecurityController::class, 'downloadBackup'])
+        ->name('admin.settings.backups.download');
+
+    Route::delete('/admin/settings/backups/{file}', [AdminSecurityController::class, 'deleteBackup'])
+        ->name('admin.settings.backups.destroy');
 
 
     /*
