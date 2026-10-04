@@ -40,8 +40,9 @@
     };
 
     $paymentLabels = [
-        'paid'    => 'Lunas',
-        'pending' => 'Menunggu bayar',
+        'paid'      => 'Lunas',
+        'verifying' => 'Perlu verifikasi',
+        'pending'   => 'Menunggu bayar',
         'unpaid'  => 'Belum bayar',
         'offline' => 'Offline',
     ];
@@ -58,6 +59,7 @@
         $paymentState = match (true) {
             $isOffline                                => 'offline',
             $payment && $payment->status === 'paid'   => 'paid',
+            $payment && $payment->status === 'verifying' => 'verifying',
             $payment && $payment->status === 'pending' => 'pending',
             default                                   => 'unpaid',
         };
@@ -78,6 +80,7 @@
             'notes'   => $booking->admin_notes,
 
             'payment' => [
+                'id'         => $payment?->id,
                 'state'      => $paymentState,
                 'label'      => $paymentLabels[$paymentState],
                 'amount'     => $payment?->amount_label,
@@ -108,6 +111,9 @@
         : collect();
 
     $initialStatus = in_array(request('status'), ['pending', 'booked'], true) ? request('status') : '';
+
+    $requirePaid = class_exists(\App\Support\BookingRules::class) && \App\Support\BookingRules::requirePaidBeforeApprove();
+    $verifyCount = $bookingData->where('payment.state', 'verifying')->count();
 @endphp
 
 @push('styles')
@@ -218,6 +224,10 @@
         .db-pill.unpaid   { background: rgba(255, 77, 94, .16); color: #ff8a96; }
         .db-pill.waiting  { background: rgba(245, 174, 0, .16); color: #ffc62d; }
         .db-pill.offline  { background: rgba(255, 255, 255, .08); color: rgba(255, 255, 255, .78); }
+        .db-pill.verify   { background: rgba(92, 168, 255, .18); color: #9ccdff; }
+        .db-btn.verify    { background: #5ca8ff; color: #06111c; }
+        .db-btn.verify-no { background: transparent; border: 1px solid rgba(255, 120, 130, .5); color: #ff9aa6; }
+        .db-verify-alert { margin-bottom: 14px; padding: 11px 14px; border-radius: 9px; border: 1px solid rgba(92, 168, 255, .4); background: rgba(92, 168, 255, .1); color: #b9dcff; font-size: 12px; }
         .db-pill.online   { background: rgba(92, 168, 255, .14); color: #8ec7ff; }
 
         .db-empty { padding: 50px 20px; text-align: center; color: var(--text-muted); font-size: 12px; }
@@ -322,6 +332,13 @@
         </div>
     @endif
 
+    @if ($verifyCount > 0)
+        <div class="db-verify-alert">
+            ◷ Ada <strong>{{ $verifyCount }}</strong> pembayaran QRIS / transfer yang menunggu verifikasi.
+            Pilih filter <strong>Perlu verifikasi</strong>, cek mutasi rekening, lalu konfirmasi di panel detail.
+        </div>
+    @endif
+
     {{-- ================= STATISTIK ================= --}}
     <section class="db-stats">
         @foreach ($stats as $stat)
@@ -349,6 +366,7 @@
         <select id="paymentFilter" class="input">
             <option value="">Semua pembayaran</option>
             <option value="paid">Lunas</option>
+            <option value="verifying">Perlu verifikasi</option>
             <option value="unpaid">Belum dibayar</option>
             <option value="offline">Offline</option>
         </select>
@@ -382,7 +400,7 @@
                     <tbody>
                         @forelse ($bookingData as $index => $row)
                             @php
-                                $payClass = ['paid' => 'paid', 'pending' => 'waiting', 'unpaid' => 'unpaid', 'offline' => 'offline'][$row['payment']['state']];
+                                $payClass = ['paid' => 'paid', 'verifying' => 'verify', 'pending' => 'waiting', 'unpaid' => 'unpaid', 'offline' => 'offline'][$row['payment']['state']];
                             @endphp
                             <tr class="db-row" data-index="{{ $index }}">
                                 <td>{{ $index + 1 }}</td>
@@ -404,7 +422,7 @@
                                 </td>
                                 <td>
                                     <span class="db-pill {{ $payClass }}">
-                                        {{ $row['payment']['state'] === 'paid' ? '✓' : ($row['payment']['state'] === 'offline' ? '⌂' : '!') }}
+                                        {{ $row['payment']['state'] === 'paid' ? '✓' : ($row['payment']['state'] === 'offline' ? '⌂' : ($row['payment']['state'] === 'verifying' ? '◷' : '!')) }}
                                         {{ $row['payment']['label'] }}
                                     </span>
                                     @if ($row['payment']['amount'] && $row['payment']['state'] !== 'offline')
@@ -471,6 +489,14 @@
                     <div class="db-pay-note" id="dPayUnpaid" hidden>
                         Customer belum menyelesaikan pembayaran online.
                     </div>
+                    <div class="db-pay-note" id="dPayVerify" hidden style="color: #b9dcff">
+                        Customer mengonfirmasi sudah membayar. Cek mutasi rekening / QRIS untuk nominal dan no. referensi di atas,
+                        lalu konfirmasi atau tolak.
+                    </div>
+                    <div class="db-actions" id="dVerifyActions" hidden>
+                        <button type="button" class="db-btn verify" id="btnVerify">✓ Dana masuk, konfirmasi</button>
+                        <button type="button" class="db-btn verify-no" id="btnVerifyReject">× Belum masuk</button>
+                    </div>
                 </div>
 
                 <div class="db-actions">
@@ -536,7 +562,10 @@
                 approve: @json(route('admin.bookings.approve', '__ID__')),
                 reject:  @json(route('admin.bookings.reject', '__ID__')),
                 reschedule: @json(route('admin.bookings.reschedule', '__ID__')),
+                verify: @json(\Illuminate\Support\Facades\Route::has('admin.payments.verify') ? route('admin.payments.verify', '__ID__') : null),
+                verifyReject: @json(\Illuminate\Support\Facades\Route::has('admin.payments.reject') ? route('admin.payments.reject', '__ID__') : null),
             };
+            const requirePaid = @json($requirePaid);
 
             const $ = (id) => document.getElementById(id);
             const setText = (id, value) => { const el = $(id); if (el) el.textContent = value ?? '-'; };
@@ -544,7 +573,7 @@
             const rows = Array.from(document.querySelectorAll('.db-row'));
             let current = null;
 
-            const payClass = { paid: 'paid', pending: 'waiting', unpaid: 'unpaid', offline: 'offline' };
+            const payClass = { paid: 'paid', verifying: 'verify', pending: 'waiting', unpaid: 'unpaid', offline: 'offline' };
 
             /* ---------- Jam ---------- */
             function updateClock() {
@@ -583,6 +612,8 @@
                 $('dPayOffline').hidden = p.state !== 'offline';
                 $('dPayOnline').hidden  = p.state === 'offline';
                 $('dPayUnpaid').hidden  = p.state !== 'unpaid';
+                $('dPayVerify').hidden  = p.state !== 'verifying';
+                $('dVerifyActions').hidden = p.state !== 'verifying' || !routes.verify;
 
                 const payPill = $('dPayPill');
                 payPill.textContent = p.label;
@@ -593,7 +624,10 @@
                 setText('dPayRef', p.reference || '-');
                 setText('dPayAt', p.paidAt || '-');
 
-                $('btnApprove').disabled = b.status !== 'pending';
+                $('btnApprove').disabled = b.status !== 'pending'
+                    || (requirePaid && ['unpaid', 'pending', 'verifying'].includes(p.state));
+                $('btnApprove').title = (requirePaid && ['unpaid', 'pending', 'verifying'].includes(p.state))
+                    ? 'Wajib lunas sebelum di-approve (diatur di Settings)' : '';
                 $('btnReschedule').href = routes.reschedule.replace('__ID__', b.id);
                 $('btnReceipt').hidden = p.state !== 'paid';
 
@@ -614,7 +648,7 @@
 
                 let message = (type === 'approve' ? 'Setujui' : 'Tolak') + ' booking atas nama ' + current.name + '?';
 
-                if (type === 'approve' && ['unpaid', 'pending'].includes(current.payment.state)) {
+                if (type === 'approve' && ['unpaid', 'pending', 'verifying'].includes(current.payment.state)) {
                     message = '⚠ Booking ini BELUM DIBAYAR.\n\n' + message;
                 }
 
@@ -626,6 +660,23 @@
             }
 
             $('btnApprove').addEventListener('click', () => submitAction('approve'));
+
+            function submitVerify(ok) {
+                if (!current || !current.payment.id) return;
+
+                const message = ok
+                    ? 'Konfirmasi pembayaran ' + current.payment.amount + ' dari ' + current.name + ' sudah MASUK?'
+                    : 'Tandai pembayaran ' + current.name + ' BELUM masuk? Customer akan diminta membayar ulang.';
+
+                if (!confirm(message)) return;
+
+                const form = $('bookingActionForm');
+                form.action = (ok ? routes.verify : routes.verifyReject).replace('__ID__', current.payment.id);
+                form.submit();
+            }
+
+            $('btnVerify').addEventListener('click', () => submitVerify(true));
+            $('btnVerifyReject').addEventListener('click', () => submitVerify(false));
             $('btnReject').addEventListener('click', () => submitAction('reject'));
 
             /* ---------- Modal bukti pembayaran ---------- */
@@ -668,7 +719,7 @@
 
                 rows.forEach((row) => {
                     const b = bookings[Number(row.dataset.index)];
-                    const payState = b.payment.state === 'pending' ? 'unpaid' : b.payment.state;
+                    const payState = b.payment.state === 'pending' ? 'unpaid' : b.payment.state;  // verifying punya filter sendiri
 
                     const match =
                         (!q || [b.name, b.email, b.phone].some((v) => String(v).toLowerCase().includes(q))) &&

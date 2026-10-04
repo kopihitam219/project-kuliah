@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Support\BookingRules;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,9 +17,6 @@ use Illuminate\View\View;
  */
 class AdminBookingRescheduleController extends Controller
 {
-    private const OPEN_TIME  = '07:00';
-    private const CLOSE_TIME = '20:00';
-
     /**
      * Halaman reschedule.
      */
@@ -93,12 +91,16 @@ class AdminBookingRescheduleController extends Controller
         $minutes  = $this->minutesBetween($start, $end);
 
         // Aturan jam lesson
-        if ($start < self::OPEN_TIME || $end > self::CLOSE_TIME) {
-            return back()->withInput()->withErrors(['booking' => 'Jam lesson hanya tersedia 07:00 sampai 20:00.']);
+        $open  = BookingRules::openTime();
+        $close = BookingRules::closeTime();
+        $min   = BookingRules::minMinutes();
+
+        if ($start < $open || $end > $close) {
+            return back()->withInput()->withErrors(['booking' => "Jam lesson hanya tersedia {$open} sampai {$close}."]);
         }
 
-        if ($minutes < 30) {
-            return back()->withInput()->withErrors(['booking' => 'Jam selesai harus setelah jam mulai, minimal 30 menit.']);
+        if ($minutes < $min) {
+            return back()->withInput()->withErrors(['booking' => "Jam selesai harus setelah jam mulai, minimal {$min} menit."]);
         }
 
         if ($newDate->isToday() && $start <= now()->format('H:i')) {
@@ -152,7 +154,7 @@ class AdminBookingRescheduleController extends Controller
             if ($payment && $payment->status !== 'paid' && $minutes !== $oldMinutes) {
                 $payment->update([
                     'duration_minutes' => $minutes,
-                    'amount'           => (int) round($minutes / 60 * \App\Models\Payment::PRICE_PER_HOUR),
+                    'amount'           => (int) round($minutes / 60 * \App\Models\Payment::pricePerHour()),
                 ]);
             }
         });
@@ -196,10 +198,14 @@ class AdminBookingRescheduleController extends Controller
 
         $isBookingDate = $booking->booking_date->isSameDay($date);
         $slots         = [];
+        $step          = BookingRules::slotMinutes();
+        $cursor        = Carbon::createFromFormat('H:i', BookingRules::openTime());
+        $closing       = Carbon::createFromFormat('H:i', BookingRules::closeTime());
 
-        for ($hour = 7; $hour < 20; $hour++) {
-            $start = sprintf('%02d:00', $hour);
-            $end   = sprintf('%02d:00', $hour + 1);
+        while ($cursor->copy()->addMinutes($step)->lte($closing)) {
+            $start = $cursor->format('H:i');
+            $end   = $cursor->copy()->addMinutes($step)->format('H:i');
+            $cursor->addMinutes($step);
 
             $overlaps = fn ($s, $e) => substr((string) $s, 0, 5) < $end && substr((string) $e, 0, 5) > $start;
 

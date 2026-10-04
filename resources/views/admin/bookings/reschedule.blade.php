@@ -242,12 +242,12 @@
                     <div class="field">
                         <label for="fStart">Jam mulai</label>
                         <input type="time" name="start_time" id="fStart" class="input" required
-                               min="07:00" max="19:30" step="1800" value="{{ $oldStart }}">
+                               min="{{ \App\Support\BookingRules::openTime() }}" max="{{ \App\Support\BookingRules::closeTime() }}" step="1800" value="{{ $oldStart }}">
                     </div>
                     <div class="field">
                         <label for="fEnd">Jam selesai</label>
                         <input type="time" name="end_time" id="fEnd" class="input" required
-                               min="07:30" max="20:00" step="1800" value="{{ $oldEnd }}">
+                               min="{{ \App\Support\BookingRules::openTime() }}" max="{{ \App\Support\BookingRules::closeTime() }}" step="1800" value="{{ $oldEnd }}">
                     </div>
                 </div>
 
@@ -270,6 +270,7 @@
     <script>
         (() => {
             const duration = {{ (int) $duration }};
+            const closeMinutes = (() => { const [h, m] = @json(\App\Support\BookingRules::closeTime()).split(':').map(Number); return h * 60 + m; })();
             const dateLabel = @json($date->locale('id')->translatedFormat('l, d M Y'));
             const start = document.getElementById('fStart');
             const end = document.getElementById('fEnd');
@@ -291,12 +292,12 @@
                     : 'pilih jam di atas';
             }
 
-            // Klik jam: jam selesai otomatis sesuai durasi lama (maks. 20:00)
+            // Klik jam: jam selesai otomatis sesuai durasi lama (maks. jam tutup)
             slots.forEach((slot) => {
                 slot.addEventListener('click', () => {
                     const s = toMinutes(slot.dataset.start);
                     start.value = slot.dataset.start;
-                    end.value = toTime(Math.min(s + duration, 20 * 60));
+                    end.value = toTime(Math.min(s + duration, closeMinutes));
                     refresh();
                 });
             });

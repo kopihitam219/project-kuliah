@@ -102,15 +102,15 @@ class AdminOfflineBookingController extends Controller
             'start_time' => [
                 'required',
                 'date_format:H:i',
-                'after_or_equal:07:00',
-                'before:20:00',
+                'after_or_equal:' . \App\Support\BookingRules::openTime(),
+                'before:' . \App\Support\BookingRules::closeTime(),
             ],
 
             'end_time' => [
                 'required',
                 'date_format:H:i',
-                'after:07:00',
-                'before_or_equal:20:00',
+                'after:' . \App\Support\BookingRules::openTime(),
+                'before_or_equal:' . \App\Support\BookingRules::closeTime(),
             ],
 
             /*
@@ -155,10 +155,10 @@ class AdminOfflineBookingController extends Controller
                 'Format jam mulai tidak valid.',
 
             'start_time.after_or_equal' =>
-                'Jam mulai minimal 07:00.',
+                'Jam mulai minimal ' . \App\Support\BookingRules::openTime() . '.',
 
             'start_time.before' =>
-                'Jam mulai harus sebelum 20:00.',
+                'Jam mulai harus sebelum ' . \App\Support\BookingRules::closeTime() . '.',
 
             'end_time.required' =>
                 'Jam selesai wajib diisi.',
@@ -170,7 +170,7 @@ class AdminOfflineBookingController extends Controller
                 'Jam selesai harus setelah jam mulai.',
 
             'end_time.before_or_equal' =>
-                'Jam selesai maksimal 20:00.',
+                'Jam selesai maksimal ' . \App\Support\BookingRules::closeTime() . '.',
         ]);
 
         /*
@@ -253,12 +253,12 @@ class AdminOfflineBookingController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if (($endMinutes - $startMinutes) < 30) {
+        if (($endMinutes - $startMinutes) < \App\Support\BookingRules::minMinutes()) {
             return back()
                 ->withInput()
                 ->withErrors([
                     'end_time' =>
-                        'Durasi booking minimal 30 menit.',
+                        'Durasi booking minimal ' . \App\Support\BookingRules::minMinutes() . ' menit.',
                 ]);
         }
 

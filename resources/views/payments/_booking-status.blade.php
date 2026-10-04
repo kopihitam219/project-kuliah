@@ -49,6 +49,8 @@
             ✓ Lunas · Dibayar di tempat
         @elseif ($cardPaid)
             ✓ Lunas · {{ $cardPayment->amount_label }}
+        @elseif ($cardPayment && $cardPayment->status === 'verifying')
+            ◷ Menunggu verifikasi admin · {{ $cardPayment->amount_label }}
         @elseif ($cardPayment && $cardPayment->status === 'pending')
             ◷ Menunggu pembayaran · {{ $cardPayment->amount_label }}
         @else
@@ -57,6 +59,6 @@
     </span>
 
     @unless ($cardOffline)
-        <a href="{{ route('payment.booking', $booking) }}">{{ $cardPaid ? 'Lihat bukti' : 'Bayar sekarang' }}</a>
+        <a href="{{ route('payment.booking', $booking) }}">{{ $cardPaid ? 'Lihat bukti' : ($cardPayment && $cardPayment->status === 'verifying' ? 'Lihat status' : 'Bayar sekarang') }}</a>
     @endunless
 </div>

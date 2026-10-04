@@ -278,7 +278,7 @@ class BookingController extends Controller
             'booking_date' => [
                 'required',
                 'date',
-                'after_or_equal:tomorrow',
+                'after_or_equal:' . \App\Support\BookingRules::minRescheduleDate()->toDateString(),
             ],
 
             'start_time' => [
@@ -428,13 +428,11 @@ class BookingController extends Controller
         );
 
         $minimumStart = Carbon::createFromFormat(
-            'H:i',
-            '07:00'
+            'H:i', \App\Support\BookingRules::openTime()
         );
 
         $maximumEnd = Carbon::createFromFormat(
-            'H:i',
-            '20:00'
+            'H:i', \App\Support\BookingRules::closeTime()
         );
 
         /*
@@ -446,7 +444,7 @@ class BookingController extends Controller
         ) {
             throw ValidationException::withMessages([
                 'booking' =>
-                    'Jam lesson hanya tersedia dari 07:00 sampai 20:00.',
+                    'Jam lesson hanya tersedia dari ' . \App\Support\BookingRules::openTime() . ' sampai ' . \App\Support\BookingRules::closeTime() . '.',
             ]);
         }
 
@@ -465,10 +463,10 @@ class BookingController extends Controller
          */
         $durationMinutes = $start->diffInMinutes($end);
 
-        if ($durationMinutes < 30) {
+        if ($durationMinutes < \App\Support\BookingRules::minMinutes()) {
             throw ValidationException::withMessages([
                 'booking' =>
-                    'Durasi lesson minimal 30 menit.',
+                    'Durasi lesson minimal ' . \App\Support\BookingRules::minMinutes() . ' menit.',
             ]);
         }
     }
@@ -520,10 +518,10 @@ class BookingController extends Controller
         /*
          * Harus masih minimal besok.
          */
-        if ($bookingDate->lte($today)) {
+        if (! \App\Support\BookingRules::canModifyDate($bookingDate)) {
             throw ValidationException::withMessages([
                 'booking' =>
-                    "Booking ini sudah masuk hari-H sehingga tidak dapat {$action}. Cancel/reschedule hanya diperbolehkan H-1.",
+                    "Booking ini tidak dapat {$action} lagi. " . \App\Support\BookingRules::cancelRuleText(),
             ]);
         }
     }

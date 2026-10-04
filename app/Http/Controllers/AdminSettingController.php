@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use App\Support\Brand;
+use App\Support\BookingRules;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,8 +19,8 @@ class AdminSettingController extends Controller
     public const TABS = [
         'general'    => ['label' => 'Umum & Branding',       'ready' => true],
         'appearance' => ['label' => 'Tampilan',              'ready' => true],
-        'booking'    => ['label' => 'Booking & Jadwal',      'ready' => false, 'stage' => 'Tahap 2'],
-        'payment'    => ['label' => 'Pembayaran',            'ready' => false, 'stage' => 'Tahap 2'],
+        'booking'    => ['label' => 'Booking & Jadwal',      'ready' => true],
+        'payment'    => ['label' => 'Pembayaran',            'ready' => true],
         'whatsapp'   => ['label' => 'Notifikasi & WhatsApp', 'ready' => false, 'stage' => 'Tahap 3'],
         'security'   => ['label' => 'Keamanan',              'ready' => false, 'stage' => 'Tahap 3'],
         'account'    => ['label' => 'Akun Admin',            'ready' => true],
@@ -107,6 +108,132 @@ class AdminSettingController extends Controller
         return redirect()
             ->route('admin.settings.index', ['tab' => 'appearance'])
             ->with('success', 'Pengaturan tampilan disimpan.');
+    }
+
+    /* ---------------------------------------------------------------
+     | BOOKING & JADWAL
+     * --------------------------------------------------------------- */
+    public function updateBooking(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'open_time'         => ['required', 'date_format:H:i'],
+            'close_time'        => ['required', 'date_format:H:i', 'after:open_time'],
+            'slot_minutes'      => ['required', Rule::in(['30', '60'])],
+            'min_minutes'       => ['required', Rule::in(['30', '60', '90', '120'])],
+            'cancel_days'       => ['required', Rule::in(['0', '1', '2', '3'])],
+            'max_active'        => ['required', Rule::in(['0', '1', '2', '3', '4', '5'])],
+            'auto_approve_paid' => ['nullable', 'boolean'],
+        ], [
+            'open_time.required'  => 'Jam buka wajib diisi.',
+            'close_time.required' => 'Jam tutup wajib diisi.',
+            'close_time.after'    => 'Jam tutup harus setelah jam buka.',
+        ]);
+
+        $open    = $request->input('open_time');
+        $close   = $request->input('close_time');
+        $minutes = (strtotime($close) - strtotime($open)) / 60;
+
+        if ($minutes < (int) $request->input('min_minutes')) {
+            return back()->withInput()->withErrors(['close_time' => 'Rentang jam buka terlalu pendek untuk durasi minimal yang dipilih.']);
+        }
+
+        Setting::put([
+            'open_time'         => $open,
+            'close_time'        => $close,
+            'slot_minutes'      => $request->input('slot_minutes'),
+            'min_minutes'       => $request->input('min_minutes'),
+            'cancel_days'       => $request->input('cancel_days'),
+            'max_active'        => $request->input('max_active'),
+            'auto_approve_paid' => $request->boolean('auto_approve_paid') ? '1' : '0',
+        ]);
+
+        return redirect()
+            ->route('admin.settings.index', ['tab' => 'booking'])
+            ->with('success', 'Aturan booking & jadwal disimpan. Berlaku untuk booking berikutnya.');
+    }
+
+    /* ---------------------------------------------------------------
+     | PEMBAYARAN
+     * --------------------------------------------------------------- */
+    public function updatePayment(Request $request): RedirectResponse
+    {
+        $account = ['nullable', 'string', 'max:30', 'regex:/^[0-9\s\-]+$/'];
+
+        $request->validate([
+            'price_per_hour'       => ['required', 'integer', 'min:0', 'max:100000000'],
+            'payment_expiry_hours' => ['required', Rule::in(['1', '3', '6', '12', '24', '48'])],
+            'require_paid'         => ['nullable', 'boolean'],
+            'payment_mode'         => ['required', Rule::in(['demo', 'live'])],
+
+            'pay_qris_enabled'     => ['nullable', 'boolean'],
+            'qris_image'           => ['nullable', 'file', 'mimes:png,jpg,jpeg', 'max:2048'],
+            'qris_merchant'        => ['nullable', 'string', 'max:60'],
+            'qris_nmid'            => ['nullable', 'string', 'max:30'],
+
+            'pay_mandiri_enabled'  => ['nullable', 'boolean'],
+            'mandiri_account'      => $account,
+            'mandiri_holder'       => ['nullable', 'string', 'max:60'],
+
+            'pay_bca_enabled'      => ['nullable', 'boolean'],
+            'bca_account'          => $account,
+            'bca_holder'           => ['nullable', 'string', 'max:60'],
+        ], [
+            'price_per_hour.required' => 'Harga per jam wajib diisi.',
+            'price_per_hour.integer'  => 'Harga harus berupa angka tanpa titik, misalnya 900000.',
+            'qris_image.mimes'        => 'Gambar QRIS harus PNG atau JPG.',
+            'qris_image.max'          => 'Ukuran gambar QRIS maksimal 2 MB.',
+            '*_account.regex'         => 'Nomor rekening hanya boleh berisi angka.',
+        ]);
+
+        $enabled = array_filter(['qris', 'mandiri', 'bca'], fn ($key) => $request->boolean("pay_{$key}_enabled"));
+
+        if (empty($enabled)) {
+            return back()->withInput()->withErrors(['pay_qris_enabled' => 'Minimal satu metode pembayaran harus aktif.']);
+        }
+
+        // Mode live: bank yang diaktifkan wajib punya nomor rekening & atas nama asli
+        if ($request->input('payment_mode') === 'live') {
+            foreach (['mandiri' => 'Mandiri', 'bca' => 'BCA'] as $key => $label) {
+                if ($request->boolean("pay_{$key}_enabled")
+                    && (! $request->filled("{$key}_account") || ! $request->filled("{$key}_holder"))) {
+                    return back()->withInput()->withErrors([
+                        "{$key}_account" => "Mode Live: nomor rekening dan atas nama {$label} wajib diisi jika {$label} diaktifkan.",
+                    ]);
+                }
+            }
+
+            if ($request->boolean('pay_qris_enabled') && ! Setting::get('qris_image') && ! $request->hasFile('qris_image')) {
+                return back()->withInput()->withErrors([
+                    'qris_image' => 'Mode Live: upload gambar QRIS asli, atau nonaktifkan QRIS.',
+                ]);
+            }
+        }
+
+        $values = [
+            'price_per_hour'       => (string) (int) $request->input('price_per_hour'),
+            'payment_expiry_hours' => $request->input('payment_expiry_hours'),
+            'require_paid'         => $request->boolean('require_paid') ? '1' : '0',
+            'payment_mode'         => $request->input('payment_mode'),
+            'qris_merchant'        => trim((string) $request->input('qris_merchant')),
+            'qris_nmid'            => trim((string) $request->input('qris_nmid')),
+        ];
+
+        foreach (['qris', 'mandiri', 'bca'] as $key) {
+            $values["pay_{$key}_enabled"] = $request->boolean("pay_{$key}_enabled") ? '1' : '0';
+        }
+
+        foreach (['mandiri', 'bca'] as $key) {
+            $values["{$key}_account"] = preg_replace('/\D+/', '', (string) $request->input("{$key}_account"));
+            $values["{$key}_holder"]  = trim((string) $request->input("{$key}_holder"));
+        }
+
+        Setting::put($values);
+
+        $this->handleImage($request, 'qris_image', 'qris_image', 'settings/payment');
+
+        return redirect()
+            ->route('admin.settings.index', ['tab' => 'payment'])
+            ->with('success', 'Pengaturan pembayaran disimpan. Harga baru berlaku untuk tagihan berikutnya.');
     }
 
     /* ---------------------------------------------------------------

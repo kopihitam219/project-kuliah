@@ -229,6 +229,12 @@ Route::middleware([
     Route::get('/admin/payments/{payment}/receipt', [AdminPaymentController::class, 'receipt'])
         ->name('admin.payments.receipt');
 
+    Route::patch('/admin/payments/{payment}/verify', [AdminPaymentController::class, 'verify'])
+        ->name('admin.payments.verify');
+
+    Route::patch('/admin/payments/{payment}/reject', [AdminPaymentController::class, 'rejectVerification'])
+        ->name('admin.payments.reject');
+
 
     /*
     |--------------------------------------------------------------------------
@@ -278,6 +284,12 @@ Route::middleware([
 
     Route::put('/admin/settings/password', [AdminSettingController::class, 'updatePassword'])
         ->name('admin.settings.password');
+
+    Route::put('/admin/settings/booking', [AdminSettingController::class, 'updateBooking'])
+        ->name('admin.settings.booking');
+
+    Route::put('/admin/settings/payment', [AdminSettingController::class, 'updatePayment'])
+        ->name('admin.settings.payment');
 
 
     /*

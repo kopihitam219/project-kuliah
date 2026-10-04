@@ -3,7 +3,9 @@
 @section('title', 'Settings')
 
 @php
+    use App\Models\Payment;
     use App\Models\Setting;
+    use App\Support\BookingRules;
     use App\Support\Brand;
 
     $hero = Brand::hero();
@@ -108,7 +110,7 @@
     <section class="page-head">
         <div>
             <h1>Settings</h1>
-            <p>Atur identitas usaha, tampilan, dan akun admin. Perubahan langsung berlaku setelah disimpan.</p>
+            <p>Atur identitas usaha, tampilan, aturan booking, pembayaran, dan akun admin. Perubahan langsung berlaku setelah disimpan.</p>
         </div>
     </section>
 
@@ -321,6 +323,240 @@
         </form>
     @endif
 
+    {{-- ================= BOOKING & JADWAL ================= --}}
+    @if ($tab === 'booking')
+        @php
+            $bk = [
+                'open_time'    => old('open_time', BookingRules::openTime()),
+                'close_time'   => old('close_time', BookingRules::closeTime()),
+                'slot_minutes' => (string) old('slot_minutes', BookingRules::slotMinutes()),
+                'min_minutes'  => (string) old('min_minutes', BookingRules::minMinutes()),
+                'cancel_days'  => (string) old('cancel_days', BookingRules::cancelDays()),
+                'max_active'   => (string) old('max_active', BookingRules::maxActive()),
+            ];
+        @endphp
+
+        <form method="POST" action="{{ route('admin.settings.booking') }}">
+            @csrf
+            @method('PUT')
+
+            <section class="st-card">
+                <h2>Jam operasional & slot</h2>
+                <p class="st-sub">Berlaku untuk booking customer, booking offline admin, dan reschedule. Booking yang sudah ada tidak berubah.</p>
+
+                <div class="st-grid-3">
+                    <div class="field">
+                        <label for="bOpen">Jam buka</label>
+                        <input type="time" name="open_time" id="bOpen" class="input" required step="1800" value="{{ $bk['open_time'] }}">
+                    </div>
+                    <div class="field">
+                        <label for="bClose">Jam tutup</label>
+                        <input type="time" name="close_time" id="bClose" class="input" required step="1800" value="{{ $bk['close_time'] }}">
+                    </div>
+                    <div class="field">
+                        <label for="bSlot">Ukuran slot di halaman booking</label>
+                        <select name="slot_minutes" id="bSlot" class="input">
+                            @foreach (['30' => '30 menit', '60' => '1 jam'] as $value => $label)
+                                <option value="{{ $value }}" @selected($bk['slot_minutes'] === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="bMin">Durasi minimal booking</label>
+                        <select name="min_minutes" id="bMin" class="input">
+                            @foreach (['30' => '30 menit', '60' => '1 jam', '90' => '1,5 jam', '120' => '2 jam'] as $value => $label)
+                                <option value="{{ $value }}" @selected($bk['min_minutes'] === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="bCancel">Batas cancel & reschedule</label>
+                        <select name="cancel_days" id="bCancel" class="input">
+                            @foreach (['0' => 'Sampai hari lesson', '1' => 'H-1 (sehari sebelumnya)', '2' => 'H-2', '3' => 'H-3'] as $value => $label)
+                                <option value="{{ $value }}" @selected($bk['cancel_days'] === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="bMax">Booking aktif per customer</label>
+                        <select name="max_active" id="bMax" class="input">
+                            @foreach (['0' => 'Tanpa batas', '1' => '1 booking', '2' => '2 booking', '3' => '3 booking', '4' => '4 booking', '5' => '5 booking'] as $value => $label)
+                                <option value="{{ $value }}" @selected($bk['max_active'] === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <p class="field-hint">Booking pending & booked yang tanggalnya belum lewat.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="st-card">
+                <h2>Persetujuan</h2>
+                <p class="st-sub">Cara booking online berubah dari Pending menjadi Booked.</p>
+
+                <input type="hidden" name="auto_approve_paid" value="0">
+                <label class="st-toggle st-box">
+                    <span>
+                        <strong>Setujui otomatis setelah lunas</strong>
+                        <small>Booking online langsung berstatus Booked begitu pembayaran lunas, tanpa menunggu admin menekan Approve.</small>
+                    </span>
+                    <input type="checkbox" name="auto_approve_paid" value="1" @checked(old('auto_approve_paid', BookingRules::autoApprovePaid() ? '1' : '0') === '1')>
+                </label>
+            </section>
+
+            <div class="st-actions">
+                <button type="submit" class="btn btn-primary">Simpan aturan booking</button>
+            </div>
+        </form>
+    @endif
+
+    {{-- ================= PEMBAYARAN ================= --}}
+    @if ($tab === 'payment')
+        @php
+            $qris    = Payment::methodConfig('qris');
+            $banks   = ['mandiri' => Payment::methodConfig('mandiri'), 'bca' => Payment::methodConfig('bca')];
+            $enabled = fn ($key) => old("pay_{$key}_enabled", Setting::get("pay_{$key}_enabled", '1')) === '1';
+            $mode    = old('payment_mode', BookingRules::paymentMode());
+            $savedAccount = fn ($key) => old("{$key}_account", Setting::get("{$key}_account"));
+            $savedHolder  = fn ($key) => old("{$key}_holder", Setting::get("{$key}_holder"));
+        @endphp
+
+        <form method="POST" action="{{ route('admin.settings.payment') }}" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+
+            <section class="st-card">
+                <h2>Mode pembayaran</h2>
+                <p class="st-sub">Selama mode Demo, tidak ada uang sungguhan yang diterima. Pindah ke Live setelah QRIS / rekening asli siap.</p>
+
+                <div class="st-grid-2">
+                    <label class="st-toggle st-box" style="align-items: flex-start">
+                        <span>
+                            <strong>Demo (simulasi)</strong>
+                            <small>QR dummy & rekening contoh. Customer menekan "Saya sudah bayar (simulasi)" dan pembayaran langsung lunas.</small>
+                        </span>
+                        <input type="radio" name="payment_mode" value="demo" @checked($mode === 'demo')>
+                    </label>
+                    <label class="st-toggle st-box" style="align-items: flex-start">
+                        <span>
+                            <strong>Live (uang sungguhan)</strong>
+                            <small>Memakai QRIS & nomor rekening asli di bawah. Setiap pembayaran wajib dicek dan dikonfirmasi admin di Dashboard.</small>
+                        </span>
+                        <input type="radio" name="payment_mode" value="live" @checked($mode === 'live')>
+                    </label>
+                </div>
+            </section>
+
+            <section class="st-card">
+                <h2>Harga & aturan pembayaran</h2>
+                <p class="st-sub">Harga baru hanya berlaku untuk tagihan baru. Tagihan yang sudah dibuat tidak berubah.</p>
+
+                <div class="st-grid-3">
+                    <div class="field">
+                        <label for="pPrice">Harga lesson per jam (Rupiah)</label>
+                        <input type="number" name="price_per_hour" id="pPrice" class="input" required min="0" step="1000"
+                               value="{{ old('price_per_hour', BookingRules::pricePerHour()) }}">
+                        <p class="field-hint" id="pricePreview"></p>
+                    </div>
+                    <div class="field">
+                        <label for="pExpiry">Batas waktu bayar</label>
+                        <select name="payment_expiry_hours" id="pExpiry" class="input">
+                            @foreach (['1' => '1 jam', '3' => '3 jam', '6' => '6 jam', '12' => '12 jam', '24' => '24 jam', '48' => '48 jam'] as $value => $label)
+                                <option value="{{ $value }}" @selected((string) old('payment_expiry_hours', BookingRules::paymentExpiryHours()) === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <p class="field-hint">Setelah lewat, customer harus memilih metode lagi.</p>
+                    </div>
+                    <div class="field">
+                        <span class="field-label">Persetujuan</span>
+                        <input type="hidden" name="require_paid" value="0">
+                        <label class="checkbox">
+                            <input type="checkbox" name="require_paid" value="1" @checked(old('require_paid', BookingRules::requirePaidBeforeApprove() ? '1' : '0') === '1')>
+                            Wajib lunas sebelum di-approve
+                        </label>
+                        <p class="field-hint">Tombol Approve dikunci sampai booking online lunas.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="st-card">
+                <h2>Metode pembayaran</h2>
+                <p class="st-sub">
+                    QR dan rekening di bawah tampil ke customer di halaman pembayaran.
+                    Di mode <strong>Demo</strong>, kolom yang kosong diganti QR dummy / rekening contoh.
+                    Di mode <strong>Live</strong>, setiap pembayaran harus dikonfirmasi admin di Dashboard setelah mengecek mutasi.
+                </p>
+
+                <div class="st-grid-3" style="align-items: start">
+
+                    {{-- QRIS --}}
+                    <div class="st-box">
+                        <label class="st-toggle" style="margin-bottom: 12px">
+                            <span><strong>QRIS</strong></span>
+                            <input type="hidden" name="pay_qris_enabled" value="0">
+                            <input type="checkbox" name="pay_qris_enabled" value="1" @checked($enabled('qris'))>
+                        </label>
+
+                        <div class="st-upload">
+                            <div class="st-preview logo" style="width: 96px; height: 96px; background: #fff">
+                                @if ($qris['image'])
+                                    <img src="{{ $qris['image'] }}" alt="QRIS saat ini">
+                                @else
+                                    <span style="color: #666">QR dummy</span>
+                                @endif
+                            </div>
+                            <div style="flex: 1; min-width: 0">
+                                <label class="field-label" for="qImg">Gambar QRIS</label>
+                                <input type="file" name="qris_image" id="qImg" class="input" accept="image/png,image/jpeg">
+                                @if (Setting::get('qris_image'))
+                                    <label class="st-remove"><input type="checkbox" name="remove_qris_image" value="1"> Hapus, kembali ke QR dummy</label>
+                                @endif
+                            </div>
+                        </div>
+                        <p class="field-hint">QR statis dari bank / penyedia QRIS, PNG atau JPG maks. 2 MB.</p>
+
+                        <div class="field" style="margin-top: 12px">
+                            <label for="qMerchant">Nama merchant</label>
+                            <input type="text" name="qris_merchant" id="qMerchant" class="input" maxlength="60" value="{{ old('qris_merchant', $qris['merchant']) }}">
+                        </div>
+                        <div class="field">
+                            <label for="qNmid">NMID</label>
+                            <input type="text" name="qris_nmid" id="qNmid" class="input" maxlength="30" value="{{ old('qris_nmid', $qris['nmid']) }}" placeholder="Dari penyedia QRIS">
+                        </div>
+                    </div>
+
+                    {{-- BANK --}}
+                    @foreach ($banks as $key => $bank)
+                        <div class="st-box">
+                            <label class="st-toggle" style="margin-bottom: 12px">
+                                <span><strong>{{ $bank['label'] }}</strong></span>
+                                <input type="hidden" name="pay_{{ $key }}_enabled" value="0">
+                                <input type="checkbox" name="pay_{{ $key }}_enabled" value="1" @checked($enabled($key))>
+                            </label>
+
+                            <div>
+                                <div class="field">
+                                    <label for="{{ $key }}Account">Nomor rekening</label>
+                                    <input type="text" name="{{ $key }}_account" id="{{ $key }}Account" class="input" inputmode="numeric" maxlength="30"
+                                           value="{{ $savedAccount($key) }}" placeholder="Demo: {{ \App\Models\Payment::DEMO_ACCOUNTS[$key]['account'] }}">
+                                </div>
+                                <div class="field">
+                                    <label for="{{ $key }}Holder">Atas nama</label>
+                                    <input type="text" name="{{ $key }}_holder" id="{{ $key }}Holder" class="input" maxlength="60"
+                                           value="{{ $savedHolder($key) }}" placeholder="Nama pemilik rekening">
+                                </div>
+                                <p class="field-hint">Demo: jika kosong, customer melihat rekening contoh. Live: wajib diisi rekening asli.</p>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+
+            <div class="st-actions">
+                <button type="submit" class="btn btn-primary">Simpan pengaturan pembayaran</button>
+            </div>
+        </form>
+    @endif
+
     {{-- ================= TAB TAHAP BERIKUTNYA ================= --}}
     @if (! ($tabs[$tab]['ready'] ?? false))
         <section class="st-card st-soon">
@@ -402,6 +638,16 @@
 
 @push('scripts')
     <script>
+        // Pratinjau harga
+        (() => {
+            const price = document.getElementById('pPrice');
+            const preview = document.getElementById('pricePreview');
+            if (!price || !preview) return;
+            const update = () => { preview.textContent = 'Tampil sebagai Rp' + Number(price.value || 0).toLocaleString('id-ID') + ' per jam'; };
+            price.addEventListener('input', update);
+            update();
+        })();
+
         // Pratinjau teks Home langsung saat diketik
         document.querySelectorAll('[data-preview]').forEach((input) => {
             const target = document.getElementById(input.dataset.preview);

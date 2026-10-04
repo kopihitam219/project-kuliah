@@ -6,6 +6,11 @@
     $startTime = substr($booking->start_time, 0, 5);
     $endTime   = substr($booking->end_time, 0, 5);
     $hours     = $payment->duration_minutes / 60;
+    $rate      = $payment->duration_minutes > 0 ? (int) round($payment->amount * 60 / $payment->duration_minutes) : Payment::pricePerHour();
+
+    // Metode yang sedang dipakai & apakah perlu dicek admin (QRIS asli / transfer rekening)
+    $isReal = (bool) ($activeMethod['real'] ?? false);
+    $allDummy = collect($methods)->every(fn ($m) => ! ($m['real'] ?? false));
 
     $bookingActive = in_array($booking->status, ['pending', 'booked'], true);
 
@@ -46,6 +51,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pembayaran | {{ \App\Support\Brand::name() }}</title>
+    @include('partials.brand-head')
 
     <style>
         :root {
@@ -151,6 +157,13 @@
         .pill.unpaid    { background: rgba(255, 255, 255, .08); color: #d5ddd8; }
         .pill.pending   { background: rgba(255, 196, 0, .14); color: #ffd45c; }
         .pill.paid      { background: rgba(184, 255, 0, .14); color: var(--lime); }
+        .pill.verifying { background: rgba(92, 168, 255, .16); color: #9ccdff; }
+        .verify-box { padding: 22px; text-align: center; }
+        .verify-icon { width: 64px; height: 64px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 50%; background: rgba(92, 168, 255, .16); color: #9ccdff; font-size: 28px; }
+        .verify-box h2 { font-size: 20px; font-weight: 800; }
+        .verify-box p { margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+        .qr-real { width: 240px; max-width: 100%; height: auto; border-radius: 8px; }
+        .real-note { margin-top: 14px; padding: 10px 12px; border-radius: 9px; background: rgba(92, 168, 255, .08); border: 1px solid rgba(92, 168, 255, .25); color: #b9dcff; font-size: 12px; line-height: 1.5; }
         .pill.cancelled { background: rgba(255, 92, 92, .14); color: #ff9a9a; }
 
         /* METODE */
@@ -295,11 +308,9 @@
             .logout-button { display: none; }
         }
     </style>
-    @include('partials.brand-head')
 </head>
 <body>
 
-{{-- ============================ NAVBAR ============================ --}}
 @include('partials.site-navbar')
 
 {{-- ============================== PAGE ============================== --}}
@@ -312,7 +323,7 @@
             <span class="step-number">{{ $payment->status === 'paid' ? '✓' : '2' }}</span> Pembayaran
         </span>
         <span class="step-line"></span>
-        <span class="step {{ $booking->status === 'booked' ? 'done' : ($payment->status === 'paid' ? 'current' : '') }}">
+        <span class="step {{ $booking->status === 'booked' ? 'done' : (in_array($payment->status, ['paid', 'verifying'], true) ? 'current' : '') }}">
             <span class="step-number">{{ $booking->status === 'booked' ? '✓' : '3' }}</span> Konfirmasi admin
         </span>
     </div>
@@ -322,10 +333,12 @@
         <p>Selesaikan pembayaran untuk mengamankan jadwal lesson Anda.</p>
     </div>
 
-    <div class="demo-banner">
-        <strong>Mode demo:</strong> pembayaran ini hanya simulasi. Nomor rekening dan QR tidak sungguhan
-        dan tidak ada uang yang ditransfer.
-    </div>
+    @if (\App\Support\BookingRules::isDemoPayment() && ! in_array($payment->status, ['paid', 'verifying'], true))
+        <div class="demo-banner">
+            <strong>Mode demo:</strong> QR dan nomor rekening di halaman ini hanya contoh.
+            Jangan mentransfer uang sungguhan. Tekan "Saya sudah bayar (simulasi)" untuk mencoba alurnya.
+        </div>
+    @endif
 
     @if (session('booking_success'))
         <div class="alert alert-success">{{ session('booking_success') }}</div>
@@ -351,7 +364,7 @@
             <div class="summary-row"><span>Durasi</span><span>{{ $payment->duration_label }}</span></div>
             <div class="summary-row">
                 <span>Harga per jam</span>
-                <span>{{ Payment::formatRupiah(Payment::PRICE_PER_HOUR) }}</span>
+                <span>{{ Payment::formatRupiah($rate) }}</span>
             </div>
             <div class="summary-row">
                 <span>Status booking</span>
@@ -367,7 +380,7 @@
                 <strong>{{ $payment->amount_label }}</strong>
             </div>
             <div class="summary-note">
-                {{ rtrim(rtrim(number_format($hours, 2, ',', '.'), '0'), ',') }} jam × {{ Payment::formatRupiah(Payment::PRICE_PER_HOUR) }}
+                {{ rtrim(rtrim(number_format($hours, 2, ',', '.'), '0'), ',') }} jam × {{ Payment::formatRupiah($rate) }}
             </div>
         </section>
 
@@ -385,7 +398,7 @@
                         @if ($booking->status === 'pending')
                             Booking sedang menunggu konfirmasi admin, dan Anda akan mendapat notifikasi setelah disetujui.
                         @elseif ($booking->status === 'booked')
-                            Booking Anda sudah dikonfirmasi admin. Sampai jumpa di lapangan!
+                            Booking Anda sudah dikonfirmasi. Sampai jumpa di lapangan!
                         @endif
                     </p>
 
@@ -398,6 +411,20 @@
                     <a href="{{ route('booking', ['date' => $date->format('Y-m-d')]) }}" class="btn">Kembali ke halaman booking</a>
                 </div>
 
+            @elseif ($payment->status === 'verifying')
+
+                {{-- ---------- MENUNGGU VERIFIKASI ADMIN ---------- --}}
+                <div class="verify-box">
+                    <div class="verify-icon">◷</div>
+                    <h2>Pembayaran sedang dicek</h2>
+                    <p>
+                        Anda sudah mengonfirmasi pembayaran {{ $payment->amount_label }} via {{ $payment->method_label }}.
+                        Admin akan mengecek dana yang masuk dan mengonfirmasi secepatnya.
+                        Anda akan mendapat notifikasi setelah pembayaran dikonfirmasi.
+                    </p>
+                    <a href="{{ route('booking', ['date' => $date->format('Y-m-d')]) }}" class="btn">Kembali ke halaman booking</a>
+                </div>
+
             @elseif (! $bookingActive)
 
                 {{-- ---------- BOOKING TIDAK AKTIF ---------- --}}
@@ -406,7 +433,7 @@
                     <a href="{{ route('booking') }}" class="btn">Buat booking baru</a>
                 </div>
 
-            @elseif ($payment->status === 'pending')
+            @elseif ($payment->status === 'pending' && $activeMethod)
 
                 {{-- ---------- INSTRUKSI PEMBAYARAN ---------- --}}
                 <div class="panel-title">Bayar dengan {{ $payment->method_label }}</div>
@@ -416,25 +443,32 @@
                     <strong id="countdown" data-expires="{{ $payment->expires_at->toIso8601String() }}">--:--:--</strong>
                 </div>
 
-                @if ($payment->method === 'qris')
+                @if ($activeMethod['type'] === 'qris')
                     <div class="qr-box">
-                        <svg viewBox="0 0 {{ $qrSize }} {{ $qrSize }}" shape-rendering="crispEdges" aria-label="QR code dummy">
-                            <rect width="{{ $qrSize }}" height="{{ $qrSize }}" fill="#fff"/>
-                            @for ($y = 0; $y < $qrSize; $y++)
-                                @for ($x = 0; $x < $qrSize; $x++)
-                                    @if (! $inFinder($x, $y) && $qrBits[$y * $qrSize + $x] === '1')
-                                        <rect x="{{ $x }}" y="{{ $y }}" width="1" height="1" fill="#111"/>
-                                    @endif
+                        @if ($activeMethod['image'])
+                            <img src="{{ $activeMethod['image'] }}" alt="QRIS {{ $activeMethod['merchant'] }}" class="qr-real">
+                        @else
+                            <svg viewBox="0 0 {{ $qrSize }} {{ $qrSize }}" shape-rendering="crispEdges" aria-label="QR code dummy">
+                                <rect width="{{ $qrSize }}" height="{{ $qrSize }}" fill="#fff"/>
+                                @for ($y = 0; $y < $qrSize; $y++)
+                                    @for ($x = 0; $x < $qrSize; $x++)
+                                        @if (! $inFinder($x, $y) && $qrBits[$y * $qrSize + $x] === '1')
+                                            <rect x="{{ $x }}" y="{{ $y }}" width="1" height="1" fill="#111"/>
+                                        @endif
+                                    @endfor
                                 @endfor
-                            @endfor
-                            @foreach ([[0, 0], [$qrSize - 7, 0], [0, $qrSize - 7]] as $finder)
-                                <rect x="{{ $finder[0] }}" y="{{ $finder[1] }}" width="7" height="7" fill="#111"/>
-                                <rect x="{{ $finder[0] + 1 }}" y="{{ $finder[1] + 1 }}" width="5" height="5" fill="#fff"/>
-                                <rect x="{{ $finder[0] + 2 }}" y="{{ $finder[1] + 2 }}" width="3" height="3" fill="#111"/>
-                            @endforeach
-                        </svg>
-                        <strong>GOLF BOOKING LESSON</strong>
-                        <small>NMID: ID{{ str_pad((string) $booking->id, 13, '0', STR_PAD_LEFT) }} · QR dummy</small>
+                                @foreach ([[0, 0], [$qrSize - 7, 0], [0, $qrSize - 7]] as $finder)
+                                    <rect x="{{ $finder[0] }}" y="{{ $finder[1] }}" width="7" height="7" fill="#111"/>
+                                    <rect x="{{ $finder[0] + 1 }}" y="{{ $finder[1] + 1 }}" width="5" height="5" fill="#fff"/>
+                                    <rect x="{{ $finder[0] + 2 }}" y="{{ $finder[1] + 2 }}" width="3" height="3" fill="#111"/>
+                                @endforeach
+                            </svg>
+                        @endif
+                        <strong>{{ $activeMethod['merchant'] }}</strong>
+                        <small>
+                            @if ($activeMethod['nmid']) NMID: {{ $activeMethod['nmid'] }} @endif
+                            {{ $activeMethod['real'] ? '' : '· contoh (demo)' }}
+                        </small>
                     </div>
 
                     <div class="amount-line">
@@ -445,46 +479,55 @@
                     <ol class="how-to">
                         <li>Buka aplikasi e-wallet atau m-banking yang mendukung QRIS.</li>
                         <li>Pilih menu <strong>Scan / Bayar</strong>, lalu arahkan kamera ke QR di atas.</li>
-                        <li>Pastikan nama merchant <strong>Golf Booking Lesson</strong> dan nominal sesuai.</li>
-                        <li>Konfirmasi pembayaran, lalu tekan tombol di bawah.</li>
+                        <li>Masukkan nominal <strong>{{ $payment->amount_label }}</strong> jika diminta, dan pastikan nama merchant sesuai.</li>
+                        <li>Selesaikan pembayaran, lalu tekan tombol di bawah.</li>
                     </ol>
-                @else
+
+                @elseif ($activeMethod['type'] === 'transfer')
                     <div class="va-box">
-                        <div class="va-label">Nomor Virtual Account {{ $payment->method_label }}</div>
+                        <div class="va-label">Nomor rekening {{ $activeMethod['label'] }}</div>
                         <div class="va-row">
-                            <span class="va-number" id="vaNumber">{{ trim(chunk_split($payment->va_number, 4, ' ')) }}</span>
-                            <button type="button" class="copy-btn" data-copy="{{ $payment->va_number }}">Salin</button>
+                            <span class="va-number">{{ trim(chunk_split((string) $activeMethod['account'], 4, ' ')) }}</span>
+                            <button type="button" class="copy-btn" data-copy="{{ $activeMethod['account'] }}">Salin</button>
+                        </div>
+                        <div class="summary-row" style="border-bottom: 0; padding-bottom: 0">
+                            <span>Atas nama</span><span>{{ $activeMethod['holder'] }}</span>
                         </div>
 
                         <div class="amount-line">
-                            <span>Total yang harus dibayar</span>
+                            <span>Total yang harus ditransfer</span>
                             <strong>{{ $payment->amount_label }}</strong>
                         </div>
                     </div>
 
                     <ol class="how-to">
-                        @if ($payment->method === 'mandiri')
-                            <li>Buka <strong>Livin' by Mandiri</strong> atau ATM Mandiri.</li>
-                            <li>Pilih <strong>Bayar → Buat pembayaran baru → Virtual Account</strong>.</li>
-                        @else
-                            <li>Buka <strong>BCA mobile</strong> (m-BCA) atau ATM BCA.</li>
-                            <li>Pilih <strong>m-Transfer → BCA Virtual Account</strong>.</li>
-                        @endif
-                        <li>Masukkan nomor Virtual Account di atas.</li>
-                        <li>Pastikan nama tagihan <strong>Golf Booking Lesson</strong> dan nominal sesuai, lalu konfirmasi.</li>
+                        <li>Transfer tepat <strong>{{ $payment->amount_label }}</strong> ke rekening {{ $activeMethod['label'] }} di atas.</li>
+                        <li>Tulis <strong>{{ $payment->reference }}</strong> di kolom berita / keterangan transfer.</li>
+                        <li>Pastikan nama penerima <strong>{{ $activeMethod['holder'] }}</strong>.</li>
                         <li>Setelah transfer berhasil, tekan tombol di bawah.</li>
                     </ol>
+
                 @endif
 
-                <form method="POST" action="{{ route('payment.booking.confirm', $booking) }}" id="confirmForm">
+                @if ($isReal)
+                    <div class="real-note">Setelah Anda menekan tombol di bawah, admin akan mengecek dana yang masuk sebelum pembayaran dinyatakan lunas.</div>
+                @endif
+
+                <form method="POST" action="{{ route('payment.booking.confirm', $booking) }}" id="confirmForm" data-real="{{ $isReal ? '1' : '0' }}">
                     @csrf
-                    <button type="submit" class="btn">Saya sudah bayar (simulasi)</button>
+                    <button type="submit" class="btn">{{ $isReal ? 'Saya sudah transfer' : 'Saya sudah bayar (simulasi)' }}</button>
                 </form>
 
                 <form method="POST" action="{{ route('payment.booking.reset', $booking) }}">
                     @csrf
                     <button type="submit" class="btn btn-ghost">Ganti metode pembayaran</button>
                 </form>
+
+            @elseif (empty($methods))
+
+                <div class="blocked">
+                    Belum ada metode pembayaran yang aktif. Silakan hubungi admin.
+                </div>
 
             @else
 
@@ -575,7 +618,10 @@
         const confirmForm = document.getElementById('confirmForm');
         if (confirmForm) {
             confirmForm.addEventListener('submit', (event) => {
-                if (!confirm('Tandai pembayaran ini sebagai sudah dibayar?\n\n(Mode demo: tidak ada uang yang ditransfer.)')) {
+                const message = confirmForm.dataset.real === '1'
+                    ? 'Pastikan Anda sudah mentransfer dengan nominal yang sesuai. Lanjutkan?'
+                    : 'Tandai pembayaran ini sebagai sudah dibayar?\n\n(Mode demo: tidak ada uang yang ditransfer.)';
+                if (!confirm(message)) {
                     event.preventDefault();
                 }
             });

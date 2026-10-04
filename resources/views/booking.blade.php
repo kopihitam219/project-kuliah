@@ -74,13 +74,13 @@
     $slotMap = [];
     $counts  = ['available' => 0, 'pending' => 0, 'booked' => 0, 'mine' => 0, 'past' => 0, 'blocked' => 0];
 
-    $cursor  = Carbon::createFromFormat('H:i', '07:00');
-    $closing = Carbon::createFromFormat('H:i', '20:00');
+    $cursor  = Carbon::createFromFormat('H:i', \App\Support\BookingRules::openTime());
+    $closing = Carbon::createFromFormat('H:i', \App\Support\BookingRules::closeTime());
 
     while ($cursor->lt($closing)) {
 
         $slotStart = $cursor->copy();
-        $slotEnd   = $cursor->copy()->addHour();
+        $slotEnd   = $cursor->copy()->addMinutes(\App\Support\BookingRules::slotMinutes());
 
         if ($slotEnd->gt($closing)) {
             break;
@@ -111,7 +111,7 @@
             'status' => $status,
         ];
 
-        $cursor->addHour();
+        $cursor->addMinutes(\App\Support\BookingRules::slotMinutes());
     }
 
     $statusLabels = [
@@ -130,7 +130,7 @@
     */
 
     $canModifyBooking = function ($booking) use ($today) {
-        return Carbon::parse($booking->booking_date)->gt($today)
+        return \App\Support\BookingRules::canModifyDate($booking->booking_date)
             && in_array($booking->status, ['pending', 'booked'], true);
     };
 
@@ -648,7 +648,7 @@
                                         <div class="reschedule-field">
                                             <label>Tanggal</label>
                                             <input type="date" name="booking_date"
-                                                   min="{{ $today->copy()->addDay()->format('Y-m-d') }}"
+                                                   min="{{ \App\Support\BookingRules::minRescheduleDate()->format('Y-m-d') }}"
                                                    value="{{ $bookingDate->format('Y-m-d') }}" required>
                                         </div>
 
@@ -656,14 +656,14 @@
                                             <label>Mulai</label>
                                             <input type="time" name="start_time"
                                                    value="{{ $yourStart->format('H:i') }}"
-                                                   min="07:00" max="19:00" step="3600" required>
+                                                   min="{{ \App\Support\BookingRules::openTime() }}" max="{{ \App\Support\BookingRules::closeTime() }}" step="{{ \App\Support\BookingRules::slotMinutes() * 60 }}" required>
                                         </div>
 
                                         <div class="reschedule-field">
                                             <label>Selesai</label>
                                             <input type="time" name="end_time"
                                                    value="{{ $yourEnd->format('H:i') }}"
-                                                   min="08:00" max="20:00" step="3600" required>
+                                                   min="{{ \App\Support\BookingRules::openTime() }}" max="{{ \App\Support\BookingRules::closeTime() }}" step="{{ \App\Support\BookingRules::slotMinutes() * 60 }}" required>
                                         </div>
                                     </div>
 
@@ -678,7 +678,7 @@
                             </div>
 
                             <div class="action-locked">
-                                Pembatalan dan perubahan jadwal hanya dapat dilakukan sebelum hari lesson.
+                                {{ \App\Support\BookingRules::cancelRuleText() }}
                             </div>
 
                         @else

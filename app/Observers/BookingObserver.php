@@ -20,6 +20,8 @@ class BookingObserver
      */
     public function saving(Booking $booking): void
     {
+        $this->checkMaxActive($booking);
+
         if (! class_exists(ScheduleBlock::class)) {
             return;
         }
@@ -92,6 +94,35 @@ class BookingObserver
                 BookingNotifier::toCustomer($booking, $event, $actor, $from);
             }
         });
+    }
+
+    /**
+     * Batas jumlah booking aktif per customer (diatur di Settings, 0 = tanpa batas).
+     * Hanya berlaku untuk booking baru yang dibuat customer sendiri.
+     */
+    private function checkMaxActive(Booking $booking): void
+    {
+        if ($booking->exists || ! $booking->user_id || ! class_exists(\App\Support\BookingRules::class)) {
+            return;
+        }
+
+        $max = \App\Support\BookingRules::maxActive();
+
+        if ($max === 0 || auth()->user()?->role !== 'customer') {
+            return;
+        }
+
+        $active = Booking::where('user_id', $booking->user_id)
+            ->whereIn('status', ['pending', 'booked'])
+            ->whereDate('booking_date', '>=', today())
+            ->count();
+
+        if ($active >= $max) {
+            throw ValidationException::withMessages([
+                'booking' => "Anda sudah memiliki {$active} booking aktif. Maksimal {$max} booking aktif per customer, "
+                    . 'selesaikan atau batalkan salah satunya terlebih dahulu.',
+            ]);
+        }
     }
 
     /**

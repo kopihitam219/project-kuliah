@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\User;
+use App\Support\BookingRules;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -12,14 +13,13 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
- * Pembayaran booking lesson (MODE DUMMY / SIMULASI).
- * Tidak terhubung ke payment gateway sungguhan.
+ * Pembayaran booking lesson oleh customer (QRIS / transfer rekening).
+ * - Mode demo : simulasi, langsung lunas.
+ * - Mode live : menunggu verifikasi admin setelah customer transfer.
+ * Mode diatur di Settings > Pembayaran.
  */
 class PaymentController extends Controller
 {
-    /**
-     * Halaman pembayaran sebuah booking.
-     */
     public function show(Request $request, Booking $booking): View|RedirectResponse
     {
         $this->authorizeOwner($request, $booking);
@@ -31,16 +31,21 @@ class PaymentController extends Controller
         $payment = Payment::forBooking($booking);
         $payment->releaseIfExpired();
 
+        // Metode yang dipilih sudah tidak tersedia (dinonaktifkan / rekening dihapus): pilih ulang
+        if ($payment->status === 'pending' && ! array_key_exists((string) $payment->method, Payment::methods())) {
+            $payment->update(['status' => 'unpaid', 'method' => null, 'va_number' => null, 'expires_at' => null]);
+        }
+
+        $payment = $payment->fresh();
+
         return view('payments.booking', [
-            'booking' => $booking,
-            'payment' => $payment->fresh(),
-            'methods' => Payment::METHODS,
+            'booking'      => $booking,
+            'payment'      => $payment,
+            'methods'      => Payment::methods(),
+            'activeMethod' => $payment->method ? Payment::methodConfig($payment->method) : null,
         ]);
     }
 
-    /**
-     * Customer memilih metode pembayaran.
-     */
     public function chooseMethod(Request $request, Booking $booking): RedirectResponse
     {
         $this->authorizeOwner($request, $booking);
@@ -50,9 +55,10 @@ class PaymentController extends Controller
         }
 
         $validated = $request->validate([
-            'method' => ['required', Rule::in(array_keys(Payment::METHODS))],
+            'method' => ['required', Rule::in(array_keys(Payment::methods()))],
         ], [
             'method.required' => 'Pilih metode pembayaran terlebih dahulu.',
+            'method.in'       => 'Metode pembayaran tidak tersedia.',
         ]);
 
         $payment = Payment::forBooking($booking);
@@ -61,24 +67,16 @@ class PaymentController extends Controller
             return back()->withErrors(['payment' => $error]);
         }
 
-        $method = $validated['method'];
-        $prefix = Payment::METHODS[$method]['prefix'];
-
         $payment->update([
-            'method'     => $method,
+            'method'     => $validated['method'],
             'status'     => 'pending',
-            'va_number'  => $prefix
-                ? $prefix . str_pad((string) $booking->id, 6, '0', STR_PAD_LEFT) . random_int(1000, 9999)
-                : null,
-            'expires_at' => now()->addHours(Payment::EXPIRES_IN_HOURS),
+            'va_number'  => null,
+            'expires_at' => now()->addHours(BookingRules::paymentExpiryHours()),
         ]);
 
         return redirect()->route('payment.booking', $booking);
     }
 
-    /**
-     * Ganti metode pembayaran (kembali ke pilihan metode).
-     */
     public function resetMethod(Request $request, Booking $booking): RedirectResponse
     {
         $this->authorizeOwner($request, $booking);
@@ -102,7 +100,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * SIMULASI: customer menekan "Saya sudah bayar" -> pembayaran langsung lunas.
+     * Customer menekan "Saya sudah bayar".
      */
     public function confirm(Request $request, Booking $booking): RedirectResponse
     {
@@ -125,29 +123,58 @@ class PaymentController extends Controller
             return back()->withErrors(['payment' => $error]);
         }
 
-        $payment->update([
-            'status'  => 'paid',
-            'paid_at' => now(),
-        ]);
+        // Mode live: tunggu admin mengecek mutasi
+        if ($payment->needsVerification()) {
+            $payment->update(['status' => 'verifying']);
 
-        $this->notifyAdmins($request->user(), $booking, $payment);
+            $this->notifyAdmins(
+                $request->user(),
+                $booking,
+                $payment,
+                'Pembayaran perlu dicek',
+                'mengonfirmasi sudah membayar'
+            );
+
+            return redirect()
+                ->route('payment.booking', $booking)
+                ->with('payment_success', 'Terima kasih! Admin akan mengecek pembayaran Anda dan mengonfirmasi secepatnya.');
+        }
+
+        // Mode demo: langsung lunas
+        $payment->update(['status' => 'paid', 'paid_at' => now()]);
+        self::autoApprove($booking);
+
+        $this->notifyAdmins($request->user(), $booking, $payment, 'Pembayaran diterima', 'membayar');
 
         return redirect()
             ->route('payment.booking', $booking)
-            ->with('payment_success', 'Pembayaran berhasil! Booking Anda sekarang menunggu konfirmasi admin.');
+            ->with('payment_success', $booking->fresh()->status === 'booked'
+                ? 'Pembayaran berhasil dan booking Anda sudah dikonfirmasi!'
+                : 'Pembayaran berhasil! Booking Anda sekarang menunggu konfirmasi admin.');
     }
 
     /* ---------------------------------------------------------------
      | HELPER
      * --------------------------------------------------------------- */
+
+    /**
+     * Setujui otomatis setelah lunas (jika diaktifkan di Settings).
+     * Disimpan tanpa event agar tidak memicu notifikasi ganda.
+     */
+    public static function autoApprove(Booking $booking): void
+    {
+        if (BookingRules::autoApprovePaid() && $booking->status === 'pending') {
+            $booking->forceFill(['status' => 'booked'])->saveQuietly();
+        }
+    }
+
     private function authorizeOwner(Request $request, Booking $booking): void
     {
         abort_unless((int) $booking->user_id === (int) $request->user()->id, 403);
     }
 
     /**
-     * Booking offline dibuat admin dan sudah dibayar langsung di tempat,
-     * jadi tidak perlu (dan tidak boleh) dibayar online lagi.
+     * Booking offline dibuat admin dan sudah dibayar langsung di tempat.
      */
     private function redirectIfOffline(Booking $booking): ?RedirectResponse
     {
@@ -166,6 +193,10 @@ class PaymentController extends Controller
             return 'Booking ini sudah lunas.';
         }
 
+        if ($payment->status === 'verifying') {
+            return 'Pembayaran sedang dicek admin.';
+        }
+
         if (! in_array($booking->status, ['pending', 'booked'], true)) {
             return 'Booking ini sudah tidak aktif sehingga tidak dapat dibayar.';
         }
@@ -173,10 +204,10 @@ class PaymentController extends Controller
         return null;
     }
 
-    private function notifyAdmins(User $customer, Booking $booking, Payment $payment): void
+    private function notifyAdmins(User $customer, Booking $booking, Payment $payment, string $title, string $verb): void
     {
         if (! class_exists(\App\Notifications\BookingActivity::class)) {
-            return; // fitur notifikasi belum terpasang
+            return;
         }
 
         try {
@@ -191,8 +222,8 @@ class PaymentController extends Controller
 
             Notification::send($admins, new \App\Notifications\BookingActivity(
                 'paid',
-                'Pembayaran diterima',
-                "{$customer->name} membayar booking {$schedule} via {$payment->method_label} ({$payment->amount_label}).",
+                $title,
+                "{$customer->name} {$verb} booking {$schedule} via {$payment->method_label} ({$payment->amount_label}).",
                 route('admin.dashboard', [], false) . '#booking-list',
                 $booking->id,
             ));
