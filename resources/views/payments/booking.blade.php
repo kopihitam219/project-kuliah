@@ -155,7 +155,7 @@
 
         .pill { display: inline-flex; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; }
         .pill.unpaid    { background: rgba(255, 255, 255, .08); color: #d5ddd8; }
-        .pill.pending   { background: rgba(255, 196, 0, .14); color: #ffd45c; }
+        .pill.pending   { background: rgba(255, 196, 0, .16); color: #ffd45c; border: 1px solid rgba(255, 196, 0, .3); }
         .pill.paid      { background: rgba(184, 255, 0, .14); color: var(--lime); }
         .pill.verifying { background: rgba(92, 168, 255, .16); color: #9ccdff; }
         .verify-box { padding: 22px; text-align: center; }
@@ -164,6 +164,41 @@
         .verify-box p { margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.6; }
         .qr-real { width: 240px; max-width: 100%; height: auto; border-radius: 8px; }
         .real-note { margin-top: 14px; padding: 10px 12px; border-radius: 9px; background: rgba(92, 168, 255, .08); border: 1px solid rgba(92, 168, 255, .25); color: #b9dcff; font-size: 12px; line-height: 1.5; }
+
+        /* Langkah */
+        .step-head { display: flex; align-items: center; gap: 10px; margin: 6px 0 12px; }
+        .step-badge {
+            width: 26px; height: 26px; flex: 0 0 26px; display: grid; place-items: center;
+            border-radius: 50%; background: var(--lime); color: #071000; font-size: 12px; font-weight: 900;
+        }
+        .step-head strong { display: block; font-size: 14px; font-weight: 800; }
+        .step-head small { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+
+        /* Upload bukti */
+        .proof-card { margin-top: 18px; padding-top: 16px; border-top: 1px dashed rgba(255, 255, 255, .12); }
+
+        .proof-drop {
+            position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+            min-height: 150px; padding: 16px;
+            border: 2px dashed rgba(184, 255, 0, .35); border-radius: 12px;
+            background: rgba(184, 255, 0, .03);
+            color: var(--muted); font-size: 12px; text-align: center;
+            cursor: pointer; transition: border-color .15s ease, background .15s ease;
+        }
+        .proof-drop:hover, .proof-drop.dragging { border-color: var(--lime); background: rgba(184, 255, 0, .07); }
+        .proof-drop strong { color: var(--lime); font-size: 13px; }
+        .proof-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .proof-drop img { max-width: 100%; max-height: 260px; border-radius: 8px; }
+        .proof-icon { font-size: 26px; color: var(--lime); }
+        .proof-name { margin-top: 6px; color: var(--muted); font-size: 11px; text-align: center; word-break: break-all; }
+
+        .proof-thumb {
+            display: block; margin: 14px auto 0; max-width: 240px;
+            border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+        }
+        .proof-thumb img { display: block; width: 100%; height: auto; }
+        .proof-link { display: inline-block; margin-top: 8px; color: var(--lime); font-size: 12px; font-weight: 700; }
         .pill.cancelled { background: rgba(255, 92, 92, .14); color: #ff9a9a; }
 
         /* METODE */
@@ -406,6 +441,12 @@
                         <div class="summary-row"><span>Metode</span><span>{{ $payment->method_label }}</span></div>
                         <div class="summary-row"><span>Dibayar pada</span><span>{{ $payment->paid_at?->locale('id')->translatedFormat('d M Y, H:i') }}</span></div>
                         <div class="summary-row"><span>Jumlah</span><span>{{ $payment->amount_label }}</span></div>
+                        @if ($payment->hasProof())
+                            <div class="summary-row">
+                                <span>Bukti pembayaran</span>
+                                <span><a href="{{ route('payment.booking.proof', $booking) }}" target="_blank" rel="noopener" class="proof-link" style="margin: 0">Lihat bukti</a></span>
+                            </div>
+                        @endif
                     </div>
 
                     <a href="{{ route('booking', ['date' => $date->format('Y-m-d')]) }}" class="btn">Kembali ke halaman booking</a>
@@ -422,6 +463,14 @@
                         Admin akan mengecek dana yang masuk dan mengonfirmasi secepatnya.
                         Anda akan mendapat notifikasi setelah pembayaran dikonfirmasi.
                     </p>
+
+                    @if ($payment->hasProof())
+                        <a href="{{ route('payment.booking.proof', $booking) }}" target="_blank" rel="noopener" class="proof-thumb">
+                            <img src="{{ route('payment.booking.proof', $booking) }}" alt="Bukti pembayaran yang Anda kirim">
+                        </a>
+                        <span class="proof-link">Bukti pembayaran terkirim {{ $payment->proof_uploaded_at?->locale('id')->diffForHumans() }}</span>
+                    @endif
+
                     <a href="{{ route('booking', ['date' => $date->format('Y-m-d')]) }}" class="btn">Kembali ke halaman booking</a>
                 </div>
 
@@ -441,6 +490,14 @@
                 <div class="countdown">
                     <span>Selesaikan sebelum {{ $payment->expires_at->locale('id')->translatedFormat('d M Y, H:i') }}</span>
                     <strong id="countdown" data-expires="{{ $payment->expires_at->toIso8601String() }}">--:--:--</strong>
+                </div>
+
+                <div class="step-head">
+                    <span class="step-badge">1</span>
+                    <div>
+                        <strong>{{ $activeMethod['type'] === 'qris' ? 'Scan & bayar' : 'Transfer ke rekening' }}</strong>
+                        <small>Bayar tepat {{ $payment->amount_label }}</small>
+                    </div>
                 </div>
 
                 @if ($activeMethod['type'] === 'qris')
@@ -480,7 +537,7 @@
                         <li>Buka aplikasi e-wallet atau m-banking yang mendukung QRIS.</li>
                         <li>Pilih menu <strong>Scan / Bayar</strong>, lalu arahkan kamera ke QR di atas.</li>
                         <li>Masukkan nominal <strong>{{ $payment->amount_label }}</strong> jika diminta, dan pastikan nama merchant sesuai.</li>
-                        <li>Selesaikan pembayaran, lalu tekan tombol di bawah.</li>
+                        <li>Selesaikan pembayaran, simpan bukti (screenshot), lalu upload di langkah 2.</li>
                     </ol>
 
                 @elseif ($activeMethod['type'] === 'transfer')
@@ -504,19 +561,43 @@
                         <li>Transfer tepat <strong>{{ $payment->amount_label }}</strong> ke rekening {{ $activeMethod['label'] }} di atas.</li>
                         <li>Tulis <strong>{{ $payment->reference }}</strong> di kolom berita / keterangan transfer.</li>
                         <li>Pastikan nama penerima <strong>{{ $activeMethod['holder'] }}</strong>.</li>
-                        <li>Setelah transfer berhasil, tekan tombol di bawah.</li>
+                        <li>Simpan bukti transfer (screenshot), lalu upload di langkah 2.</li>
                     </ol>
 
                 @endif
 
-                @if ($isReal)
-                    <div class="real-note">Setelah Anda menekan tombol di bawah, admin akan mengecek dana yang masuk sebelum pembayaran dinyatakan lunas.</div>
-                @endif
+                <div class="proof-card">
+                    <div class="step-head">
+                        <span class="step-badge">2</span>
+                        <div>
+                            <strong>Upload bukti pembayaran</strong>
+                            <small>
+                                Screenshot / foto bukti transfer bank atau pembayaran QRIS
+                                {{ $isReal ? '(wajib)' : '(opsional di mode demo)' }}
+                            </small>
+                        </div>
+                    </div>
 
-                <form method="POST" action="{{ route('payment.booking.confirm', $booking) }}" id="confirmForm" data-real="{{ $isReal ? '1' : '0' }}">
-                    @csrf
-                    <button type="submit" class="btn">{{ $isReal ? 'Saya sudah transfer' : 'Saya sudah bayar (simulasi)' }}</button>
-                </form>
+                    <form method="POST" action="{{ route('payment.booking.confirm', $booking) }}" enctype="multipart/form-data"
+                          id="confirmForm" data-real="{{ $isReal ? '1' : '0' }}">
+                        @csrf
+
+                        <label class="proof-drop" id="proofDrop">
+                            <span class="proof-icon" id="proofIcon">⇪</span>
+                            <span id="proofText"><strong>Pilih gambar</strong> atau seret ke sini</span>
+                            <small id="proofHint">JPG, PNG, atau WEBP · maks. 4 MB</small>
+                            <img id="proofPreview" alt="Pratinjau bukti pembayaran" hidden>
+                            <input type="file" name="proof" id="proofInput" accept="image/jpeg,image/png,image/webp" @if ($isReal) required @endif>
+                        </label>
+                        <div class="proof-name" id="proofName"></div>
+
+                        @if ($isReal)
+                            <div class="real-note">Admin akan mencocokkan bukti ini dengan dana yang masuk sebelum pembayaran dinyatakan lunas.</div>
+                        @endif
+
+                        <button type="submit" class="btn">{{ $isReal ? 'Kirim bukti & konfirmasi pembayaran' : 'Saya sudah bayar (simulasi)' }}</button>
+                    </form>
+                </div>
 
                 <form method="POST" action="{{ route('payment.booking.reset', $booking) }}">
                     @csrf
@@ -614,16 +695,60 @@
             timer = setInterval(tick, 1000);
         }
 
-        /* Konfirmasi simulasi pembayaran */
+        /* Upload bukti: pratinjau, seret & lepas, cek ukuran */
+        const proofInput = document.getElementById('proofInput');
+        if (proofInput) {
+            const drop = document.getElementById('proofDrop');
+            const preview = document.getElementById('proofPreview');
+            const nameEl = document.getElementById('proofName');
+            const hideEls = ['proofIcon', 'proofText', 'proofHint'].map((id) => document.getElementById(id));
+
+            const showFile = () => {
+                const file = proofInput.files[0];
+                if (!file) return;
+
+                if (file.size > 4 * 1024 * 1024) {
+                    alert('Ukuran gambar maksimal 4 MB.');
+                    proofInput.value = '';
+                    return;
+                }
+
+                preview.src = URL.createObjectURL(file);
+                preview.hidden = false;
+                hideEls.forEach((el) => { el.hidden = true; });
+                nameEl.textContent = file.name + ' · klik gambar untuk mengganti';
+            };
+
+            proofInput.addEventListener('change', showFile);
+
+            ['dragenter', 'dragover'].forEach((type) => drop.addEventListener(type, (event) => {
+                event.preventDefault();
+                drop.classList.add('dragging');
+            }));
+
+            ['dragleave', 'drop'].forEach((type) => drop.addEventListener(type, () => drop.classList.remove('dragging')));
+
+            drop.addEventListener('drop', (event) => {
+                event.preventDefault();
+                if (event.dataTransfer.files.length) {
+                    proofInput.files = event.dataTransfer.files;
+                    showFile();
+                }
+            });
+        }
+
+        /* Konfirmasi pembayaran */
         const confirmForm = document.getElementById('confirmForm');
         if (confirmForm) {
             confirmForm.addEventListener('submit', (event) => {
                 const message = confirmForm.dataset.real === '1'
-                    ? 'Pastikan Anda sudah mentransfer dengan nominal yang sesuai. Lanjutkan?'
+                    ? 'Kirim bukti pembayaran ini ke admin?\n\nPastikan nominal transfer sesuai.'
                     : 'Tandai pembayaran ini sebagai sudah dibayar?\n\n(Mode demo: tidak ada uang yang ditransfer.)';
                 if (!confirm(message)) {
                     event.preventDefault();
+                    return;
                 }
+                confirmForm.querySelector('button[type="submit"]').disabled = true;
             });
         }
     })();

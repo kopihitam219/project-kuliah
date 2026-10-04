@@ -21,6 +21,16 @@ class AdminPaymentController extends Controller
     }
 
     /**
+     * Bukti pembayaran yang di-upload customer (file privat, hanya admin).
+     */
+    public function proof(Payment $payment)
+    {
+        abort_unless($payment->hasProof(), 404);
+
+        return response()->file(\Illuminate\Support\Facades\Storage::disk(Payment::PROOF_DISK)->path($payment->proof_path));
+    }
+
+    /**
      * Admin mengonfirmasi pembayaran QRIS / transfer setelah mengecek mutasi.
      */
     public function verify(Payment $payment): RedirectResponse
@@ -56,11 +66,16 @@ class AdminPaymentController extends Controller
             return redirect()->route('admin.dashboard')->with('error', 'Pembayaran ini tidak sedang menunggu verifikasi.');
         }
 
+        // Bukti lama dihapus, customer upload ulang setelah membayar
+        $payment->deleteProof();
+
         $payment->update([
-            'status'     => 'unpaid',
-            'method'     => null,
-            'va_number'  => null,
-            'expires_at' => null,
+            'status'            => 'unpaid',
+            'method'            => null,
+            'va_number'         => null,
+            'expires_at'        => null,
+            'proof_path'        => null,
+            'proof_uploaded_at' => null,
         ]);
 
         $this->notifyCustomer(

@@ -89,6 +89,10 @@
                 'va'         => $payment?->va_number ? trim(chunk_split($payment->va_number, 4, ' ')) : null,
                 'duration'   => $payment?->duration_label,
                 'paidAt'     => $payment?->paid_at?->locale('id')->translatedFormat('d M Y, H:i'),
+                'proofUrl'   => ($payment && method_exists($payment, 'hasProof') && $payment->hasProof() && \Illuminate\Support\Facades\Route::has('admin.payments.proof'))
+                    ? route('admin.payments.proof', $payment)
+                    : null,
+                'proofAt'    => $payment?->proof_uploaded_at?->locale('id')->diffForHumans(),
                 'receiptUrl' => ($payment && $payment->status === 'paid' && \Illuminate\Support\Facades\Route::has('admin.payments.receipt'))
                     ? route('admin.payments.receipt', $payment)
                     : null,
@@ -246,6 +250,8 @@
         .db-row-info span:last-child { color: #fff; font-weight: 700; word-break: break-word; }
 
         .db-pay-note { padding: 9px 10px; border-radius: 8px; background: rgba(255, 255, 255, .05); color: var(--text-muted); font-size: 10px; line-height: 1.5; }
+        .db-proof { display: block; max-width: 180px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+        .db-proof img { display: block; width: 100%; height: auto; max-height: 220px; object-fit: cover; }
 
         .db-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 12px; }
         .db-btn { height: 36px; border: 0; border-radius: 7px; font-size: 10px; font-weight: 900; cursor: pointer; }
@@ -481,6 +487,12 @@
                         <div class="db-row-info"><span>Metode</span><span id="dPayMethod">-</span></div>
                         <div class="db-row-info"><span>Referensi</span><span id="dPayRef">-</span></div>
                         <div class="db-row-info"><span>Dibayar</span><span id="dPayAt">-</span></div>
+                        <div id="dProof" hidden style="margin-top: 8px">
+                            <a href="#" id="dProofLink" target="_blank" rel="noopener" class="db-proof">
+                                <img src="" alt="Bukti pembayaran dari customer" id="dProofImg">
+                            </a>
+                            <small id="dProofAt" style="display: block; margin-top: 4px; color: var(--text-muted); font-size: 10px"></small>
+                        </div>
                     </div>
                     <div class="db-pay-note" id="dPayOffline" hidden>
                         Booking offline dibuat oleh admin. Pembayaran dilakukan langsung di tempat,
@@ -490,8 +502,8 @@
                         Customer belum menyelesaikan pembayaran online.
                     </div>
                     <div class="db-pay-note" id="dPayVerify" hidden style="color: #b9dcff">
-                        Customer mengonfirmasi sudah membayar. Cek mutasi rekening / QRIS untuk nominal dan no. referensi di atas,
-                        lalu konfirmasi atau tolak.
+                        Customer mengonfirmasi sudah membayar. Bandingkan bukti di atas dengan mutasi rekening / QRIS
+                        (nominal & no. referensi), lalu konfirmasi atau tolak.
                     </div>
                     <div class="db-actions" id="dVerifyActions" hidden>
                         <button type="button" class="db-btn verify" id="btnVerify">✓ Dana masuk, konfirmasi</button>
@@ -623,6 +635,13 @@
                 setText('dPayMethod', p.method || '-');
                 setText('dPayRef', p.reference || '-');
                 setText('dPayAt', p.paidAt || '-');
+
+                $('dProof').hidden = !p.proofUrl;
+                if (p.proofUrl) {
+                    $('dProofLink').href = p.proofUrl;
+                    $('dProofImg').src = p.proofUrl;
+                    setText('dProofAt', 'Bukti dikirim ' + (p.proofAt || '') + ' · klik untuk memperbesar');
+                }
 
                 $('btnApprove').disabled = b.status !== 'pending'
                     || (requirePaid && ['unpaid', 'pending', 'verifying'].includes(p.state));

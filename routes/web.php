@@ -93,6 +93,9 @@ Route::middleware([
 
     Route::post('/payment/booking/{booking}/confirm', [PaymentController::class, 'confirm'])
         ->name('payment.booking.confirm');
+
+    Route::get('/payment/booking/{booking}/proof', [PaymentController::class, 'proof'])
+        ->name('payment.booking.proof');
 });
 
 
@@ -234,6 +237,9 @@ Route::middleware([
 
     Route::patch('/admin/payments/{payment}/reject', [AdminPaymentController::class, 'rejectVerification'])
         ->name('admin.payments.reject');
+
+    Route::get('/admin/payments/{payment}/proof', [AdminPaymentController::class, 'proof'])
+        ->name('admin.payments.proof');
 
 
     /*

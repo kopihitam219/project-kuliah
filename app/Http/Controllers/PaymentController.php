@@ -123,6 +123,24 @@ class PaymentController extends Controller
             return back()->withErrors(['payment' => $error]);
         }
 
+        // Bukti pembayaran: wajib di mode live, opsional di mode demo
+        $request->validate([
+            'proof' => [$payment->needsVerification() ? 'required' : 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+        ], [
+            'proof.required' => 'Upload bukti pembayaran (screenshot / foto bukti transfer) terlebih dahulu.',
+            'proof.image'    => 'Bukti pembayaran harus berupa gambar.',
+            'proof.mimes'    => 'Bukti pembayaran harus JPG, PNG, atau WEBP.',
+            'proof.max'      => 'Ukuran bukti pembayaran maksimal 4 MB.',
+        ]);
+
+        if ($request->hasFile('proof')) {
+            $payment->deleteProof();
+            $payment->update([
+                'proof_path'        => $request->file('proof')->store(Payment::PROOF_FOLDER, Payment::PROOF_DISK),
+                'proof_uploaded_at' => now(),
+            ]);
+        }
+
         // Mode live: tunggu admin mengecek mutasi
         if ($payment->needsVerification()) {
             $payment->update(['status' => 'verifying']);
@@ -151,6 +169,20 @@ class PaymentController extends Controller
             ->with('payment_success', $booking->fresh()->status === 'booked'
                 ? 'Pembayaran berhasil dan booking Anda sudah dikonfirmasi!'
                 : 'Pembayaran berhasil! Booking Anda sekarang menunggu konfirmasi admin.');
+    }
+
+    /**
+     * Tampilkan bukti pembayaran milik customer sendiri (file privat).
+     */
+    public function proof(Request $request, Booking $booking)
+    {
+        $this->authorizeOwner($request, $booking);
+
+        $payment = Payment::where('booking_id', $booking->id)->first();
+
+        abort_unless($payment && $payment->hasProof(), 404);
+
+        return response()->file(\Illuminate\Support\Facades\Storage::disk(Payment::PROOF_DISK)->path($payment->proof_path));
     }
 
     /* ---------------------------------------------------------------

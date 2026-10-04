@@ -51,6 +51,8 @@ class Payment extends Model
         'amount',
         'method',
         'va_number',
+        'proof_path',
+        'proof_uploaded_at',
         'status',
         'expires_at',
         'paid_at',
@@ -61,7 +63,24 @@ class Payment extends Model
         'duration_minutes' => 'integer',
         'expires_at'       => 'datetime',
         'paid_at'          => 'datetime',
+        'proof_uploaded_at' => 'datetime',
     ];
+
+    /** Folder bukti pembayaran di disk privat (storage/app/private) */
+    public const PROOF_DISK   = 'local';
+    public const PROOF_FOLDER = 'payment-proofs';
+
+    public function hasProof(): bool
+    {
+        return $this->proof_path && Storage::disk(self::PROOF_DISK)->exists($this->proof_path);
+    }
+
+    public function deleteProof(): void
+    {
+        if ($this->proof_path && Storage::disk(self::PROOF_DISK)->exists($this->proof_path)) {
+            Storage::disk(self::PROOF_DISK)->delete($this->proof_path);
+        }
+    }
 
     public function booking(): BelongsTo
     {
