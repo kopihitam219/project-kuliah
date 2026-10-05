@@ -459,6 +459,14 @@
         .booking-place-name { color: #cdd5d1; font-size: 12px; font-weight: 700; }
         .reschedule-fixed { padding: 10px 12px; border-radius: 9px; background: rgba(255,255,255,.04); color: #cdd5d1; font-size: 13px; font-weight: 700; }
 
+        .locked-help { display: flex; flex-direction: column; gap: 10px; }
+        .locked-help strong { display: block; margin-top: 4px; color: #ffd45c; font-weight: 700; }
+        .contact-admin {
+            align-self: flex-start; display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 16px; border-radius: 10px; background: #25d366; color: #04210f;
+            font-size: 13px; font-weight: 800;
+        }
+        .contact-admin:hover { background: #3fe07a; }
         [hidden] { display: none !important; }
     </style>
     @include('partials.brand-head')
@@ -885,8 +893,36 @@
 
                         @else
 
-                            <div class="action-locked">
-                                Pembatalan dan perubahan jadwal sudah ditutup karena lesson berlangsung hari ini.
+                            @php
+                                $waNumber = class_exists(\App\Models\ContactSetting::class)
+                                    ? preg_replace('/\D+/', '', (string) \App\Models\ContactSetting::query()->value('whatsapp'))
+                                    : '';
+                                $waNumber = str_starts_with($waNumber, '0') ? '62' . substr($waNumber, 1) : $waNumber;
+                                $waText   = 'Halo Admin, saya ' . auth()->user()->name . ' ingin mengubah booking '
+                                    . $booking->lesson_label . ' tanggal ' . $bookingDate->locale('id')->translatedFormat('d M Y')
+                                    . ' jam ' . $yourStart->format('H:i') . '–' . $yourEnd->format('H:i')
+                                    . ($booking->place_label ? ' di ' . $booking->place_label : '')
+                                    . '. Apakah ada jadwal lain yang tersedia?';
+                            @endphp
+
+                            <div class="action-locked locked-help">
+                                <span>
+                                    @if($bookingDate->isSameDay($today))
+                                        Pembatalan dan perubahan jadwal sudah ditutup karena lesson berlangsung hari ini.
+                                    @else
+                                        Pembatalan dan perubahan jadwal sudah ditutup. {{ \App\Support\BookingRules::cancelRuleText() }}
+                                    @endif
+                                    <strong>Jika ada perubahan, silakan hubungi admin untuk melihat ketersediaan jadwal.</strong>
+                                </span>
+
+                                @if($waNumber)
+                                    <a href="https://wa.me/{{ $waNumber }}?text={{ rawurlencode($waText) }}"
+                                       target="_blank" rel="noopener" class="contact-admin">
+                                        Hubungi Admin via WhatsApp
+                                    </a>
+                                @else
+                                    <a href="{{ route('contact') }}" class="contact-admin">Hubungi Admin</a>
+                                @endif
                             </div>
 
                         @endif
