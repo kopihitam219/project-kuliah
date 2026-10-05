@@ -365,6 +365,8 @@
             </div>
         @endif
 
+    @include('partials.lesson-pricing')
+
     </main>
 
 </div>

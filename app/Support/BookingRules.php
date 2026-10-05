@@ -23,7 +23,22 @@ class BookingRules
         'payment_expiry_hours' => '24',
         'require_paid'         => '0',
         'payment_mode'         => 'demo',
+        'course_enabled'       => '1',
+        'course_start'         => '07:00',
+        'course_end'           => '12:00',
+        'course_price'         => '3300000',
+        'course_location'      => 'Lapangan golf (dikonfirmasi admin)',
+        'course_note'          => 'Harga belum termasuk caddy fee, green fee, dan tip.',
     ];
+
+    /** Jenis lesson yang bisa dipilih customer */
+    public const LESSON_TYPES = [
+        'driving' => 'Lesson Driving Range',
+        'course'  => 'Course Lesson',
+    ];
+
+    /** Cache nama lapangan (id => nama) untuk satu request */
+    private static ?array $locationNames = null;
 
     private static function value(string $key): string
     {
@@ -121,5 +136,90 @@ class BookingRules
     public static function isDemoPayment(): bool
     {
         return self::paymentMode() === 'demo';
+    }
+
+    /* ---------------------- Jenis lesson ---------------------- */
+
+    public static function courseEnabled(): bool
+    {
+        return self::value('course_enabled') === '1';
+    }
+
+    public static function courseStart(): string
+    {
+        return self::value('course_start');
+    }
+
+    public static function courseEnd(): string
+    {
+        return self::value('course_end');
+    }
+
+    public static function coursePrice(): int
+    {
+        return max(0, (int) self::value('course_price'));
+    }
+
+    public static function courseLocation(): string
+    {
+        return self::value('course_location');
+    }
+
+    /** Catatan harga Course Lesson (caddy fee, green fee, tip) */
+    public static function courseNote(): string
+    {
+        return trim(self::value('course_note'));
+    }
+
+    public static function lessonTypes(): array
+    {
+        return self::courseEnabled() ? self::LESSON_TYPES : ['driving' => self::LESSON_TYPES['driving']];
+    }
+
+    public static function lessonLabel(?string $type): string
+    {
+        return self::LESSON_TYPES[$type ?: 'driving'] ?? self::LESSON_TYPES['driving'];
+    }
+
+    /** Nama lapangan driving range dari menu Contact > Lokasi */
+    public static function locationName($id): ?string
+    {
+        if (! $id) {
+            return null;
+        }
+
+        if (self::$locationNames === null) {
+            try {
+                self::$locationNames = \App\Models\ContactLocation::query()->pluck('name', 'id')->all();
+            } catch (\Throwable $e) {
+                self::$locationNames = [];
+            }
+        }
+
+        return self::$locationNames[$id] ?? null;
+    }
+
+    /** Lapangan yang ditampilkan untuk sebuah booking */
+    public static function placeFor(?string $type, $locationId, ?string $venue = null): ?string
+    {
+        if ($type === 'course') {
+            return $venue ? trim($venue) : 'Lapangan golf pilihan customer';
+        }
+
+        return self::locationName($locationId);
+    }
+
+    /** Lapangan aktif untuk dipilih customer */
+    public static function activeLocations()
+    {
+        try {
+            return \App\Models\ContactLocation::query()
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get(['id', 'name', 'area']);
+        } catch (\Throwable $e) {
+            return collect();
+        }
     }
 }

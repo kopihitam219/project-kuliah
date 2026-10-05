@@ -426,6 +426,45 @@
             </section>
 
             <section class="st-card">
+                <h2>Course Lesson</h2>
+                <p class="st-sub">Sesi lesson di lapangan golf dengan jam dan harga tetap. Lapangan golf ditentukan sendiri oleh customer saat booking. Lesson Driving Range memakai harga per jam di tab Pembayaran.</p>
+
+                <input type="hidden" name="course_enabled" value="0">
+                <label class="st-toggle st-box" style="margin-bottom: 16px">
+                    <span>
+                        <strong>Aktifkan Course Lesson</strong>
+                        <small>Customer bisa memilih Course Lesson di halaman booking.</small>
+                    </span>
+                    <input type="checkbox" name="course_enabled" value="1" @checked(old('course_enabled', BookingRules::courseEnabled() ? '1' : '0') === '1')>
+                </label>
+
+                <div class="st-grid-3">
+                    <div class="field">
+                        <label for="cStart">Jam mulai</label>
+                        <input type="time" name="course_start" id="cStart" class="input" required step="1800" value="{{ old('course_start', BookingRules::courseStart()) }}">
+                    </div>
+                    <div class="field">
+                        <label for="cEnd">Jam selesai</label>
+                        <input type="time" name="course_end" id="cEnd" class="input" required step="1800" value="{{ old('course_end', BookingRules::courseEnd()) }}">
+                    </div>
+                    <div class="field">
+                        <label for="cPrice">Harga per sesi (Rupiah)</label>
+                        <input type="number" name="course_price" id="cPrice" class="input" required min="0" step="1000" value="{{ old('course_price', BookingRules::coursePrice()) }}">
+                        <p class="field-hint">Contoh: 3300000 = Rp3.300.000</p>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="cNote">Catatan harga</label>
+                    <input type="text" name="course_note" id="cNote" class="input" maxlength="200"
+                           value="{{ old('course_note', BookingRules::courseNote()) }}"
+                           placeholder="Harga belum termasuk caddy fee, green fee, dan tip.">
+                    <p class="field-hint">Tampil di halaman booking, pembayaran, dan Program setiap kali harga Course Lesson ditampilkan. Kosongkan jika tidak perlu.</p>
+                </div>
+
+            </section>
+
+            <section class="st-card">
                 <h2>Persetujuan</h2>
                 <p class="st-sub">Cara booking online berubah dari Pending menjadi Booked.</p>
 
@@ -488,7 +527,7 @@
 
                 <div class="st-grid-3">
                     <div class="field">
-                        <label for="pPrice">Harga lesson per jam (Rupiah)</label>
+                        <label for="pPrice">Harga Lesson Driving Range per jam (Rupiah)</label>
                         <input type="number" name="price_per_hour" id="pPrice" class="input" required min="0" step="1000"
                                value="{{ old('price_per_hour', BookingRules::pricePerHour()) }}">
                         <p class="field-hint" id="pricePreview"></p>
@@ -584,6 +623,30 @@
                             </div>
                         </div>
                     @endforeach
+                </div>
+            </section>
+
+            <section class="st-card">
+                <h2>Bayar cash</h2>
+                <p class="st-sub">Customer booking lewat website, lalu membayar tunai langsung ke admin saat lesson. Admin menandai lunas di Dashboard, dan waktu pembayarannya tercatat otomatis.</p>
+
+                <div class="st-grid-2">
+                    <label class="st-toggle st-box">
+                        <span>
+                            <strong>Aktifkan bayar cash</strong>
+                            <small>Pilihan "Bayar Cash" tampil di halaman pembayaran customer.</small>
+                        </span>
+                        <input type="hidden" name="pay_cash_enabled" value="0">
+                        <input type="checkbox" name="pay_cash_enabled" value="1" @checked(old('pay_cash_enabled', Setting::get('pay_cash_enabled', '1')) === '1')>
+                    </label>
+                    <label class="st-toggle st-box">
+                        <span>
+                            <strong>Izinkan cash untuk Course Lesson</strong>
+                            <small>Jika mati, Course Lesson tetap wajib dibayar di muka lewat QRIS / transfer.</small>
+                        </span>
+                        <input type="hidden" name="cash_allow_course" value="0">
+                        <input type="checkbox" name="cash_allow_course" value="1" @checked(old('cash_allow_course', Setting::get('cash_allow_course', '0')) === '1')>
+                    </label>
                 </div>
             </section>
 

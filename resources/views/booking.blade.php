@@ -136,6 +136,42 @@
 
     $oldStart = old('start_time');
     $oldEnd   = old('end_time');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Jenis lesson & lapangan
+    |--------------------------------------------------------------------------
+    */
+
+    $locations    = collect($locations ?? []);
+    $lessonTypes  = \App\Support\BookingRules::lessonTypes();
+    $lessonType   = old('lesson_type', request('type', 'driving'));
+    $lessonType   = array_key_exists($lessonType, $lessonTypes) ? $lessonType : 'driving';
+    $locationId   = (string) old('location_id', request('location', $locations->first()?->id));
+
+    $pricePerHour = \App\Models\Payment::pricePerHour();
+    $coursePrice  = \App\Support\BookingRules::coursePrice();
+    $courseStart  = \App\Support\BookingRules::courseStart();
+    $courseEnd    = \App\Support\BookingRules::courseEnd();
+    $minMinutes   = \App\Support\BookingRules::minMinutes();
+
+    // Course Lesson tersedia jika semua slot di jam course masih kosong
+    $courseSlots     = collect($slotMap)->filter(fn ($s) => $s['start'] >= $courseStart && $s['end'] <= $courseEnd);
+    $courseBlocking  = $courseSlots->first(fn ($s) => $s['status'] !== 'available');
+    $courseAvailable = isset($lessonTypes['course']) && $courseSlots->isNotEmpty() && ! $courseBlocking;
+    $courseReason    = $courseBlocking
+        ? 'Jam ' . $courseBlocking['start'] . ' berstatus ' . ($statusLabels[$courseBlocking['status']] ?? 'terisi') . '.'
+        : ($courseSlots->isEmpty() ? 'Jam course di luar jam operasional.' : '');
+
+    $rp = fn ($n) => 'Rp' . number_format((int) $n, 0, ',', '.');
+
+    // Link kalender tetap membawa pilihan jenis lesson & lapangan
+    $linkFor = fn ($date) => array_filter([
+        'date'     => $date,
+        'type'     => $lessonType,
+        'location' => $locationId,
+    ]);
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -363,6 +399,67 @@
             .slot-list { grid-template-columns: 1fr 1fr; }
             .booking-actions { grid-template-columns: 1fr; }
         }
+    
+        /* ---------- Jenis lesson & lapangan ---------- */
+        .step-label { display: flex; align-items: center; gap: 9px; margin: 4px 0 10px; color: #cdd5d1; font-size: 13px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; }
+        .step-num { width: 22px; height: 22px; flex: 0 0 22px; display: grid; place-items: center; border-radius: 50%; background: var(--lime); color: #071000; font-size: 11px; font-weight: 900; letter-spacing: 0; }
+
+        .lesson-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 18px; }
+        .lesson-option input, .location-option input { position: absolute; opacity: 0; pointer-events: none; }
+        .lesson-card {
+            height: 100%; display: flex; flex-direction: column; gap: 6px; padding: 14px 15px;
+            border: 1px solid rgba(255,255,255,.10); border-radius: 13px; background: rgba(255,255,255,.03);
+            cursor: pointer; transition: border-color .15s ease, background .15s ease;
+        }
+        .lesson-card strong { font-size: 14px; font-weight: 800; }
+        .lesson-price { color: var(--lime); font-size: 19px; font-weight: 900; }
+        .lesson-price small { color: var(--muted); font-size: 11px; font-weight: 700; }
+        .lesson-desc { color: var(--muted); font-size: 12px; line-height: 1.45; }
+        .lesson-option:hover .lesson-card { border-color: rgba(184,255,0,.35); }
+        .lesson-option input:checked + .lesson-card { border-color: var(--lime); background: rgba(184,255,0,.08); box-shadow: inset 0 0 0 1px var(--lime); }
+        .lesson-option input:focus-visible + .lesson-card { outline: 2px solid var(--lime); outline-offset: 2px; }
+
+        .location-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 4px; }
+        .location-card {
+            display: flex; align-items: center; gap: 11px; padding: 12px 14px;
+            border: 1px solid rgba(255,255,255,.10); border-radius: 12px; background: rgba(255,255,255,.03); cursor: pointer;
+        }
+        .location-card strong { display: block; font-size: 13px; font-weight: 800; }
+        .location-card small { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+        .location-pin { color: var(--lime); font-size: 16px; }
+        .location-option:hover .location-card { border-color: rgba(184,255,0,.35); }
+        .location-option input:checked + .location-card { border-color: var(--lime); background: rgba(184,255,0,.08); box-shadow: inset 0 0 0 1px var(--lime); }
+        .location-option input:focus-visible + .location-card { outline: 2px solid var(--lime); outline-offset: 2px; }
+        .venue-input {
+            width: 100%; padding: 13px 15px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px;
+            background: rgba(0,0,0,.25); color: #fff; font-size: 14px; outline: none;
+        }
+        .venue-input:focus { border-color: rgba(184,255,0,.55); }
+        .venue-input::placeholder { color: #6a756f; }
+        .venue-hint { display: block; margin-top: 7px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+        .course-box {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+            padding: 14px 16px; border: 1px solid rgba(184,255,0,.35); border-radius: 12px; background: rgba(184,255,0,.06);
+        }
+        .course-box strong { display: block; color: var(--lime); font-size: 20px; font-weight: 900; }
+        .course-box span { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+        .course-box em { font-style: normal; font-size: 12px; font-weight: 800; }
+        .course-ok { color: var(--lime); }
+        .course-no { color: #ff9a9a; max-width: 260px; }
+        .course-box.unavailable { border-color: rgba(255,92,92,.35); background: rgba(255,92,92,.06); }
+        .lesson-note { display: block; margin-top: 4px; color: #ffd45c; font-size: 11px; font-weight: 700; }
+        .course-note { flex-basis: 100%; color: #ffd45c; font-size: 12px; font-weight: 700; }
+
+        .duration-box { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+        .booking-place { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 2px 0 10px; }
+        .booking-place-type { padding: 4px 10px; border-radius: 999px; background: rgba(184,255,0,.12); color: var(--lime); font-size: 11px; font-weight: 800; }
+        .booking-place-type.course { background: rgba(92,168,255,.14); color: #a9d0ff; }
+        .booking-place-name { color: #cdd5d1; font-size: 12px; font-weight: 700; }
+        .reschedule-fixed { padding: 10px 12px; border-radius: 9px; background: rgba(255,255,255,.04); color: #cdd5d1; font-size: 13px; font-weight: 700; }
+
+        [hidden] { display: none !important; }
     </style>
     @include('partials.brand-head')
 </head>
@@ -408,21 +505,89 @@
 
             <div class="section-title">
                 <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
-                Pilih Tanggal &amp; Jam
+                Booking Lesson
             </div>
+
+            {{-- ---------- 1. JENIS LESSON ---------- --}}
+            <div class="step-label"><span class="step-num">1</span> Jenis lesson</div>
+
+            <div class="lesson-options">
+                @foreach($lessonTypes as $typeKey => $typeLabel)
+                    <label class="lesson-option">
+                        <input type="radio" name="lesson_type" value="{{ $typeKey }}" form="bookingForm"
+                               {{ $lessonType === $typeKey ? 'checked' : '' }}>
+                        <span class="lesson-card">
+                            <strong>{{ $typeLabel }}</strong>
+                            <span class="lesson-price">
+                                {{ $typeKey === 'course' ? $rp($coursePrice) : $rp($pricePerHour) }}
+                                <small>{{ $typeKey === 'course' ? '/ sesi' : '/ jam' }}</small>
+                            </span>
+                            <span class="lesson-desc">
+                                @if($typeKey === 'course')
+                                    Sesi tetap {{ $courseStart }} – {{ $courseEnd }} di lapangan golf
+                                    @if(\App\Support\BookingRules::courseNote())
+                                        <span class="lesson-note">* {{ \App\Support\BookingRules::courseNote() }}</span>
+                                    @endif
+                                @else
+                                    Latihan di driving range, pilih jam sendiri (min. {{ $minMinutes }} menit)
+                                @endif
+                            </span>
+                        </span>
+                    </label>
+                @endforeach
+            </div>
+
+            {{-- ---------- 2. LAPANGAN ---------- --}}
+            @if($locations->isNotEmpty())
+                <div id="locationStep">
+                    <div class="step-label"><span class="step-num">2</span> Lapangan driving range</div>
+
+                    <div class="location-options">
+                        @foreach($locations as $location)
+                            <label class="location-option">
+                                <input type="radio" name="location_id" value="{{ $location->id }}" form="bookingForm"
+                                       {{ $locationId === (string) $location->id ? 'checked' : '' }}>
+                                <span class="location-card">
+                                    <span class="location-pin">◉</span>
+                                    <span>
+                                        <strong>{{ $location->name }}</strong>
+                                        @if($location->area)
+                                            <small>{{ $location->area }}</small>
+                                        @endif
+                                    </span>
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            <div id="courseLocation" class="course-location" hidden>
+                <div class="step-label"><span class="step-num">2</span> Lapangan golf pilihan Anda</div>
+                <input type="text" name="course_venue" id="courseVenue" form="bookingForm"
+                       class="venue-input" maxlength="150"
+                       value="{{ old('course_venue') }}"
+                       placeholder="Contoh: Padang Golf Pondok Indah">
+                <small class="venue-hint">Tulis lapangan golf tempat Anda ingin Course Lesson. Admin akan mengonfirmasi ketersediaannya.</small>
+            </div>
+
+            <div class="divider"></div>
+
+            {{-- ---------- 3. TANGGAL ---------- --}}
+            <div class="step-label"><span class="step-num">3</span> Tanggal</div>
 
             <div class="calendar-top">
                 <div class="calendar-month">{{ $selected->format('F Y') }}</div>
 
                 <div class="month-actions">
                     @if($previousAllowed)
-                        <a href="{{ route('booking', ['date' => $previousMonth->format('Y-m-d')]) }}"
+                        <a href="{{ route('booking', $linkFor($previousMonth->format('Y-m-d'))) }}"
                            class="month-button" aria-label="Bulan sebelumnya">‹</a>
                     @else
                         <button type="button" class="month-button" disabled aria-label="Bulan sebelumnya">‹</button>
                     @endif
 
-                    <a href="{{ route('booking', ['date' => $nextMonth->format('Y-m-d')]) }}"
+                    <a href="{{ route('booking', $linkFor($nextMonth->format('Y-m-d'))) }}"
                        class="month-button" aria-label="Bulan berikutnya">›</a>
                 </div>
             </div>
@@ -455,7 +620,7 @@
                     @if($isPast)
                         <div class="calendar-day disabled {{ $isTodayCell ? 'today' : '' }}">{{ $day }}</div>
                     @else
-                        <a href="{{ route('booking', ['date' => $dateString]) }}"
+                        <a href="{{ route('booking', $linkFor($dateString)) }}"
                            class="calendar-day {{ $isSelected ? 'selected' : '' }} {{ $isTodayCell ? 'today' : '' }}">
                             {{ $day }}
                         </a>
@@ -466,14 +631,14 @@
 
             <div class="divider"></div>
 
-            <div class="form-title">Pilih Jam Lesson</div>
+            <div class="step-label"><span class="step-num">4</span> <span id="timeStepTitle">Jam lesson</span></div>
 
             <form action="{{ route('booking.store') }}" method="POST" id="bookingForm">
                 @csrf
 
                 <input type="hidden" name="booking_date" value="{{ $selectedDateString }}">
 
-                <div class="time-form-grid">
+                <div class="time-form-grid" id="timeFields">
 
                     <div class="field">
                         <label for="start_time">Jam Mulai</label>
@@ -504,8 +669,26 @@
 
                 </div>
 
+                <div class="course-box {{ $courseAvailable ? '' : 'unavailable' }}" id="courseBox" hidden>
+                    <div>
+                        <strong>{{ $courseStart }} – {{ $courseEnd }}</strong>
+                        <span>Sesi Course Lesson · {{ $selected->locale('id')->translatedFormat('l, d M Y') }}</span>
+                    </div>
+                    @if($courseAvailable)
+                        <em class="course-ok">✓ Tersedia</em>
+                    @else
+                        <em class="course-no">Tidak tersedia. {{ $courseReason }} Pilih tanggal lain.</em>
+                    @endif
+                    @if(\App\Support\BookingRules::courseNote())
+                        <small class="course-note">* {{ \App\Support\BookingRules::courseNote() }}</small>
+                    @endif
+                    <input type="hidden" name="start_time" value="{{ $courseStart }}" id="courseStartInput" disabled>
+                    <input type="hidden" name="end_time" value="{{ $courseEnd }}" id="courseEndInput" disabled>
+                </div>
+
                 <div class="duration-box">
-                    Durasi: <strong id="durationText">-</strong>
+                    <span>Durasi: <strong id="durationText">-</strong></span>
+                    <span>Total: <strong id="priceText">-</strong></span>
                 </div>
 
                 <button type="submit" class="book-button" id="bookButton" disabled>
@@ -515,6 +698,7 @@
                 <div class="booking-note">
                     Diharapkan hadir 30 menit sebelum lesson dimulai.
                     Booking baru berstatus <strong>Pending</strong> sampai disetujui Admin.
+                    Jadwal coach berlaku untuk semua lapangan.
                 </div>
 
             </form>
@@ -610,6 +794,13 @@
                             </div>
                         </div>
 
+                        <div class="booking-place">
+                            <span class="booking-place-type {{ $booking->isCourse() ? 'course' : '' }}">{{ $booking->lesson_label }}</span>
+                            @if($booking->place_label)
+                                <span class="booking-place-name">◉ {{ $booking->place_label }}</span>
+                            @endif
+                        </div>
+
                         <div class="booking-status {{ $booking->status === 'pending' ? 'pending' : 'booked' }}">
                             <span class="booking-status-dot"></span>
 
@@ -652,6 +843,12 @@
                                                    value="{{ $bookingDate->format('Y-m-d') }}" required>
                                         </div>
 
+                                        @if($booking->isCourse())
+                                        <div class="reschedule-field" style="grid-column: span 2">
+                                            <label>Jam</label>
+                                            <div class="reschedule-fixed">{{ $courseStart }} – {{ $courseEnd }} (Course Lesson)</div>
+                                        </div>
+                                        @else
                                         <div class="reschedule-field">
                                             <label>Mulai</label>
                                             <input type="time" name="start_time"
@@ -665,6 +862,7 @@
                                                    value="{{ $yourEnd->format('H:i') }}"
                                                    min="{{ \App\Support\BookingRules::openTime() }}" max="{{ \App\Support\BookingRules::closeTime() }}" step="{{ \App\Support\BookingRules::slotMinutes() * 60 }}" required>
                                         </div>
+                                        @endif
                                     </div>
 
                                     <button type="submit" class="reschedule-submit">AJUKAN JADWAL BARU</button>
@@ -721,6 +919,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const initialEnd = @json($oldEnd);
 
+    /* Jenis lesson */
+    const config = {
+        pricePerHour: {{ (int) $pricePerHour }},
+        coursePrice: {{ (int) $coursePrice }},
+        courseStart: @json($courseStart),
+        courseEnd: @json($courseEnd),
+        courseAvailable: @json($courseAvailable),
+        hasLocations: @json($locations->isNotEmpty()),
+    };
+
+    const timeFields      = document.getElementById('timeFields');
+    const courseBox       = document.getElementById('courseBox');
+    const courseStartIn   = document.getElementById('courseStartInput');
+    const courseEndIn     = document.getElementById('courseEndInput');
+    const locationStep    = document.getElementById('locationStep');
+    const courseLocation  = document.getElementById('courseLocation');
+    const priceText       = document.getElementById('priceText');
+    const timeStepTitle   = document.getElementById('timeStepTitle');
+    const courseVenue     = document.getElementById('courseVenue');
+
+    const lessonType = () => (document.querySelector('input[name="lesson_type"]:checked') || {}).value || 'driving';
+    const locationValue = () => (document.querySelector('input[name="location_id"]:checked') || {}).value || '';
+    const isCourse = () => lessonType() === 'course';
+    const rupiah = (n) => 'Rp' + Number(n).toLocaleString('id-ID');
+
     const indexByStart = {};
     slots.forEach((slot, i) => { indexByStart[slot.start] = i; });
 
@@ -770,8 +993,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function highlight() {
-        const start = startSelect.value;
-        const end   = endSelect.value;
+        const start = isCourse() ? config.courseStart : startSelect.value;
+        const end   = isCourse() ? config.courseEnd : endSelect.value;
 
         slotButtons.forEach(function (button) {
             let on = false;
@@ -785,19 +1008,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function updateSummary() {
-        const start = startSelect.value;
-        const end   = endSelect.value;
-
-        highlight();
-
-        if (!start || !end) {
-            durationText.textContent = '-';
-            bookButton.disabled = true;
-            bookButton.textContent = 'Pilih jam lesson dulu';
-            return;
-        }
-
+    function durationLabel(start, end) {
         const duration = toMinutes(end) - toMinutes(start);
         const hours    = Math.floor(duration / 60);
         const minutes  = duration % 60;
@@ -805,11 +1016,87 @@ document.addEventListener('DOMContentLoaded', function () {
         let text = '';
         if (hours > 0) text += hours + ' Jam';
         if (minutes > 0) text += (text ? ' ' : '') + minutes + ' Menit';
+        return text;
+    }
 
-        durationText.textContent = text;
+    function updateSummary() {
+        highlight();
+
+        /* Course Lesson: jam & harga tetap */
+        if (isCourse()) {
+            const venueFilled = courseVenue.value.trim() !== '';
+
+            durationText.textContent = durationLabel(config.courseStart, config.courseEnd) + ' (' + config.courseStart + '–' + config.courseEnd + ')';
+            priceText.textContent = rupiah(config.coursePrice);
+            bookButton.disabled = !config.courseAvailable || !venueFilled;
+            bookButton.textContent = !config.courseAvailable
+                ? 'Course Lesson tidak tersedia di tanggal ini'
+                : (venueFilled ? 'Pesan Course Lesson' : 'Isi lapangan golf dulu');
+            return;
+        }
+
+        const start = startSelect.value;
+        const end   = endSelect.value;
+
+        if (config.hasLocations && !locationValue()) {
+            durationText.textContent = start && end ? durationLabel(start, end) : '-';
+            priceText.textContent = '-';
+            bookButton.disabled = true;
+            bookButton.textContent = 'Pilih lapangan dulu';
+            return;
+        }
+
+        if (!start || !end) {
+            durationText.textContent = '-';
+            priceText.textContent = '-';
+            bookButton.disabled = true;
+            bookButton.textContent = 'Pilih jam lesson dulu';
+            return;
+        }
+
+        const minutes = toMinutes(end) - toMinutes(start);
+
+        durationText.textContent = durationLabel(start, end);
+        priceText.textContent = rupiah(Math.round(minutes / 60 * config.pricePerHour));
         bookButton.disabled = false;
         bookButton.textContent = 'Pesan Lesson Ini';
     }
+
+    /* Tampilan sesuai jenis lesson */
+    function syncLessonType() {
+        const course = isCourse();
+
+        timeFields.hidden = course;
+        courseBox.hidden = !course;
+        startSelect.disabled = course;
+        endSelect.disabled = course || !startSelect.value;
+        courseStartIn.disabled = !course;
+        courseEndIn.disabled = !course;
+        if (locationStep) locationStep.hidden = course;
+        courseLocation.hidden = !course;
+        courseVenue.disabled = !course;
+        courseVenue.required = course;
+        timeStepTitle.textContent = course ? 'Jam course' : 'Jam lesson';
+
+        updateLinks();
+        updateSummary();
+    }
+
+    /* Link kalender & bulan membawa pilihan jenis lesson & lapangan */
+    function updateLinks() {
+        document.querySelectorAll('a.calendar-day, a.month-button').forEach(function (link) {
+            const url = new URL(link.href, window.location.origin);
+            url.searchParams.set('type', lessonType());
+            if (locationValue()) url.searchParams.set('location', locationValue());
+            link.href = url.toString();
+        });
+    }
+
+    document.querySelectorAll('input[name="lesson_type"], input[name="location_id"]').forEach(function (input) {
+        input.addEventListener('change', syncLessonType);
+    });
+
+    courseVenue.addEventListener('input', updateSummary);
 
 
     startSelect.addEventListener('change', function () {
@@ -823,6 +1110,8 @@ document.addEventListener('DOMContentLoaded', function () {
     /* Klik slot: pilih satu slot, klik slot berikutnya untuk memperpanjang durasi */
     slotButtons.forEach(function (button) {
         button.addEventListener('click', function () {
+
+            if (isCourse()) return;
 
             const start = startSelect.value;
 
@@ -846,7 +1135,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     form.addEventListener('submit', function (event) {
-        if (!startSelect.value || !endSelect.value) {
+        if (isCourse()) {
+            if (!config.courseAvailable || courseVenue.value.trim() === '') event.preventDefault();
+            return;
+        }
+
+        if (!startSelect.value || !endSelect.value || (config.hasLocations && !locationValue())) {
             event.preventDefault();
         }
     });
@@ -904,7 +1198,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* Kondisi awal (termasuk old input setelah validasi gagal) */
     fillEnds(startSelect.value, initialEnd);
-    updateSummary();
+    syncLessonType();
 
 });
 </script>

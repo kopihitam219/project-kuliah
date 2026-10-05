@@ -249,6 +249,9 @@ Route::middleware([
     Route::patch('/admin/payments/{payment}/reject', [AdminPaymentController::class, 'rejectVerification'])
         ->name('admin.payments.reject');
 
+    Route::patch('/admin/payments/{payment}/cash', [AdminPaymentController::class, 'markCash'])
+        ->name('admin.payments.cash');
+
     Route::get('/admin/payments/{payment}/proof', [AdminPaymentController::class, 'proof'])
         ->name('admin.payments.proof');
 

@@ -6,7 +6,9 @@ use App\Models\Booking;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Support\BookingRules;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -85,6 +87,9 @@ class BookingController extends Controller
                 'booking_date',
                 'start_time',
                 'end_time',
+                'lesson_type',
+                'location_id',
+                'course_venue',
                 'status',
             ]);
 
@@ -93,6 +98,7 @@ class BookingController extends Controller
             'pendingBookings' => $pendingBookings,
             'bookedBookings' => $bookedBookings,
             'yourBookings' => $yourBookings,
+            'locations' => BookingRules::activeLocations(),
         ]);
     }
 
@@ -104,7 +110,39 @@ class BookingController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $lessonType = $request->input('lesson_type', 'driving');
+
+        /*
+         * Course Lesson: jam selalu sesuai Settings (default 07:00 - 12:00).
+         */
+        if ($lessonType === 'course') {
+            $request->merge([
+                'start_time' => BookingRules::courseStart(),
+                'end_time'   => BookingRules::courseEnd(),
+            ]);
+        }
+
+        $hasLocations = BookingRules::activeLocations()->isNotEmpty();
+
         $validated = $request->validate([
+            'lesson_type' => [
+                'required',
+                Rule::in(array_keys(BookingRules::lessonTypes())),
+            ],
+
+            'location_id' => [
+                Rule::requiredIf($lessonType !== 'course' && $hasLocations),
+                'nullable',
+                Rule::exists('contact_locations', 'id')->where('is_active', true),
+            ],
+
+            'course_venue' => [
+                Rule::requiredIf($lessonType === 'course'),
+                'nullable',
+                'string',
+                'max:150',
+            ],
+
             'booking_date' => [
                 'required',
                 'date',
@@ -120,14 +158,25 @@ class BookingController extends Controller
                 'required',
                 'date_format:H:i',
             ],
+        ], [
+            'lesson_type.required' => 'Pilih jenis lesson terlebih dahulu.',
+            'lesson_type.in'       => 'Jenis lesson tidak tersedia.',
+            'location_id.required' => 'Pilih lapangan driving range terlebih dahulu.',
+            'location_id.exists'   => 'Lapangan yang dipilih tidak tersedia.',
+            'course_venue.required' => 'Tulis lapangan golf yang Anda pilih untuk Course Lesson.',
+            'course_venue.max'      => 'Nama lapangan golf maksimal 150 karakter.',
         ]);
 
-        $this->validateBookingTime(
-            $validated['start_time'],
-            $validated['end_time']
-        );
+        if ($lessonType === 'course') {
+            $this->validateCourseDate($validated['booking_date']);
+        } else {
+            $this->validateBookingTime(
+                $validated['start_time'],
+                $validated['end_time']
+            );
+        }
 
-        $newBooking = DB::transaction(function () use ($request, $validated) {
+        $newBooking = DB::transaction(function () use ($request, $validated, $lessonType) {
 
             /*
              * Lock booking pada tanggal tersebut selama proses
@@ -163,8 +212,9 @@ class BookingController extends Controller
 
             if ($overlap) {
                 throw ValidationException::withMessages([
-                    'booking' =>
-                        'Waktu yang dipilih sudah digunakan. Silakan pilih waktu lain.',
+                    'booking' => $lessonType === 'course'
+                        ? 'Course Lesson tidak tersedia di tanggal ini karena sebagian jam ' . BookingRules::courseStart() . '–' . BookingRules::courseEnd() . ' sudah terisi. Silakan pilih tanggal lain.'
+                        : 'Waktu yang dipilih sudah digunakan. Silakan pilih waktu lain.',
                 ]);
             }
 
@@ -173,6 +223,9 @@ class BookingController extends Controller
                 'booking_date' => $validated['booking_date'],
                 'start_time' => $validated['start_time'],
                 'end_time' => $validated['end_time'],
+                'lesson_type' => $lessonType,
+                'location_id' => $lessonType === 'course' ? null : ($validated['location_id'] ?? null),
+                'course_venue' => $lessonType === 'course' ? trim($validated['course_venue']) : null,
                 'status' => 'pending',
             ]);
         });
@@ -274,6 +327,13 @@ class BookingController extends Controller
             ]);
         }
 
+        if ($booking->isCourse()) {
+            $request->merge([
+                'start_time' => BookingRules::courseStart(),
+                'end_time'   => BookingRules::courseEnd(),
+            ]);
+        }
+
         $validated = $request->validate([
             'booking_date' => [
                 'required',
@@ -292,10 +352,14 @@ class BookingController extends Controller
             ],
         ]);
 
-        $this->validateBookingTime(
-            $validated['start_time'],
-            $validated['end_time']
-        );
+        if ($booking->isCourse()) {
+            $this->validateCourseDate($validated['booking_date']);
+        } else {
+            $this->validateBookingTime(
+                $validated['start_time'],
+                $validated['end_time']
+            );
+        }
 
         DB::transaction(function () use (
             $booking,
@@ -467,6 +531,26 @@ class BookingController extends Controller
             throw ValidationException::withMessages([
                 'booking' =>
                     'Durasi lesson minimal ' . \App\Support\BookingRules::minMinutes() . ' menit.',
+            ]);
+        }
+    }
+
+    /**
+     * Validasi Course Lesson: fitur aktif & jam mulai belum lewat.
+     */
+    private function validateCourseDate(string $date): void
+    {
+        if (! BookingRules::courseEnabled()) {
+            throw ValidationException::withMessages([
+                'booking' => 'Course Lesson sedang tidak tersedia.',
+            ]);
+        }
+
+        $start = Carbon::parse($date . ' ' . BookingRules::courseStart());
+
+        if ($start->lte(now())) {
+            throw ValidationException::withMessages([
+                'booking' => 'Course Lesson hari ini sudah dimulai. Silakan pilih tanggal lain.',
             ]);
         }
     }

@@ -40,7 +40,7 @@ class AdminDashboardController extends Controller
         if (class_exists(\App\Support\BookingRules::class)
             && \App\Support\BookingRules::requirePaidBeforeApprove()
             && $booking->source !== 'offline'
-            && ! \App\Models\Payment::where('booking_id', $booking->id)->where('status', 'paid')->exists()) {
+            && ! \App\Models\Payment::where('booking_id', $booking->id)->whereIn('status', ['paid', 'cash'])->exists()) {
             return redirect()
                 ->route('admin.dashboard')
                 ->with('error', 'Booking ini belum lunas. Approve hanya bisa dilakukan setelah pembayaran dikonfirmasi.');

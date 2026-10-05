@@ -18,6 +18,8 @@ class AdminOfflineBookingController extends Controller
      */
     public function create(): View
     {
+        view()->share('offlineLocations', \App\Support\BookingRules::activeLocations());
+
         $customers = DB::table('users')
             ->where('role', 'customer')
             ->orderBy('name')
@@ -39,6 +41,26 @@ class AdminOfflineBookingController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        /*
+         * Course Lesson: jam mengikuti Settings (default 07:00 - 12:00).
+         */
+        $lessonType = $request->input('lesson_type', 'driving') === 'course' ? 'course' : 'driving';
+
+        if ($lessonType === 'course') {
+            $request->merge([
+                'start_time' => \App\Support\BookingRules::courseStart(),
+                'end_time'   => \App\Support\BookingRules::courseEnd(),
+            ]);
+        }
+
+        $request->validate([
+            'lesson_type' => ['nullable', 'in:driving,course'],
+            'location_id' => ['nullable', 'integer', 'exists:contact_locations,id'],
+            'course_venue' => [$lessonType === 'course' ? 'required' : 'nullable', 'string', 'max:150'],
+        ], [
+            'course_venue.required' => 'Isi lapangan golf untuk Course Lesson.',
+        ]);
+
         $validated = $request->validate([
             /*
             |--------------------------------------------------------------------------
@@ -290,7 +312,7 @@ class AdminOfflineBookingController extends Controller
             }
         }
 
-        $bookingId = DB::transaction(function () use ($validated) {
+        $bookingId = DB::transaction(function () use ($validated, $lessonType, $request) {
 
             /*
             |--------------------------------------------------------------------------
@@ -382,6 +404,19 @@ class AdminOfflineBookingController extends Controller
                 'start_time' => $validated['start_time'],
 
                 'end_time' => $validated['end_time'],
+
+                /*
+                 * Jenis lesson & lapangan.
+                 */
+                'lesson_type' => $lessonType,
+
+                'location_id' => $lessonType === 'course'
+                    ? null
+                    : ($request->input('location_id') ?: null),
+
+                'course_venue' => $lessonType === 'course'
+                    ? trim((string) $request->input('course_venue'))
+                    : null,
 
                 /*
                  * Admin booking langsung BOOKED.

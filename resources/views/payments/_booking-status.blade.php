@@ -48,7 +48,9 @@
         @if ($cardOffline)
             ✓ Lunas · Dibayar di tempat
         @elseif ($cardPaid)
-            ✓ Lunas · {{ $cardPayment->amount_label }}
+            ✓ Lunas · {{ $cardPayment->amount_label }}{{ $cardPayment->method === 'cash' ? ' (Cash)' : '' }}
+        @elseif ($cardPayment && $cardPayment->status === 'cash')
+            Bayar cash saat lesson · {{ $cardPayment->amount_label }}
         @elseif ($cardPayment && $cardPayment->status === 'verifying')
             ◷ Menunggu verifikasi admin · {{ $cardPayment->amount_label }}
         @elseif ($cardPayment && $cardPayment->status === 'pending')
@@ -59,6 +61,6 @@
     </span>
 
     @unless ($cardOffline)
-        <a href="{{ route('payment.booking', $booking) }}">{{ $cardPaid ? 'Lihat bukti' : ($cardPayment && $cardPayment->status === 'verifying' ? 'Lihat status' : 'Bayar sekarang') }}</a>
+        <a href="{{ route('payment.booking', $booking) }}">{{ $cardPaid ? 'Lihat bukti' : ($cardPayment && in_array($cardPayment->status, ['verifying', 'cash'], true) ? 'Lihat detail' : 'Bayar sekarang') }}</a>
     @endunless
 </div>

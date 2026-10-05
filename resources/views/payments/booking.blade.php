@@ -7,6 +7,8 @@
     $endTime   = substr($booking->end_time, 0, 5);
     $hours     = $payment->duration_minutes / 60;
     $rate      = $payment->duration_minutes > 0 ? (int) round($payment->amount * 60 / $payment->duration_minutes) : Payment::pricePerHour();
+    $isCourse  = $booking->isCourse();
+    $place     = $booking->place_label;
 
     // Metode yang sedang dipakai & apakah perlu dicek admin (QRIS asli / transfer rekening)
     $isReal = (bool) ($activeMethod['real'] ?? false);
@@ -237,6 +239,14 @@
         .method-logo.qris    { color: #d4145a; }
         .method-logo.mandiri { color: #003d79; }
         .method-logo.bca     { color: #0060af; }
+        .method-logo.cash    { color: #2e7d32; }
+        .pill.cash      { background: rgba(255, 196, 0, .16); color: #ffd45c; border: 1px solid rgba(255, 196, 0, .3); }
+        .cash-box { padding: 22px; text-align: center; }
+        .cash-icon { width: 64px; height: 64px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 50%; background: rgba(255, 196, 0, .14); color: #ffd45c; font-size: 26px; font-weight: 900; }
+        .cash-box h2 { font-size: 20px; font-weight: 800; }
+        .cash-box p { margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+        .cash-amount { margin: 16px auto 4px; color: var(--lime); font-size: 30px; font-weight: 900; }
+        .cash-steps { max-width: 420px; margin: 14px auto 18px; padding-left: 18px; text-align: left; color: var(--muted); font-size: 13px; line-height: 1.7; }
 
         .method-text strong { display: block; font-size: 14px; }
         .method-text small { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
@@ -368,7 +378,7 @@
         <p>Selesaikan pembayaran untuk mengamankan jadwal lesson Anda.</p>
     </div>
 
-    @if (\App\Support\BookingRules::isDemoPayment() && ! in_array($payment->status, ['paid', 'verifying'], true))
+    @if (\App\Support\BookingRules::isDemoPayment() && ! in_array($payment->status, ['paid', 'verifying', 'cash'], true))
         <div class="demo-banner">
             <strong>Mode demo:</strong> QR dan nomor rekening di halaman ini hanya contoh.
             Jangan mentransfer uang sungguhan. Tekan "Saya sudah bayar (simulasi)" untuk mencoba alurnya.
@@ -394,12 +404,17 @@
             <div class="panel-title">Ringkasan booking</div>
 
             <div class="summary-row"><span>No. referensi</span><span>{{ $payment->reference }}</span></div>
+            <div class="summary-row"><span>Jenis lesson</span><span>{{ $booking->lesson_label }}</span></div>
+            <div class="summary-row"><span>Booking dibuat</span><span>{{ $booking->created_at?->locale('id')->translatedFormat('d M Y, H:i') }} WIB</span></div>
+            @if ($place)
+                <div class="summary-row"><span>Lapangan</span><span>{{ $place }}</span></div>
+            @endif
             <div class="summary-row"><span>Tanggal</span><span>{{ $date->locale('id')->translatedFormat('l, d F Y') }}</span></div>
             <div class="summary-row"><span>Jam</span><span>{{ $startTime }} – {{ $endTime }}</span></div>
             <div class="summary-row"><span>Durasi</span><span>{{ $payment->duration_label }}</span></div>
             <div class="summary-row">
-                <span>Harga per jam</span>
-                <span>{{ Payment::formatRupiah($rate) }}</span>
+                <span>{{ $isCourse ? 'Harga paket' : 'Harga per jam' }}</span>
+                <span>{{ $isCourse ? Payment::formatRupiah($payment->amount) . ' / sesi' : Payment::formatRupiah($rate) }}</span>
             </div>
             <div class="summary-row">
                 <span>Status booking</span>
@@ -415,7 +430,14 @@
                 <strong>{{ $payment->amount_label }}</strong>
             </div>
             <div class="summary-note">
-                {{ rtrim(rtrim(number_format($hours, 2, ',', '.'), '0'), ',') }} jam × {{ Payment::formatRupiah($rate) }}
+                @if ($isCourse)
+                    1 sesi Course Lesson ({{ rtrim(rtrim(number_format($hours, 2, ',', '.'), '0'), ',') }} jam)
+                    @if (\App\Support\BookingRules::courseNote())
+                        <br><span style="color: #ffd45c; font-weight: 700">* {{ \App\Support\BookingRules::courseNote() }}</span>
+                    @endif
+                @else
+                    {{ rtrim(rtrim(number_format($hours, 2, ',', '.'), '0'), ',') }} jam × {{ Payment::formatRupiah($rate) }}
+                @endif
             </div>
         </section>
 
@@ -439,7 +461,13 @@
 
                     <div class="receipt">
                         <div class="summary-row"><span>Metode</span><span>{{ $payment->method_label }}</span></div>
-                        <div class="summary-row"><span>Dibayar pada</span><span>{{ $payment->paid_at?->locale('id')->translatedFormat('d M Y, H:i') }}</span></div>
+                        @if ($payment->submitted_at)
+                            <div class="summary-row"><span>Dikirim pada</span><span>{{ $payment->submitted_at->locale('id')->translatedFormat('d M Y, H:i') }} WIB</span></div>
+                        @endif
+                        <div class="summary-row"><span>Dibayar pada</span><span>{{ $payment->paid_at?->locale('id')->translatedFormat('d M Y, H:i') }} WIB</span></div>
+                        @if ($payment->received_by)
+                            <div class="summary-row"><span>Diterima oleh</span><span>{{ $payment->received_by }}</span></div>
+                        @endif
                         <div class="summary-row"><span>Jumlah</span><span>{{ $payment->amount_label }}</span></div>
                         @if ($payment->hasProof())
                             <div class="summary-row">
@@ -459,7 +487,10 @@
                     <div class="verify-icon">◷</div>
                     <h2>Pembayaran sedang dicek</h2>
                     <p>
-                        Anda sudah mengonfirmasi pembayaran {{ $payment->amount_label }} via {{ $payment->method_label }}.
+                        Anda sudah mengonfirmasi pembayaran {{ $payment->amount_label }} via {{ $payment->method_label }}
+                        @if ($payment->submitted_at)
+                            pada <strong>{{ $payment->submitted_at->locale('id')->translatedFormat('d M Y, H:i') }} WIB</strong>
+                        @endif.
                         Admin akan mengecek dana yang masuk dan mengonfirmasi secepatnya.
                         Anda akan mendapat notifikasi setelah pembayaran dikonfirmasi.
                     </p>
@@ -480,6 +511,31 @@
                 <div class="blocked">
                     Booking ini sudah <strong>{{ strtolower($bookingStatusLabel) }}</strong>, sehingga tidak perlu dibayar.
                     <a href="{{ route('booking') }}" class="btn">Buat booking baru</a>
+                </div>
+
+            @elseif ($payment->status === 'cash')
+
+                {{-- ---------- BAYAR CASH ---------- --}}
+                <div class="cash-box">
+                    <div class="cash-icon">Rp</div>
+                    <h2>Bayar cash saat lesson</h2>
+                    <p>Anda memilih membayar tunai langsung ke admin.</p>
+
+                    <div class="cash-amount">{{ $payment->amount_label }}</div>
+                    <p>No. referensi {{ $payment->reference }}</p>
+
+                    <ol class="cash-steps">
+                        <li>Siapkan uang tunai <strong>{{ $payment->amount_label }}</strong> sesuai total di atas.</li>
+                        <li>Bayarkan langsung ke admin saat datang untuk lesson.</li>
+                        <li>Admin akan menandai pembayaran Anda lunas, dan Anda akan menerima notifikasi.</li>
+                    </ol>
+
+                    <a href="{{ route('booking', ['date' => $date->format('Y-m-d')]) }}" class="btn">Kembali ke halaman booking</a>
+
+                    <form method="POST" action="{{ route('payment.booking.reset', $booking) }}" style="margin-top: 10px">
+                        @csrf
+                        <button type="submit" class="btn btn-ghost">Ganti ke QRIS / transfer</button>
+                    </form>
                 </div>
 
             @elseif ($payment->status === 'pending' && $activeMethod)
@@ -624,7 +680,7 @@
                                 <input type="radio" name="method" value="{{ $key }}" @checked(old('method') === $key)>
                                 <span class="method-card">
                                     <span class="method-logo {{ $key }}">
-                                        {{ $key === 'qris' ? 'QRIS' : ($key === 'mandiri' ? 'mandiri' : 'BCA') }}
+                                        {{ ['qris' => 'QRIS', 'mandiri' => 'mandiri', 'bca' => 'BCA', 'cash' => 'CASH'][$key] ?? strtoupper($key) }}
                                     </span>
                                     <span class="method-text">
                                         <strong>{{ $method['label'] }}</strong>

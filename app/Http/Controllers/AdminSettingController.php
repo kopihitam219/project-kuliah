@@ -142,7 +142,16 @@ class AdminSettingController extends Controller
             'cancel_days'       => ['required', Rule::in(['0', '1', '2', '3'])],
             'max_active'        => ['required', Rule::in(['0', '1', '2', '3', '4', '5'])],
             'auto_approve_paid' => ['nullable', 'boolean'],
+            'course_enabled'    => ['nullable', 'boolean'],
+            'course_start'      => ['required', 'date_format:H:i'],
+            'course_end'        => ['required', 'date_format:H:i', 'after:course_start'],
+            'course_price'      => ['required', 'integer', 'min:0', 'max:100000000'],
+            'course_note'       => ['nullable', 'string', 'max:200'],
         ], [
+            'course_end.after'         => 'Jam selesai Course Lesson harus setelah jam mulai.',
+            'course_price.required'    => 'Harga Course Lesson wajib diisi.',
+            'course_price.integer'     => 'Harga Course Lesson harus berupa angka tanpa titik.',
+
             'open_time.required'  => 'Jam buka wajib diisi.',
             'close_time.required' => 'Jam tutup wajib diisi.',
             'close_time.after'    => 'Jam tutup harus setelah jam buka.',
@@ -164,6 +173,11 @@ class AdminSettingController extends Controller
             'cancel_days'       => $request->input('cancel_days'),
             'max_active'        => $request->input('max_active'),
             'auto_approve_paid' => $request->boolean('auto_approve_paid') ? '1' : '0',
+            'course_enabled'    => $request->boolean('course_enabled') ? '1' : '0',
+            'course_start'      => $request->input('course_start'),
+            'course_end'        => $request->input('course_end'),
+            'course_price'      => (string) (int) $request->input('course_price'),
+            'course_note'       => trim((string) $request->input('course_note')),
         ]);
 
         return redirect()
@@ -194,6 +208,8 @@ class AdminSettingController extends Controller
             'mandiri_holder'       => ['nullable', 'string', 'max:60'],
 
             'pay_bca_enabled'      => ['nullable', 'boolean'],
+            'pay_cash_enabled'     => ['nullable', 'boolean'],
+            'cash_allow_course'    => ['nullable', 'boolean'],
             'bca_account'          => $account,
             'bca_holder'           => ['nullable', 'string', 'max:60'],
         ], [
@@ -204,7 +220,7 @@ class AdminSettingController extends Controller
             '*_account.regex'         => 'Nomor rekening hanya boleh berisi angka.',
         ]);
 
-        $enabled = array_filter(['qris', 'mandiri', 'bca'], fn ($key) => $request->boolean("pay_{$key}_enabled"));
+        $enabled = array_filter(['qris', 'mandiri', 'bca', 'cash'], fn ($key) => $request->boolean("pay_{$key}_enabled"));
 
         if (empty($enabled)) {
             return back()->withInput()->withErrors(['pay_qris_enabled' => 'Minimal satu metode pembayaran harus aktif.']);
@@ -237,7 +253,9 @@ class AdminSettingController extends Controller
             'qris_nmid'            => trim((string) $request->input('qris_nmid')),
         ];
 
-        foreach (['qris', 'mandiri', 'bca'] as $key) {
+        $values['cash_allow_course'] = $request->boolean('cash_allow_course') ? '1' : '0';
+
+        foreach (['qris', 'mandiri', 'bca', 'cash'] as $key) {
             $values["pay_{$key}_enabled"] = $request->boolean("pay_{$key}_enabled") ? '1' : '0';
         }
 

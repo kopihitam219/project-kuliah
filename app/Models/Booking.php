@@ -27,6 +27,9 @@ class Booking extends Model
         'booking_date',
         'start_time',
         'end_time',
+        'lesson_type',
+        'location_id',
+        'course_venue',
         'status',
         'source',
         'admin_notes',
@@ -75,5 +78,38 @@ class Booking extends Model
     public function isRejected(): bool
     {
         return $this->status === 'rejected';
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Jenis lesson & lapangan
+    |--------------------------------------------------------------------------
+    | Dibaca lewat getAttributes() supaya aman walau kolom tidak ikut di-select.
+    */
+
+    public function lessonType(): string
+    {
+        return $this->getAttributes()['lesson_type'] ?? 'driving';
+    }
+
+    public function isCourse(): bool
+    {
+        return $this->lessonType() === 'course';
+    }
+
+    public function getLessonLabelAttribute(): string
+    {
+        return \App\Support\BookingRules::lessonLabel($this->lessonType());
+    }
+
+    public function getPlaceLabelAttribute(): ?string
+    {
+        $attributes = $this->getAttributes();
+
+        return \App\Support\BookingRules::placeFor(
+            $this->lessonType(),
+            $attributes['location_id'] ?? null,
+            $attributes['course_venue'] ?? null
+        );
     }
 }

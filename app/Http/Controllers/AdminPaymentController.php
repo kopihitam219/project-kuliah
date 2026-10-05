@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class AdminPaymentController extends Controller
@@ -55,6 +56,47 @@ class AdminPaymentController extends Controller
         );
 
         return redirect()->route('admin.dashboard')->with('success', 'Pembayaran dikonfirmasi sebagai LUNAS.');
+    }
+
+    /**
+     * Tandai lunas karena customer membayar cash ke admin.
+     * Penerima otomatis = admin yang sedang login.
+     */
+    public function markCash(Request $request, Payment $payment): RedirectResponse
+    {
+        if ($payment->status === 'paid') {
+            return redirect()->route('admin.dashboard')->with('error', 'Pembayaran ini sudah lunas.');
+        }
+
+        $validated = $request->validate([
+            'payment_note' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $receivedBy = 'Admin · ' . $request->user()->name;
+
+        $payment->update([
+            'method'       => 'cash',
+            'status'       => 'paid',
+            'va_number'    => null,
+            'expires_at'   => null,
+            'paid_at'      => now(),
+            'received_by'  => $receivedBy,
+            'payment_note' => trim((string) ($validated['payment_note'] ?? '')) ?: null,
+        ]);
+
+        $booking = $payment->booking;
+
+        if ($booking) {
+            PaymentController::autoApprove($booking);
+        }
+
+        $this->notifyCustomer(
+            $payment,
+            'Pembayaran cash diterima',
+            "Pembayaran cash {$payment->amount_label} untuk booking Anda sudah diterima admin. Terima kasih!"
+        );
+
+        return redirect()->route('admin.dashboard')->with('success', "Pembayaran cash dicatat LUNAS (diterima oleh {$receivedBy}).");
     }
 
     /**

@@ -1869,6 +1869,175 @@
                             <div class="form-grid">
 
 
+                                {{-- JENIS LESSON & LAPANGAN (konsep sama dengan halaman booking customer) --}}
+
+                                @php
+                                    $offlineLocations   = collect($offlineLocations ?? []);
+                                    $offlineLessonTypes = \App\Support\BookingRules::lessonTypes();
+                                    $offlineLesson      = old('lesson_type', 'driving');
+                                    $offlineLocation    = (string) old('location_id', $offlineLocations->first()?->id);
+                                    $obRp               = fn ($n) => 'Rp' . number_format((int) $n, 0, ',', '.');
+                                    $obCourseStart      = \App\Support\BookingRules::courseStart();
+                                    $obCourseEnd        = \App\Support\BookingRules::courseEnd();
+                                @endphp
+
+                                <style>
+                                    .ob-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+                                    .ob-option input { position: absolute; opacity: 0; pointer-events: none; }
+                                    .ob-card {
+                                        height: 100%; display: flex; flex-direction: column; gap: 5px; padding: 13px 14px;
+                                        border: 1px solid rgba(255,255,255,.12); border-radius: 12px; background: rgba(255,255,255,.03); cursor: pointer;
+                                    }
+                                    .ob-card strong { font-size: 14px; }
+                                    .ob-price { color: #b8ff00; font-size: 18px; font-weight: 900; }
+                                    .ob-price small, .ob-card small { color: rgba(255,255,255,.6); font-size: 11px; font-weight: 600; }
+                                    .ob-note { color: #ffd45c !important; font-weight: 700 !important; }
+                                    .ob-option:hover .ob-card { border-color: rgba(184,255,0,.4); }
+                                    .ob-option input:checked + .ob-card { border-color: #b8ff00; background: rgba(184,255,0,.08); box-shadow: inset 0 0 0 1px #b8ff00; }
+                                    .ob-option input:focus-visible + .ob-card { outline: 2px solid #b8ff00; outline-offset: 2px; }
+                                    .ob-place { flex-direction: row; align-items: center; gap: 10px; }
+                                    .ob-pin { color: #b8ff00; font-size: 16px; }
+                                    .ob-total {
+                                        display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+                                        padding: 13px 15px; border-radius: 12px; border: 1px solid rgba(184,255,0,.25); background: rgba(184,255,0,.06);
+                                    }
+                                    .ob-total strong { color: #b8ff00; font-size: 18px; }
+                                    .ob-total small { color: rgba(255,255,255,.6); font-size: 11px; }
+                                </style>
+
+                                <div class="form-group full">
+                                    <label>Jenis Lesson <span class="required">*</span></label>
+
+                                    <div class="ob-options">
+                                        @foreach ($offlineLessonTypes as $typeKey => $typeLabel)
+                                            <label class="ob-option">
+                                                <input type="radio" name="lesson_type" value="{{ $typeKey }}" @checked($offlineLesson === $typeKey)>
+                                                <span class="ob-card">
+                                                    <strong>{{ $typeLabel }}</strong>
+                                                    <span class="ob-price">
+                                                        {{ $typeKey === 'course' ? $obRp(\App\Support\BookingRules::coursePrice()) : $obRp(\App\Models\Payment::pricePerHour()) }}
+                                                        <small>{{ $typeKey === 'course' ? '/ sesi' : '/ jam' }}</small>
+                                                    </span>
+                                                    @if ($typeKey === 'course')
+                                                        <small>Jam otomatis {{ $obCourseStart }} – {{ $obCourseEnd }}, lapangan golf pilihan customer</small>
+                                                        @if (\App\Support\BookingRules::courseNote())
+                                                            <small class="ob-note">* {{ \App\Support\BookingRules::courseNote() }}</small>
+                                                        @endif
+                                                    @else
+                                                        <small>Latihan di driving range, jam bebas</small>
+                                                    @endif
+                                                </span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                @if ($offlineLocations->isNotEmpty())
+                                    <div class="form-group full" id="locationGroup">
+                                        <label>Lapangan Driving Range <span class="required">*</span></label>
+
+                                        <div class="ob-options">
+                                            @foreach ($offlineLocations as $location)
+                                                <label class="ob-option">
+                                                    <input type="radio" name="location_id" value="{{ $location->id }}" @checked($offlineLocation === (string) $location->id)>
+                                                    <span class="ob-card ob-place">
+                                                        <span class="ob-pin">◉</span>
+                                                        <span>
+                                                            <strong>{{ $location->name }}</strong>
+                                                            @if ($location->area)
+                                                                <small style="display: block">{{ $location->area }}</small>
+                                                            @endif
+                                                        </span>
+                                                    </span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <div class="form-group full" id="venueGroup">
+                                    <label for="course_venue">Lapangan Golf (pilihan customer) <span class="required">*</span></label>
+
+                                    <input type="text" id="course_venue" name="course_venue" class="form-control" maxlength="150"
+                                           value="{{ old('course_venue') }}" placeholder="Contoh: Padang Golf Pondok Indah">
+
+                                    <div class="help-text">Tulis lapangan golf yang diminta customer untuk Course Lesson.</div>
+                                </div>
+
+                                <div class="form-group full">
+                                    <div class="ob-total">
+                                        <span>Estimasi harga: <strong id="obTotal">-</strong></span>
+                                        <small>Booking offline dibayar langsung di tempat.</small>
+                                    </div>
+                                </div>
+
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        var start = document.getElementById('start_time');
+                                        var end   = document.getElementById('end_time');
+                                        var place = document.getElementById('locationGroup');
+                                        var venue = document.getElementById('venueGroup');
+                                        var venueInput = document.getElementById('course_venue');
+                                        var total = document.getElementById('obTotal');
+                                        var courseStart = @json($obCourseStart);
+                                        var courseEnd   = @json($obCourseEnd);
+                                        var pricePerHour = {{ (int) \App\Models\Payment::pricePerHour() }};
+                                        var coursePrice  = {{ (int) \App\Support\BookingRules::coursePrice() }};
+
+                                        if (!start || !end) return;
+
+                                        function lesson() {
+                                            var checked = document.querySelector('input[name="lesson_type"]:checked');
+                                            return checked ? checked.value : 'driving';
+                                        }
+
+                                        function minutes(value) {
+                                            var p = (value || '').split(':').map(Number);
+                                            return p.length === 2 ? p[0] * 60 + p[1] : NaN;
+                                        }
+
+                                        function rupiah(n) {
+                                            return 'Rp' + Number(n).toLocaleString('id-ID');
+                                        }
+
+                                        function sync() {
+                                            var course = lesson() === 'course';
+
+                                            if (course) {
+                                                start.value = courseStart;
+                                                end.value = courseEnd;
+                                            }
+
+                                            start.readOnly = end.readOnly = course;
+                                            start.style.opacity = end.style.opacity = course ? '.6' : '';
+                                            if (place) place.style.display = course ? 'none' : '';
+                                            venue.style.display = course ? '' : 'none';
+                                            venueInput.required = course;
+
+                                            updateTotal();
+                                        }
+
+                                        function updateTotal() {
+                                            if (lesson() === 'course') {
+                                                total.textContent = rupiah(coursePrice) + ' / sesi';
+                                                return;
+                                            }
+
+                                            var diff = minutes(end.value) - minutes(start.value);
+                                            total.textContent = diff > 0 ? rupiah(Math.round(diff / 60 * pricePerHour)) : '-';
+                                        }
+
+                                        document.querySelectorAll('input[name="lesson_type"]').forEach(function (radio) {
+                                            radio.addEventListener('change', sync);
+                                        });
+
+                                        start.addEventListener('change', updateTotal);
+                                        end.addEventListener('change', updateTotal);
+                                        sync();
+                                    });
+                                </script>
+
+
                                 {{-- TANGGAL --}}
 
                                 <div class="form-group">

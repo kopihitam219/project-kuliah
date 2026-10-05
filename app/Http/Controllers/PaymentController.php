@@ -32,7 +32,7 @@ class PaymentController extends Controller
         $payment->releaseIfExpired();
 
         // Metode yang dipilih sudah tidak tersedia (dinonaktifkan / rekening dihapus): pilih ulang
-        if ($payment->status === 'pending' && ! array_key_exists((string) $payment->method, Payment::methods())) {
+        if (in_array($payment->status, ['pending', 'cash'], true) && ! array_key_exists((string) $payment->method, Payment::methods($booking))) {
             $payment->update(['status' => 'unpaid', 'method' => null, 'va_number' => null, 'expires_at' => null]);
         }
 
@@ -41,7 +41,7 @@ class PaymentController extends Controller
         return view('payments.booking', [
             'booking'      => $booking,
             'payment'      => $payment,
-            'methods'      => Payment::methods(),
+            'methods'      => Payment::methods($booking),
             'activeMethod' => $payment->method ? Payment::methodConfig($payment->method) : null,
         ]);
     }
@@ -55,7 +55,7 @@ class PaymentController extends Controller
         }
 
         $validated = $request->validate([
-            'method' => ['required', Rule::in(array_keys(Payment::methods()))],
+            'method' => ['required', Rule::in(array_keys(Payment::methods($booking)))],
         ], [
             'method.required' => 'Pilih metode pembayaran terlebih dahulu.',
             'method.in'       => 'Metode pembayaran tidak tersedia.',
@@ -65,6 +65,23 @@ class PaymentController extends Controller
 
         if ($error = $this->blockedReason($booking, $payment)) {
             return back()->withErrors(['payment' => $error]);
+        }
+
+        // Bayar cash: tidak ada batas waktu, admin menandai lunas setelah uang diterima
+        if ($validated['method'] === 'cash') {
+            $payment->update([
+                'method'       => 'cash',
+                'status'       => 'cash',
+                'va_number'    => null,
+                'expires_at'   => null,
+                'submitted_at' => now(),
+            ]);
+
+            $this->notifyAdmins($request->user(), $booking, $payment->fresh(), 'Customer memilih bayar cash', 'akan membayar cash untuk');
+
+            return redirect()
+                ->route('payment.booking', $booking)
+                ->with('payment_success', 'Anda memilih bayar cash. Siapkan ' . $payment->amount_label . ' untuk dibayarkan ke admin saat lesson.');
         }
 
         $payment->update([
@@ -87,7 +104,7 @@ class PaymentController extends Controller
 
         $payment = Payment::forBooking($booking);
 
-        if ($payment->status === 'pending') {
+        if (in_array($payment->status, ['pending', 'cash'], true)) {
             $payment->update([
                 'status'     => 'unpaid',
                 'method'     => null,
@@ -140,6 +157,9 @@ class PaymentController extends Controller
                 'proof_uploaded_at' => now(),
             ]);
         }
+
+        // Waktu customer mengirim pembayaran
+        $payment->update(['submitted_at' => now()]);
 
         // Mode live: tunggu admin mengecek mutasi
         if ($payment->needsVerification()) {

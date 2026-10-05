@@ -33,12 +33,17 @@ class Payment extends Model
             'label' => 'Bank BCA',
             'desc'  => 'Transfer ke rekening Bank BCA',
         ],
+        'cash' => [
+            'label' => 'Bayar Cash',
+            'desc'  => 'Bayar tunai langsung ke admin saat lesson',
+        ],
     ];
 
     public const STATUSES = [
         'unpaid'    => 'Belum dibayar',
         'pending'   => 'Menunggu pembayaran',
         'verifying' => 'Menunggu verifikasi',
+        'cash'      => 'Bayar cash saat lesson',
         'paid'      => 'Lunas',
         'cancelled' => 'Dibatalkan',
     ];
@@ -55,7 +60,10 @@ class Payment extends Model
         'proof_uploaded_at',
         'status',
         'expires_at',
+        'submitted_at',
         'paid_at',
+        'received_by',
+        'payment_note',
     ];
 
     protected $casts = [
@@ -63,6 +71,7 @@ class Payment extends Model
         'duration_minutes' => 'integer',
         'expires_at'       => 'datetime',
         'paid_at'          => 'datetime',
+        'submitted_at'     => 'datetime',
         'proof_uploaded_at' => 'datetime',
     ];
 
@@ -107,6 +116,10 @@ class Payment extends Model
 
         $config = self::METHODS[$key] + ['key' => $key];
 
+        if ($key === 'cash') {
+            return $config + ['type' => 'cash', 'real' => false];
+        }
+
         if ($key === 'qris') {
             $image = Setting::get('qris_image');
 
@@ -137,14 +150,39 @@ class Payment extends Model
     }
 
     /**
+     * Pembayaran cash aktif (Settings > Pembayaran).
+     */
+    public static function cashEnabled(?Booking $booking = null): bool
+    {
+        if (Setting::get('pay_cash_enabled', '1') !== '1') {
+            return false;
+        }
+
+        // Course Lesson boleh cash hanya jika diizinkan di Settings
+        if ($booking && method_exists($booking, 'isCourse') && $booking->isCourse()) {
+            return Setting::get('cash_allow_course', '0') === '1';
+        }
+
+        return true;
+    }
+
+    /**
      * Metode yang aktif (ditampilkan ke customer).
      * Bank hanya tampil jika nomor rekening & atas nama sudah diisi di Settings.
      */
-    public static function methods(): array
+    public static function methods(?Booking $booking = null): array
     {
         $methods = [];
 
         foreach (array_keys(self::METHODS) as $key) {
+            if ($key === 'cash') {
+                if (self::cashEnabled($booking)) {
+                    $methods[$key] = self::methodConfig($key);
+                }
+
+                continue;
+            }
+
             if (Setting::get("pay_{$key}_enabled", '1') !== '1') {
                 continue;
             }
@@ -183,13 +221,19 @@ class Payment extends Model
         $minutes = Carbon::parse($booking->start_time)->diffInMinutes(Carbon::parse($booking->end_time));
         $minutes = max(30, (int) abs($minutes));
 
+        // Course Lesson: harga paket per sesi. Lesson Driving Range: harga per jam.
+        $isCourse = method_exists($booking, 'isCourse') && $booking->isCourse();
+        $amount   = $isCourse
+            ? BookingRules::coursePrice()
+            : (int) round($minutes / 60 * self::pricePerHour());
+
         return static::firstOrCreate(
             ['booking_id' => $booking->id],
             [
                 'user_id'          => $booking->user_id,
                 'reference'        => 'GBL-' . now()->format('Ymd') . '-' . str_pad((string) $booking->id, 5, '0', STR_PAD_LEFT),
                 'duration_minutes' => $minutes,
-                'amount'           => (int) round($minutes / 60 * self::pricePerHour()),
+                'amount'           => $amount,
                 'status'           => 'unpaid',
             ]
         );

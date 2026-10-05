@@ -42,6 +42,7 @@
     $paymentLabels = [
         'paid'      => 'Lunas',
         'verifying' => 'Perlu verifikasi',
+        'cash'      => 'Bayar cash',
         'pending'   => 'Menunggu bayar',
         'unpaid'  => 'Belum bayar',
         'offline' => 'Offline',
@@ -60,6 +61,7 @@
             $isOffline                                => 'offline',
             $payment && $payment->status === 'paid'   => 'paid',
             $payment && $payment->status === 'verifying' => 'verifying',
+            $payment && $payment->status === 'cash'      => 'cash',
             $payment && $payment->status === 'pending' => 'pending',
             default                                   => 'unpaid',
         };
@@ -77,7 +79,13 @@
             'end'     => substr((string) $booking->end_time, 0, 5),
             'status'  => strtolower($booking->status),
             'type'    => $isOffline ? 'OFFLINE' : 'ONLINE',
+            'lesson'  => method_exists($booking, 'isCourse') ? $booking->lesson_label : 'Lesson Driving Range',
+            'place'   => method_exists($booking, 'isCourse') ? ($booking->place_label ?? '-') : '-',
+            'placeKey' => (method_exists($booking, 'isCourse') && $booking->isCourse())
+                ? 'course'
+                : (($booking->getAttributes()['location_id'] ?? null) ? 'loc-' . $booking->getAttributes()['location_id'] : 'none'),
             'notes'   => $booking->admin_notes,
+            'createdAt' => $booking->created_at?->locale('id')->translatedFormat('d M Y, H:i') ? $booking->created_at->locale('id')->translatedFormat('d M Y, H:i') . ' WIB' : '-',
 
             'payment' => [
                 'id'         => $payment?->id,
@@ -88,11 +96,16 @@
                 'reference'  => $payment?->reference,
                 'va'         => $payment?->va_number ? trim(chunk_split($payment->va_number, 4, ' ')) : null,
                 'duration'   => $payment?->duration_label,
-                'paidAt'     => $payment?->paid_at?->locale('id')->translatedFormat('d M Y, H:i'),
+                'paidAt'     => $payment?->paid_at?->locale('id')->translatedFormat('d M Y, H:i') ? $payment->paid_at->locale('id')->translatedFormat('d M Y, H:i') . ' WIB' : null,
+                'submittedAt' => ($payment?->getAttributes()['submitted_at'] ?? null)
+                    ? $payment->submitted_at->locale('id')->translatedFormat('d M Y, H:i') . ' WIB'
+                    : null,
                 'proofUrl'   => ($payment && method_exists($payment, 'hasProof') && $payment->hasProof() && \Illuminate\Support\Facades\Route::has('admin.payments.proof'))
                     ? route('admin.payments.proof', $payment)
                     : null,
                 'proofAt'    => $payment?->proof_uploaded_at?->locale('id')->diffForHumans(),
+                'receivedBy' => $payment?->getAttributes()['received_by'] ?? null,
+                'note'       => $payment?->getAttributes()['payment_note'] ?? null,
                 'receiptUrl' => ($payment && $payment->status === 'paid' && \Illuminate\Support\Facades\Route::has('admin.payments.receipt'))
                     ? route('admin.payments.receipt', $payment)
                     : null,
@@ -181,7 +194,7 @@
         /* ---------- Filter ---------- */
         .db-filter {
             display: grid;
-            grid-template-columns: minmax(200px, 1.6fr) repeat(3, minmax(120px, .8fr)) auto;
+            grid-template-columns: minmax(200px, 1.6fr) repeat(4, minmax(120px, .8fr)) auto;
             gap: 9px;
             padding: 12px;
             margin-bottom: 15px;
@@ -229,6 +242,13 @@
         .db-pill.waiting  { background: rgba(245, 174, 0, .16); color: #ffc62d; }
         .db-pill.offline  { background: rgba(255, 255, 255, .08); color: rgba(255, 255, 255, .78); }
         .db-pill.verify   { background: rgba(92, 168, 255, .18); color: #9ccdff; }
+        .db-pill.cash     { background: rgba(255, 196, 0, .16); color: #ffd45c; }
+        .db-cash { display: grid; gap: 8px; margin-top: 10px; padding: 12px; border-radius: 9px; border: 1px solid rgba(255, 196, 0, .3); background: rgba(255, 196, 0, .06); }
+        .db-cash strong { color: #ffd45c; font-size: 12px; }
+        .db-cash small { color: var(--text-muted); font-size: 10px; line-height: 1.5; }
+        .db-cash-row { display: grid; grid-template-columns: 100px 1fr; gap: 6px; }
+        .db-cash .input { height: 34px; font-size: 11px; }
+        .db-btn.cash { background: #ffc62d; color: #1a1300; }
         .db-btn.verify    { background: #5ca8ff; color: #06111c; }
         .db-btn.verify-no { background: transparent; border: 1px solid rgba(255, 120, 130, .5); color: #ff9aa6; }
         .db-verify-alert { margin-bottom: 14px; padding: 11px 14px; border-radius: 9px; border: 1px solid rgba(92, 168, 255, .4); background: rgba(92, 168, 255, .1); color: #b9dcff; font-size: 12px; }
@@ -361,7 +381,18 @@
 
     {{-- ================= FILTER ================= --}}
     <section class="db-filter">
-        <input type="text" id="searchBooking" class="input" placeholder="Cari nama, email, atau nomor HP...">
+        <input type="text" id="searchBooking" class="input" placeholder="Cari nama, email, HP, atau lapangan...">
+
+        <select id="placeFilter" class="input" aria-label="Filter lapangan">
+            <option value="">Semua lapangan</option>
+            @if (class_exists(\App\Support\BookingRules::class))
+                @foreach (\App\Support\BookingRules::activeLocations() as $filterLocation)
+                    <option value="loc-{{ $filterLocation->id }}">{{ $filterLocation->name }}</option>
+                @endforeach
+                <option value="course">Course Lesson (lapangan golf)</option>
+            @endif
+            <option value="none">Tanpa lapangan (booking lama)</option>
+        </select>
 
         <select id="statusFilter" class="input">
             <option value="">Semua status</option>
@@ -373,6 +404,7 @@
             <option value="">Semua pembayaran</option>
             <option value="paid">Lunas</option>
             <option value="verifying">Perlu verifikasi</option>
+            <option value="cash">Bayar cash</option>
             <option value="unpaid">Belum dibayar</option>
             <option value="offline">Offline</option>
         </select>
@@ -406,7 +438,7 @@
                     <tbody>
                         @forelse ($bookingData as $index => $row)
                             @php
-                                $payClass = ['paid' => 'paid', 'verifying' => 'verify', 'pending' => 'waiting', 'unpaid' => 'unpaid', 'offline' => 'offline'][$row['payment']['state']];
+                                $payClass = ['paid' => 'paid', 'verifying' => 'verify', 'cash' => 'cash', 'pending' => 'waiting', 'unpaid' => 'unpaid', 'offline' => 'offline'][$row['payment']['state']];
                             @endphp
                             <tr class="db-row" data-index="{{ $index }}">
                                 <td>{{ $index + 1 }}</td>
@@ -422,6 +454,7 @@
                                 <td>
                                     <strong>{{ $row['date'] }}</strong>
                                     <small>{{ $row['start'] }} – {{ $row['end'] }}</small>
+                                    <small style="display: block; color: var(--lime)">{{ $row['lesson'] }}{{ $row['place'] !== '-' ? ' · ' . $row['place'] : '' }}</small>
                                 </td>
                                 <td>
                                     <span class="db-pill {{ strtolower($row['type']) }}">{{ $row['type'] }}</span>
@@ -476,6 +509,9 @@
                     <div class="db-row-info"><span>Tanggal</span><span id="dDate">-</span></div>
                     <div class="db-row-info"><span>Jam</span><span id="dTime">-</span></div>
                     <div class="db-row-info"><span>Tipe</span><span id="dType">-</span></div>
+                    <div class="db-row-info"><span>Booking dibuat</span><span id="dCreatedAt">-</span></div>
+                    <div class="db-row-info"><span>Jenis lesson</span><span id="dLesson">-</span></div>
+                    <div class="db-row-info"><span>Lapangan</span><span id="dPlace">-</span></div>
                     <div class="db-row-info" id="dNotesRow"><span>Catatan admin</span><span id="dNotes">-</span></div>
                 </div>
 
@@ -486,6 +522,7 @@
                         <div class="db-row-info"><span>Jumlah</span><span id="dPayAmount">-</span></div>
                         <div class="db-row-info"><span>Metode</span><span id="dPayMethod">-</span></div>
                         <div class="db-row-info"><span>Referensi</span><span id="dPayRef">-</span></div>
+                        <div class="db-row-info"><span>Dikirim customer</span><span id="dSubmittedAt">-</span></div>
                         <div class="db-row-info"><span>Dibayar</span><span id="dPayAt">-</span></div>
                         <div id="dProof" hidden style="margin-top: 8px">
                             <a href="#" id="dProofLink" target="_blank" rel="noopener" class="db-proof">
@@ -509,6 +546,21 @@
                         <button type="button" class="db-btn verify" id="btnVerify">✓ Dana masuk, konfirmasi</button>
                         <button type="button" class="db-btn verify-no" id="btnVerifyReject">× Belum masuk</button>
                     </div>
+
+                    <div class="db-row-info" id="dReceivedRow" hidden><span>Diterima oleh</span><span id="dReceivedBy">-</span></div>
+                    <div class="db-row-info" id="dNoteRow" hidden><span>Catatan</span><span id="dPayNote">-</span></div>
+
+                    {{-- Tandai lunas karena dibayar cash --}}
+                    @if (\Illuminate\Support\Facades\Route::has('admin.payments.cash'))
+                        <form method="POST" action="#" class="db-cash" id="cashForm" hidden>
+                            @csrf
+                            @method('PATCH')
+                            <strong id="cashTitle">Customer membayar cash?</strong>
+                            <small id="cashHint">Tandai lunas setelah uang tunai diterima.</small>
+                            <input type="text" name="payment_note" class="input" maxlength="255" placeholder="Catatan (opsional)">
+                            <button type="submit" class="db-btn cash">✓ Tandai lunas (Cash)</button>
+                        </form>
+                    @endif
                 </div>
 
                 <div class="db-actions">
@@ -585,7 +637,7 @@
             const rows = Array.from(document.querySelectorAll('.db-row'));
             let current = null;
 
-            const payClass = { paid: 'paid', verifying: 'verify', pending: 'waiting', unpaid: 'unpaid', offline: 'offline' };
+            const payClass = { paid: 'paid', verifying: 'verify', cash: 'cash', pending: 'waiting', unpaid: 'unpaid', offline: 'offline' };
 
             /* ---------- Jam ---------- */
             function updateClock() {
@@ -613,6 +665,9 @@
                 setText('dDate', b.day + ', ' + b.date);
                 setText('dTime', b.start + ' – ' + b.end);
                 setText('dType', b.type);
+                setText('dCreatedAt', b.createdAt || '-');
+                setText('dLesson', b.lesson || '-');
+                setText('dPlace', b.place || '-');
                 setText('dNotes', b.notes || '-');
                 $('dNotesRow').hidden = !b.notes;
 
@@ -627,6 +682,25 @@
                 $('dPayVerify').hidden  = p.state !== 'verifying';
                 $('dVerifyActions').hidden = p.state !== 'verifying' || !routes.verify;
 
+                $('dReceivedRow').hidden = !p.receivedBy;
+                setText('dReceivedBy', p.receivedBy || '-');
+                $('dNoteRow').hidden = !p.note;
+                setText('dPayNote', p.note || '-');
+
+                const cashForm = $('cashForm');
+                if (cashForm) {
+                    const canCash = Boolean(p.id) && ['cash', 'unpaid', 'pending'].includes(p.state)
+                        && ['pending', 'booked'].includes(b.status);
+                    cashForm.hidden = !canCash;
+                    if (canCash) {
+                        cashForm.action = @json(\Illuminate\Support\Facades\Route::has('admin.payments.cash') ? route('admin.payments.cash', '__ID__') : '#').replace('__ID__', p.id);
+                        $('cashTitle').textContent = p.state === 'cash' ? 'Customer memilih bayar cash' : 'Customer membayar cash?';
+                        $('cashHint').textContent = p.state === 'cash'
+                            ? 'Tandai lunas setelah uang ' + (p.amount || '') + ' Anda terima.'
+                            : 'Gunakan jika customer membayar tunai, bukan lewat QRIS / transfer.';
+                    }
+                }
+
                 const payPill = $('dPayPill');
                 payPill.textContent = p.label;
                 payPill.className = 'db-pill ' + payClass[p.state];
@@ -635,6 +709,7 @@
                 setText('dPayMethod', p.method || '-');
                 setText('dPayRef', p.reference || '-');
                 setText('dPayAt', p.paidAt || '-');
+                setText('dSubmittedAt', p.submittedAt || '-');
 
                 $('dProof').hidden = !p.proofUrl;
                 if (p.proofUrl) {
@@ -679,6 +754,15 @@
             }
 
             $('btnApprove').addEventListener('click', () => submitAction('approve'));
+
+            const cashFormEl = $('cashForm');
+            if (cashFormEl) {
+                cashFormEl.addEventListener('submit', (event) => {
+                    if (!current || !confirm('Tandai pembayaran ' + (current.payment.amount || '') + ' dari ' + current.name + ' LUNAS secara cash?')) {
+                        event.preventDefault();
+                    }
+                });
+            }
 
             function submitVerify(ok) {
                 if (!current || !current.payment.id) return;
@@ -731,6 +815,7 @@
             const status  = $('statusFilter');
             const payment = $('paymentFilter');
             const date    = $('dateFilter');
+            const place   = $('placeFilter');
 
             function applyFilters() {
                 const q = search.value.trim().toLowerCase();
@@ -741,7 +826,8 @@
                     const payState = b.payment.state === 'pending' ? 'unpaid' : b.payment.state;  // verifying punya filter sendiri
 
                     const match =
-                        (!q || [b.name, b.email, b.phone].some((v) => String(v).toLowerCase().includes(q))) &&
+                        (!q || [b.name, b.email, b.phone, b.place, b.lesson].some((v) => String(v).toLowerCase().includes(q))) &&
+                        (!place.value || b.placeKey === place.value) &&
                         (!status.value || b.status === status.value) &&
                         (!payment.value || payState === payment.value) &&
                         (!date.value || b.rawDate === date.value);
@@ -755,10 +841,10 @@
             }
 
             search.addEventListener('input', applyFilters);
-            [status, payment, date].forEach((el) => el.addEventListener('change', applyFilters));
+            [status, payment, date, place].forEach((el) => el.addEventListener('change', applyFilters));
 
             $('resetFilter').addEventListener('click', () => {
-                search.value = status.value = payment.value = date.value = '';
+                search.value = status.value = payment.value = date.value = place.value = '';
                 applyFilters();
             });
 

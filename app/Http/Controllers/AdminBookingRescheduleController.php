@@ -151,7 +151,7 @@ class AdminBookingRescheduleController extends Controller
             ]);
 
             // Pembayaran belum lunas: sesuaikan nominal dengan durasi baru
-            if ($payment && $payment->status !== 'paid' && $minutes !== $oldMinutes) {
+            if ($payment && $payment->status !== 'paid' && $minutes !== $oldMinutes && ! $booking->isCourse()) {
                 $payment->update([
                     'duration_minutes' => $minutes,
                     'amount'           => (int) round($minutes / 60 * \App\Models\Payment::pricePerHour()),
