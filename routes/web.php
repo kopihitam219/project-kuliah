@@ -220,6 +220,16 @@ Route::middleware([
         ->whereNumber('user')
         ->name('admin.customers.show');
 
+    Route::get('/admin/customers/create', [AdminCustomerController::class, 'create'])
+        ->name('admin.customers.create');
+
+    Route::post('/admin/customers', [AdminCustomerController::class, 'store'])
+        ->name('admin.customers.store');
+
+    Route::delete('/admin/customers/{user}', [AdminCustomerController::class, 'destroy'])
+        ->whereNumber('user')
+        ->name('admin.customers.destroy');
+
     /*
     |--------------------------------------------------------------------------
     | Admin Kelola Jadwal & Bukti Pembayaran

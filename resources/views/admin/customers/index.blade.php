@@ -2,6 +2,17 @@
 
 @section('title', 'Customer')
 
+@push('styles')
+    <style>
+        .stat-row { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+        .alert-warning { padding: 11px 14px; border: 1px solid rgba(255, 198, 45, .4); border-radius: 9px; background: rgba(255, 198, 45, .08); color: #ffd56a; font-size: 12px; line-height: 1.5; }
+        .btn-danger { border-color: rgba(216, 35, 61, .7); background: rgba(216, 35, 61, .12); color: #ff8a9a; }
+        .btn-danger:hover { background: #d8233d; color: #fff; }
+        @media (max-width: 1100px) { .stat-row { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media (max-width: 760px) { .stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    </style>
+@endpush
+
 @section('content')
     @php
         $initials = function (?string $name) {
@@ -24,7 +35,8 @@
         </div>
 
         <div class="head-actions">
-            <a href="{{ route('admin.offline-booking.create') }}" class="btn btn-primary">＋ Buat booking offline</a>
+            <a href="{{ route('admin.customers.create') }}" class="btn btn-primary">＋ Tambah customer</a>
+            <a href="{{ route('admin.offline-booking.create') }}" class="btn btn-outline">＋ Buat booking offline</a>
         </div>
     </section>
 
@@ -45,6 +57,11 @@
             <strong>{{ $stats['active_30'] }}</strong>
             <small>Booking 30 hari terakhir</small>
         </div>
+        <a href="{{ route('admin.customers.index', ['tab' => 'member', 'inactive' => 6]) }}" class="stat-box" style="text-decoration: none; color: inherit">
+            <span>Tidak aktif</span>
+            <strong>{{ $stats['inactive_6'] }}</strong>
+            <small>Lebih dari 6 bulan</small>
+        </a>
         <div class="stat-box">
             <span>Customer offline</span>
             <strong>{{ $stats['offline'] }}</strong>
@@ -69,6 +86,15 @@
         <input type="search" name="q" value="{{ $search }}" class="input"
                placeholder="{{ $tab === 'member' ? 'Cari nama, email, atau nomor HP...' : 'Cari nama atau nomor HP...' }}">
 
+        @if ($tab === 'member')
+            <select name="inactive" class="input" onchange="this.form.submit()">
+                <option value="">Semua member</option>
+                @foreach ($inactives as $value => $label)
+                    <option value="{{ $value }}" @selected($inactive === (string) $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+        @endif
+
         <select name="sort" class="input" onchange="this.form.submit()">
             @foreach ($sorts as $value => $label)
                 <option value="{{ $value }}" @selected($sort === $value)>{{ $label }}</option>
@@ -77,10 +103,17 @@
 
         <button type="submit" class="btn btn-primary">Cari</button>
 
-        @if ($search !== '' || $sort !== 'newest')
+        @if ($search !== '' || $sort !== 'newest' || $inactive !== '')
             <a href="{{ route('admin.customers.index', ['tab' => $tab]) }}" class="btn btn-ghost">Reset</a>
         @endif
     </form>
+
+    @if ($tab === 'member' && $inactive !== '' && $customers->total() > 0)
+        <div class="alert alert-warning" style="margin-bottom: 14px">
+            {{ $customers->total() }} member tidak booking dan tidak login lebih dari {{ $inactive }} bulan.
+            Buka <strong>Detail</strong> untuk menghapus akun yang sudah tidak dipakai.
+        </div>
+    @endif
 
     {{-- Tabel --}}
     <div class="table-card">
@@ -88,6 +121,8 @@
             <div class="empty-state" style="border: 0;">
                 @if ($search !== '')
                     Tidak ada customer yang cocok dengan "{{ $search }}".
+                @elseif ($inactive !== '')
+                    Tidak ada member yang tidak aktif lebih dari {{ $inactive }} bulan.
                 @elseif ($tab === 'member')
                     Belum ada member terdaftar.
                 @else
@@ -103,7 +138,7 @@
                             <th>No. HP</th>
                             <th>{{ $tab === 'member' ? 'Bergabung' : 'Booking pertama' }}</th>
                             <th class="num">Total booking</th>
-                            <th>Booking terakhir</th>
+                            <th>{{ $tab === 'member' ? 'Terakhir aktif' : 'Booking terakhir' }}</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -127,7 +162,12 @@
                                     <td>{{ $phone ?: '—' }}</td>
                                     <td>{{ $formatDate($customer->created_at) }}</td>
                                     <td class="num"><strong>{{ $customer->bookings_count }}</strong></td>
-                                    <td>{{ $formatDate($customer->last_booking_date) }}</td>
+                                    <td>
+                                        {{ $formatDate($customer->last_active_at) }}
+                                        @if ($customer->last_active_at && $customer->last_active_at->lt(now()->subMonths(6)))
+                                            <small style="display: block; color: #ffc62d; font-size: 10px">Tidak aktif {{ $customer->last_active_at->locale('id')->diffForHumans(null, true) }}</small>
+                                        @endif
+                                    </td>
                                     <td>
                                         <div class="row-actions">
                                             @if ($waUrl)
