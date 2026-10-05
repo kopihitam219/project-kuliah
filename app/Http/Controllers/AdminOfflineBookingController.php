@@ -55,10 +55,11 @@ class AdminOfflineBookingController extends Controller
 
         $request->validate([
             'lesson_type' => ['nullable', 'in:driving,course'],
-            'location_id' => ['nullable', 'integer', 'exists:contact_locations,id'],
+            'location_id' => [$lessonType === 'course' ? 'nullable' : 'required', 'integer', 'exists:contact_locations,id'],
             'course_venue' => [$lessonType === 'course' ? 'required' : 'nullable', 'string', 'max:150'],
         ], [
             'course_venue.required' => 'Isi lapangan golf untuk Course Lesson.',
+            'location_id.required'  => 'Pilih lapangan driving range (Rawamangun atau Suvarna).',
         ]);
 
         $validated = $request->validate([

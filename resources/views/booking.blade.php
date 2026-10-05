@@ -148,7 +148,7 @@
     $lessonTypes  = \App\Support\BookingRules::lessonTypes();
     $lessonType   = old('lesson_type', request('type', 'driving'));
     $lessonType   = array_key_exists($lessonType, $lessonTypes) ? $lessonType : 'driving';
-    $locationId   = (string) old('location_id', request('location', $locations->first()?->id));
+    $locationId   = (string) old('location_id', request('location', ''));
 
     $pricePerHour = \App\Models\Payment::pricePerHour();
     $coursePrice  = \App\Support\BookingRules::coursePrice();
@@ -508,73 +508,8 @@
                 Booking Lesson
             </div>
 
-            {{-- ---------- 1. JENIS LESSON ---------- --}}
-            <div class="step-label"><span class="step-num">1</span> Jenis lesson</div>
-
-            <div class="lesson-options">
-                @foreach($lessonTypes as $typeKey => $typeLabel)
-                    <label class="lesson-option">
-                        <input type="radio" name="lesson_type" value="{{ $typeKey }}" form="bookingForm"
-                               {{ $lessonType === $typeKey ? 'checked' : '' }}>
-                        <span class="lesson-card">
-                            <strong>{{ $typeLabel }}</strong>
-                            <span class="lesson-price">
-                                {{ $typeKey === 'course' ? $rp($coursePrice) : $rp($pricePerHour) }}
-                                <small>{{ $typeKey === 'course' ? '/ sesi' : '/ jam' }}</small>
-                            </span>
-                            <span class="lesson-desc">
-                                @if($typeKey === 'course')
-                                    Sesi tetap {{ $courseStart }} – {{ $courseEnd }} di lapangan golf
-                                    @if(\App\Support\BookingRules::courseNote())
-                                        <span class="lesson-note">* {{ \App\Support\BookingRules::courseNote() }}</span>
-                                    @endif
-                                @else
-                                    Latihan di driving range, pilih jam sendiri (min. {{ $minMinutes }} menit)
-                                @endif
-                            </span>
-                        </span>
-                    </label>
-                @endforeach
-            </div>
-
-            {{-- ---------- 2. LAPANGAN ---------- --}}
-            @if($locations->isNotEmpty())
-                <div id="locationStep">
-                    <div class="step-label"><span class="step-num">2</span> Lapangan driving range</div>
-
-                    <div class="location-options">
-                        @foreach($locations as $location)
-                            <label class="location-option">
-                                <input type="radio" name="location_id" value="{{ $location->id }}" form="bookingForm"
-                                       {{ $locationId === (string) $location->id ? 'checked' : '' }}>
-                                <span class="location-card">
-                                    <span class="location-pin">◉</span>
-                                    <span>
-                                        <strong>{{ $location->name }}</strong>
-                                        @if($location->area)
-                                            <small>{{ $location->area }}</small>
-                                        @endif
-                                    </span>
-                                </span>
-                            </label>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-            <div id="courseLocation" class="course-location" hidden>
-                <div class="step-label"><span class="step-num">2</span> Lapangan golf pilihan Anda</div>
-                <input type="text" name="course_venue" id="courseVenue" form="bookingForm"
-                       class="venue-input" maxlength="150"
-                       value="{{ old('course_venue') }}"
-                       placeholder="Contoh: Padang Golf Pondok Indah">
-                <small class="venue-hint">Tulis lapangan golf tempat Anda ingin Course Lesson. Admin akan mengonfirmasi ketersediaannya.</small>
-            </div>
-
-            <div class="divider"></div>
-
-            {{-- ---------- 3. TANGGAL ---------- --}}
-            <div class="step-label"><span class="step-num">3</span> Tanggal</div>
+            {{-- ---------- 1. TANGGAL ---------- --}}
+            <div class="step-label"><span class="step-num">1</span> Pilih tanggal</div>
 
             <div class="calendar-top">
                 <div class="calendar-month">{{ $selected->format('F Y') }}</div>
@@ -627,6 +562,75 @@
                     @endif
                 @endfor
 
+            </div>
+
+            <div class="divider"></div>
+
+            {{-- ---------- 2. JENIS LESSON ---------- --}}
+            <div class="step-label"><span class="step-num">2</span> Jenis lesson</div>
+
+            <div class="lesson-options">
+                @foreach($lessonTypes as $typeKey => $typeLabel)
+                    <label class="lesson-option">
+                        <input type="radio" name="lesson_type" value="{{ $typeKey }}" form="bookingForm"
+                               {{ $lessonType === $typeKey ? 'checked' : '' }}>
+                        <span class="lesson-card">
+                            <strong>{{ $typeLabel }}</strong>
+                            <span class="lesson-price">
+                                {{ $typeKey === 'course' ? $rp($coursePrice) : $rp($pricePerHour) }}
+                                <small>{{ $typeKey === 'course' ? '/ sesi' : '/ jam' }}</small>
+                            </span>
+                            <span class="lesson-desc">
+                                @if($typeKey === 'course')
+                                    Sesi tetap {{ $courseStart }} – {{ $courseEnd }} di lapangan golf
+                                    @if(\App\Support\BookingRules::courseNote())
+                                        <span class="lesson-note">* {{ \App\Support\BookingRules::courseNote() }}</span>
+                                    @endif
+                                @else
+                                    Latihan di driving range, per jam bersama coach
+                                @endif
+                            </span>
+                        </span>
+                    </label>
+                @endforeach
+            </div>
+
+            {{-- ---------- 3. LAPANGAN ---------- --}}
+            @if($locations->isEmpty())
+                <div id="locationStep" class="course-box unavailable" style="margin-bottom: 4px">
+                    <em class="course-no">Belum ada lapangan driving range yang aktif. Silakan hubungi admin.</em>
+                </div>
+            @else
+                <div id="locationStep">
+                    <div class="step-label"><span class="step-num">3</span> Pilih lapangan driving range</div>
+
+                    <div class="location-options">
+                        @foreach($locations as $location)
+                            <label class="location-option">
+                                <input type="radio" name="location_id" value="{{ $location->id }}" form="bookingForm"
+                                       {{ $locationId === (string) $location->id ? 'checked' : '' }}>
+                                <span class="location-card">
+                                    <span class="location-pin">◉</span>
+                                    <span>
+                                        <strong>{{ $location->name }}</strong>
+                                        @if($location->area)
+                                            <small>{{ $location->area }}</small>
+                                        @endif
+                                    </span>
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            <div id="courseLocation" class="course-location" hidden>
+                <div class="step-label"><span class="step-num">3</span> Lapangan golf pilihan Anda</div>
+                <input type="text" name="course_venue" id="courseVenue" form="bookingForm"
+                       class="venue-input" maxlength="150"
+                       value="{{ old('course_venue') }}"
+                       placeholder="Contoh: Padang Golf Pondok Indah">
+                <small class="venue-hint">Tulis lapangan golf tempat Anda ingin Course Lesson. Admin akan mengonfirmasi ketersediaannya.</small>
             </div>
 
             <div class="divider"></div>
@@ -1038,11 +1042,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const start = startSelect.value;
         const end   = endSelect.value;
 
-        if (config.hasLocations && !locationValue()) {
+        if (!locationValue()) {
             durationText.textContent = start && end ? durationLabel(start, end) : '-';
             priceText.textContent = '-';
             bookButton.disabled = true;
-            bookButton.textContent = 'Pilih lapangan dulu';
+            bookButton.textContent = config.hasLocations ? 'Pilih lapangan dulu' : 'Lapangan belum tersedia';
             return;
         }
 
@@ -1140,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        if (!startSelect.value || !endSelect.value || (config.hasLocations && !locationValue())) {
+        if (!startSelect.value || !endSelect.value || !locationValue()) {
             event.preventDefault();
         }
     });

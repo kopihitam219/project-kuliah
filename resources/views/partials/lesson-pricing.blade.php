@@ -57,7 +57,7 @@
             <h3>Lesson Driving Range</h3>
             <div class="lp-price">{{ $lpRp(BookingRules::pricePerHour()) }} <small>/ jam</small></div>
             <ul class="lp-list">
-                <li>Jam fleksibel {{ BookingRules::openTime() }} – {{ BookingRules::closeTime() }}, minimal {{ BookingRules::minMinutes() }} menit</li>
+                <li>Per jam, pilih jam antara {{ BookingRules::openTime() }} – {{ BookingRules::closeTime() }}</li>
                 @if ($lpLocations->isNotEmpty())
                     <li>Pilih lapangan: {{ $lpLocations->pluck('name')->join(', ', ' atau ') }}</li>
                 @endif

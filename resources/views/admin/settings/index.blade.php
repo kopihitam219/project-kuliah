@@ -377,30 +377,22 @@
             @method('PUT')
 
             <section class="st-card">
-                <h2>Jam operasional & slot</h2>
-                <p class="st-sub">Berlaku untuk booking customer, booking offline admin, dan reschedule. Booking yang sudah ada tidak berubah.</p>
+                <h2>Jam operasional</h2>
+                <p class="st-sub">Lesson coach dihitung per jam, jadi jadwal booking selalu dalam kelipatan 1 jam. Berlaku untuk booking customer, booking offline admin, dan reschedule.</p>
 
                 <div class="st-grid-3">
                     <div class="field">
                         <label for="bOpen">Jam buka</label>
-                        <input type="time" name="open_time" id="bOpen" class="input" required step="1800" value="{{ $bk['open_time'] }}">
+                        <input type="time" name="open_time" id="bOpen" class="input" required step="3600" value="{{ $bk['open_time'] }}">
                     </div>
                     <div class="field">
                         <label for="bClose">Jam tutup</label>
-                        <input type="time" name="close_time" id="bClose" class="input" required step="1800" value="{{ $bk['close_time'] }}">
+                        <input type="time" name="close_time" id="bClose" class="input" required step="3600" value="{{ $bk['close_time'] }}">
                     </div>
                     <div class="field">
-                        <label for="bSlot">Ukuran slot di halaman booking</label>
-                        <select name="slot_minutes" id="bSlot" class="input">
-                            @foreach (['30' => '30 menit', '60' => '1 jam'] as $value => $label)
-                                <option value="{{ $value }}" @selected($bk['slot_minutes'] === $value)>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label for="bMin">Durasi minimal booking</label>
+                        <label for="bMin">Durasi minimal Lesson Driving Range</label>
                         <select name="min_minutes" id="bMin" class="input">
-                            @foreach (['30' => '30 menit', '60' => '1 jam', '90' => '1,5 jam', '120' => '2 jam'] as $value => $label)
+                            @foreach (['60' => '1 jam', '120' => '2 jam', '180' => '3 jam'] as $value => $label)
                                 <option value="{{ $value }}" @selected($bk['min_minutes'] === $value)>{{ $label }}</option>
                             @endforeach
                         </select>
@@ -438,21 +430,17 @@
                     <input type="checkbox" name="course_enabled" value="1" @checked(old('course_enabled', BookingRules::courseEnabled() ? '1' : '0') === '1')>
                 </label>
 
-                <div class="st-grid-3">
+                <div class="st-grid-2">
                     <div class="field">
                         <label for="cStart">Jam mulai</label>
-                        <input type="time" name="course_start" id="cStart" class="input" required step="1800" value="{{ old('course_start', BookingRules::courseStart()) }}">
+                        <input type="time" name="course_start" id="cStart" class="input" required step="3600" value="{{ old('course_start', BookingRules::courseStart()) }}">
                     </div>
                     <div class="field">
                         <label for="cEnd">Jam selesai</label>
-                        <input type="time" name="course_end" id="cEnd" class="input" required step="1800" value="{{ old('course_end', BookingRules::courseEnd()) }}">
-                    </div>
-                    <div class="field">
-                        <label for="cPrice">Harga per sesi (Rupiah)</label>
-                        <input type="number" name="course_price" id="cPrice" class="input" required min="0" step="1000" value="{{ old('course_price', BookingRules::coursePrice()) }}">
-                        <p class="field-hint">Contoh: 3300000 = Rp3.300.000</p>
+                        <input type="time" name="course_end" id="cEnd" class="input" required step="3600" value="{{ old('course_end', BookingRules::courseEnd()) }}">
                     </div>
                 </div>
+                <p class="field-hint" style="margin-bottom: 12px">Harga Course Lesson diatur di tab <strong>Pembayaran → Harga lesson</strong>.</p>
 
                 <div class="field">
                     <label for="cNote">Catatan harga</label>
@@ -500,6 +488,26 @@
             @method('PUT')
 
             <section class="st-card">
+                <h2>Harga lesson</h2>
+                <p class="st-sub">Harga yang tampil ke customer di halaman Booking, Pembayaran, dan Program. Harga baru hanya berlaku untuk tagihan baru, tagihan yang sudah dibuat tidak berubah.</p>
+
+                <div class="st-grid-2">
+                    <div class="st-box">
+                        <label class="field-label" for="pPrice">Lesson Driving Range</label>
+                        <input type="number" name="price_per_hour" id="pPrice" class="input" required min="0" step="1000"
+                               value="{{ old('price_per_hour', BookingRules::pricePerHour()) }}">
+                        <p class="field-hint" id="pricePreview"></p>
+                    </div>
+                    <div class="st-box">
+                        <label class="field-label" for="cPrice">Course Lesson</label>
+                        <input type="number" name="course_price" id="cPrice" class="input" required min="0" step="1000"
+                               value="{{ old('course_price', BookingRules::coursePrice()) }}">
+                        <p class="field-hint" id="coursePricePreview"></p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="st-card">
                 <h2>Mode pembayaran</h2>
                 <p class="st-sub">Selama mode Demo, tidak ada uang sungguhan yang diterima. Pindah ke Live setelah QRIS / rekening asli siap.</p>
 
@@ -522,16 +530,10 @@
             </section>
 
             <section class="st-card">
-                <h2>Harga & aturan pembayaran</h2>
-                <p class="st-sub">Harga baru hanya berlaku untuk tagihan baru. Tagihan yang sudah dibuat tidak berubah.</p>
+                <h2>Aturan pembayaran</h2>
+                <p class="st-sub">Batas waktu bayar dan persetujuan booking online.</p>
 
-                <div class="st-grid-3">
-                    <div class="field">
-                        <label for="pPrice">Harga Lesson Driving Range per jam (Rupiah)</label>
-                        <input type="number" name="price_per_hour" id="pPrice" class="input" required min="0" step="1000"
-                               value="{{ old('price_per_hour', BookingRules::pricePerHour()) }}">
-                        <p class="field-hint" id="pricePreview"></p>
-                    </div>
+                <div class="st-grid-2">
                     <div class="field">
                         <label for="pExpiry">Batas waktu bayar</label>
                         <select name="payment_expiry_hours" id="pExpiry" class="input">
@@ -1082,9 +1084,17 @@
             const price = document.getElementById('pPrice');
             const preview = document.getElementById('pricePreview');
             if (!price || !preview) return;
-            const update = () => { preview.textContent = 'Tampil sebagai Rp' + Number(price.value || 0).toLocaleString('id-ID') + ' per jam'; };
+            const update = () => { preview.textContent = 'Tampil sebagai Rp' + Number(price.value || 0).toLocaleString('id-ID') + ' / jam'; };
             price.addEventListener('input', update);
             update();
+
+            const course = document.getElementById('cPrice');
+            const coursePreview = document.getElementById('coursePricePreview');
+            if (course && coursePreview) {
+                const updateCourse = () => { coursePreview.textContent = 'Tampil sebagai Rp' + Number(course.value || 0).toLocaleString('id-ID') + ' / sesi (07:00–12:00)'; };
+                course.addEventListener('input', updateCourse);
+                updateCourse();
+            }
         })();
 
         // Pratinjau teks Home langsung saat diketik

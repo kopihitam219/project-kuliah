@@ -122,8 +122,6 @@ class BookingController extends Controller
             ]);
         }
 
-        $hasLocations = BookingRules::activeLocations()->isNotEmpty();
-
         $validated = $request->validate([
             'lesson_type' => [
                 'required',
@@ -131,7 +129,7 @@ class BookingController extends Controller
             ],
 
             'location_id' => [
-                Rule::requiredIf($lessonType !== 'course' && $hasLocations),
+                Rule::requiredIf($lessonType !== 'course'),
                 'nullable',
                 Rule::exists('contact_locations', 'id')->where('is_active', true),
             ],
@@ -161,7 +159,7 @@ class BookingController extends Controller
         ], [
             'lesson_type.required' => 'Pilih jenis lesson terlebih dahulu.',
             'lesson_type.in'       => 'Jenis lesson tidak tersedia.',
-            'location_id.required' => 'Pilih lapangan driving range terlebih dahulu.',
+            'location_id.required' => 'Pilih lapangan driving range terlebih dahulu (Rawamangun atau Suvarna).',
             'location_id.exists'   => 'Lapangan yang dipilih tidak tersedia.',
             'course_venue.required' => 'Tulis lapangan golf yang Anda pilih untuk Course Lesson.',
             'course_venue.max'      => 'Nama lapangan golf maksimal 150 karakter.',
@@ -525,7 +523,16 @@ class BookingController extends Controller
         /*
          * Minimal 30 menit.
          */
-        $durationMinutes = $start->diffInMinutes($end);
+        $durationMinutes = (int) abs($start->diffInMinutes($end));
+
+        /*
+         * Lesson coach dihitung per jam: mulai di jam bulat & durasi kelipatan 1 jam.
+         */
+        if ($start->minute !== 0 || $end->minute !== 0 || $durationMinutes % 60 !== 0) {
+            throw ValidationException::withMessages([
+                'booking' => 'Lesson dihitung per jam. Pilih jam mulai dan selesai di jam bulat, misalnya 08:00 – 10:00.',
+            ]);
+        }
 
         if ($durationMinutes < \App\Support\BookingRules::minMinutes()) {
             throw ValidationException::withMessages([

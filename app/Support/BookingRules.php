@@ -15,7 +15,7 @@ class BookingRules
         'open_time'            => '07:00',
         'close_time'           => '20:00',
         'slot_minutes'         => '60',
-        'min_minutes'          => '30',
+        'min_minutes'          => '60',
         'cancel_days'          => '1',
         'max_active'           => '0',
         'auto_approve_paid'    => '0',
@@ -57,14 +57,18 @@ class BookingRules
         return self::value('close_time');
     }
 
+    /** Lesson coach dihitung per jam, jadi slot selalu 1 jam */
     public static function slotMinutes(): int
     {
-        return max(30, (int) self::value('slot_minutes'));
+        return 60;
     }
 
+    /** Durasi minimal dalam kelipatan 1 jam (minimal 1 jam) */
     public static function minMinutes(): int
     {
-        return max(30, (int) self::value('min_minutes'));
+        $minutes = (int) self::value('min_minutes');
+
+        return max(60, intdiv($minutes, 60) * 60);
     }
 
     /** 0 = sampai hari H, 1 = H-1, 2 = H-2, dst. */

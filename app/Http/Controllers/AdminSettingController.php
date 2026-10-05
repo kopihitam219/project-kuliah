@@ -137,20 +137,16 @@ class AdminSettingController extends Controller
         $request->validate([
             'open_time'         => ['required', 'date_format:H:i'],
             'close_time'        => ['required', 'date_format:H:i', 'after:open_time'],
-            'slot_minutes'      => ['required', Rule::in(['30', '60'])],
-            'min_minutes'       => ['required', Rule::in(['30', '60', '90', '120'])],
+            'min_minutes'       => ['required', Rule::in(['60', '120', '180'])],
             'cancel_days'       => ['required', Rule::in(['0', '1', '2', '3'])],
             'max_active'        => ['required', Rule::in(['0', '1', '2', '3', '4', '5'])],
             'auto_approve_paid' => ['nullable', 'boolean'],
             'course_enabled'    => ['nullable', 'boolean'],
             'course_start'      => ['required', 'date_format:H:i'],
             'course_end'        => ['required', 'date_format:H:i', 'after:course_start'],
-            'course_price'      => ['required', 'integer', 'min:0', 'max:100000000'],
             'course_note'       => ['nullable', 'string', 'max:200'],
         ], [
             'course_end.after'         => 'Jam selesai Course Lesson harus setelah jam mulai.',
-            'course_price.required'    => 'Harga Course Lesson wajib diisi.',
-            'course_price.integer'     => 'Harga Course Lesson harus berupa angka tanpa titik.',
 
             'open_time.required'  => 'Jam buka wajib diisi.',
             'close_time.required' => 'Jam tutup wajib diisi.',
@@ -168,7 +164,7 @@ class AdminSettingController extends Controller
         Setting::put([
             'open_time'         => $open,
             'close_time'        => $close,
-            'slot_minutes'      => $request->input('slot_minutes'),
+            'slot_minutes'      => '60',
             'min_minutes'       => $request->input('min_minutes'),
             'cancel_days'       => $request->input('cancel_days'),
             'max_active'        => $request->input('max_active'),
@@ -176,7 +172,6 @@ class AdminSettingController extends Controller
             'course_enabled'    => $request->boolean('course_enabled') ? '1' : '0',
             'course_start'      => $request->input('course_start'),
             'course_end'        => $request->input('course_end'),
-            'course_price'      => (string) (int) $request->input('course_price'),
             'course_note'       => trim((string) $request->input('course_note')),
         ]);
 
@@ -194,6 +189,7 @@ class AdminSettingController extends Controller
 
         $request->validate([
             'price_per_hour'       => ['required', 'integer', 'min:0', 'max:100000000'],
+            'course_price'         => ['required', 'integer', 'min:0', 'max:100000000'],
             'payment_expiry_hours' => ['required', Rule::in(['1', '3', '6', '12', '24', '48'])],
             'require_paid'         => ['nullable', 'boolean'],
             'payment_mode'         => ['required', Rule::in(['demo', 'live'])],
@@ -215,6 +211,8 @@ class AdminSettingController extends Controller
         ], [
             'price_per_hour.required' => 'Harga per jam wajib diisi.',
             'price_per_hour.integer'  => 'Harga harus berupa angka tanpa titik, misalnya 900000.',
+            'course_price.required'   => 'Harga Course Lesson wajib diisi.',
+            'course_price.integer'    => 'Harga Course Lesson harus berupa angka tanpa titik, misalnya 3300000.',
             'qris_image.mimes'        => 'Gambar QRIS harus PNG atau JPG.',
             'qris_image.max'          => 'Ukuran gambar QRIS maksimal 2 MB.',
             '*_account.regex'         => 'Nomor rekening hanya boleh berisi angka.',
@@ -246,6 +244,7 @@ class AdminSettingController extends Controller
 
         $values = [
             'price_per_hour'       => (string) (int) $request->input('price_per_hour'),
+            'course_price'         => (string) (int) $request->input('course_price'),
             'payment_expiry_hours' => $request->input('payment_expiry_hours'),
             'require_paid'         => $request->boolean('require_paid') ? '1' : '0',
             'payment_mode'         => $request->input('payment_mode'),

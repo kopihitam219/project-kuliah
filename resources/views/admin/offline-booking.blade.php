@@ -1924,7 +1924,7 @@
                                                             <small class="ob-note">* {{ \App\Support\BookingRules::courseNote() }}</small>
                                                         @endif
                                                     @else
-                                                        <small>Latihan di driving range, jam bebas</small>
+                                                        <small>Latihan di driving range, per jam bersama coach</small>
                                                     @endif
                                                 </span>
                                             </label>
