@@ -535,13 +535,13 @@
 
                 <div class="st-grid-2">
                     <div class="field">
-                        <label for="pExpiry">Batas waktu bayar</label>
-                        <select name="payment_expiry_hours" id="pExpiry" class="input">
-                            @foreach (['1' => '1 jam', '3' => '3 jam', '6' => '6 jam', '12' => '12 jam', '24' => '24 jam', '48' => '48 jam'] as $value => $label)
-                                <option value="{{ $value }}" @selected((string) old('payment_expiry_hours', BookingRules::paymentExpiryHours()) === $value)>{{ $label }}</option>
+                        <label for="pDeadline">Batas waktu bayar</label>
+                        <select name="payment_deadline_minutes" id="pDeadline" class="input">
+                            @foreach (['15' => '15 menit', '30' => '30 menit', '45' => '45 menit', '60' => '1 jam', '120' => '2 jam'] as $value => $label)
+                                <option value="{{ $value }}" @selected((string) old('payment_deadline_minutes', BookingRules::paymentDeadlineMinutes()) === $value)>{{ $label }}</option>
                             @endforeach
                         </select>
-                        <p class="field-hint">Setelah lewat, customer harus memilih metode lagi.</p>
+                        <p class="field-hint">Dihitung sejak booking dibuat. Jika customer belum mengirim bukti bayar (atau memilih cash), booking gagal otomatis dan admin mendapat notifikasi.</p>
                     </div>
                     <div class="field">
                         <span class="field-label">Persetujuan</span>

@@ -190,7 +190,7 @@ class AdminSettingController extends Controller
         $request->validate([
             'price_per_hour'       => ['required', 'integer', 'min:0', 'max:100000000'],
             'course_price'         => ['required', 'integer', 'min:0', 'max:100000000'],
-            'payment_expiry_hours' => ['required', Rule::in(['1', '3', '6', '12', '24', '48'])],
+            'payment_deadline_minutes' => ['required', Rule::in(['15', '30', '45', '60', '120'])],
             'require_paid'         => ['nullable', 'boolean'],
             'payment_mode'         => ['required', Rule::in(['demo', 'live'])],
 
@@ -245,7 +245,7 @@ class AdminSettingController extends Controller
         $values = [
             'price_per_hour'       => (string) (int) $request->input('price_per_hour'),
             'course_price'         => (string) (int) $request->input('course_price'),
-            'payment_expiry_hours' => $request->input('payment_expiry_hours'),
+            'payment_deadline_minutes' => $request->input('payment_deadline_minutes'),
             'require_paid'         => $request->boolean('require_paid') ? '1' : '0',
             'payment_mode'         => $request->input('payment_mode'),
             'qris_merchant'        => trim((string) $request->input('qris_merchant')),

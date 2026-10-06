@@ -301,6 +301,8 @@
         }
 
         .countdown strong { font-size: 16px; font-variant-numeric: tabular-nums; }
+        .countdown.urgent { border-color: rgba(255, 92, 92, .45); background: rgba(255, 92, 92, .08); color: #ff9a9a; }
+        #confirmButton:disabled { opacity: .45; cursor: not-allowed; }
 
         .qr-box { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px; border-radius: 12px; background: #ffffff; color: #111; }
         .qr-box svg { width: 210px; height: 210px; }
@@ -509,7 +511,14 @@
 
                 {{-- ---------- BOOKING TIDAK AKTIF ---------- --}}
                 <div class="blocked">
-                    Booking ini sudah <strong>{{ strtolower($bookingStatusLabel) }}</strong>, sehingga tidak perlu dibayar.
+                    @if (($booking->getAttributes()['expired_at'] ?? null))
+                        <strong>Booking gagal.</strong>
+                        Booking ini dibatalkan otomatis karena belum dibayar dalam
+                        {{ \App\Support\BookingRules::paymentDeadlineMinutes() }} menit setelah booking dibuat.
+                        Jadwalnya sudah dibuka kembali, silakan booking ulang jika masih tersedia.
+                    @else
+                        Booking ini sudah <strong>{{ strtolower($bookingStatusLabel) }}</strong>, sehingga tidak perlu dibayar.
+                    @endif
                     <a href="{{ route('booking') }}" class="btn">Buat booking baru</a>
                 </div>
 
@@ -543,10 +552,12 @@
                 {{-- ---------- INSTRUKSI PEMBAYARAN ---------- --}}
                 <div class="panel-title">Bayar dengan {{ $payment->method_label }}</div>
 
-                <div class="countdown">
-                    <span>Selesaikan sebelum {{ $payment->expires_at->locale('id')->translatedFormat('d M Y, H:i') }}</span>
-                    <strong id="countdown" data-expires="{{ $payment->expires_at->toIso8601String() }}">--:--:--</strong>
-                </div>
+                @if ($deadline && $awaiting)
+                    <div class="countdown">
+                        <span>Upload bukti & konfirmasi sebelum {{ $deadline->locale('id')->translatedFormat('d M Y, H:i') }} WIB</span>
+                        <strong id="countdown" data-expires="{{ $deadline->toIso8601String() }}">--:--</strong>
+                    </div>
+                @endif
 
                 <div class="step-head">
                     <span class="step-badge">1</span>
@@ -629,7 +640,7 @@
                             <strong>Upload bukti pembayaran</strong>
                             <small>
                                 Screenshot / foto bukti transfer bank atau pembayaran QRIS
-                                {{ $isReal ? '(wajib)' : '(opsional di mode demo)' }}
+                                (wajib)
                             </small>
                         </div>
                     </div>
@@ -643,7 +654,7 @@
                             <span id="proofText"><strong>Pilih gambar</strong> atau seret ke sini</span>
                             <small id="proofHint">JPG, PNG, atau WEBP · maks. 4 MB</small>
                             <img id="proofPreview" alt="Pratinjau bukti pembayaran" hidden>
-                            <input type="file" name="proof" id="proofInput" accept="image/jpeg,image/png,image/webp" @if ($isReal) required @endif>
+                            <input type="file" name="proof" id="proofInput" accept="image/jpeg,image/png,image/webp" required>
                         </label>
                         <div class="proof-name" id="proofName"></div>
 
@@ -651,7 +662,7 @@
                             <div class="real-note">Admin akan mencocokkan bukti ini dengan dana yang masuk sebelum pembayaran dinyatakan lunas.</div>
                         @endif
 
-                        <button type="submit" class="btn">{{ $isReal ? 'Kirim bukti & konfirmasi pembayaran' : 'Saya sudah bayar (simulasi)' }}</button>
+                        <button type="submit" class="btn" id="confirmButton" disabled>Upload bukti dulu</button>
                     </form>
                 </div>
 
@@ -670,6 +681,16 @@
 
                 {{-- ---------- PILIH METODE ---------- --}}
                 <div class="panel-title">Pilih metode pembayaran</div>
+
+                @if ($deadline && $awaiting)
+                    <div class="countdown">
+                        <span>
+                            Bayar dalam {{ \App\Support\BookingRules::paymentDeadlineMinutes() }} menit sejak booking dibuat,
+                            sebelum {{ $deadline->locale('id')->translatedFormat('H:i') }} WIB. Jika lewat, booking gagal otomatis.
+                        </span>
+                        <strong id="countdown" data-expires="{{ $deadline->toIso8601String() }}">--:--</strong>
+                    </div>
+                @endif
 
                 <form method="POST" action="{{ route('payment.booking.method', $booking) }}" id="methodForm">
                     @csrf
@@ -739,12 +760,16 @@
                 const left = Math.max(0, Math.floor((expires - Date.now()) / 1000));
 
                 if (left === 0) {
-                    countdown.textContent = 'Waktu habis, muat ulang halaman';
+                    countdown.textContent = 'Waktu habis';
                     clearInterval(timer);
+                    // Muat ulang: server menandai booking gagal
+                    setTimeout(() => window.location.reload(), 1500);
                     return;
                 }
 
-                countdown.textContent = pad(Math.floor(left / 3600)) + ':' + pad(Math.floor(left % 3600 / 60)) + ':' + pad(left % 60);
+                const hours = Math.floor(left / 3600);
+                countdown.textContent = (hours ? pad(hours) + ':' : '') + pad(Math.floor(left % 3600 / 60)) + ':' + pad(left % 60);
+                countdown.closest('.countdown')?.classList.toggle('urgent', left <= 300);
             };
 
             tick();
@@ -770,6 +795,14 @@
                 }
 
                 preview.src = URL.createObjectURL(file);
+
+                const confirmButton = document.getElementById('confirmButton');
+                if (confirmButton) {
+                    confirmButton.disabled = false;
+                    confirmButton.textContent = confirmForm && confirmForm.dataset.real === '1'
+                        ? 'Kirim bukti & konfirmasi pembayaran'
+                        : 'Saya sudah bayar';
+                }
                 preview.hidden = false;
                 hideEls.forEach((el) => { el.hidden = true; });
                 nameEl.textContent = file.name + ' · klik gambar untuk mengganti';

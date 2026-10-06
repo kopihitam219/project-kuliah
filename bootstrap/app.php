@@ -34,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             \App\Http\Middleware\SiteMaintenance::class,
+            \App\Http\Middleware\ExpireUnpaidBookings::class,
             \App\Http\Middleware\AdminSecurity::class,
         ]);
 

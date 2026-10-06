@@ -10,6 +10,17 @@
 
     $cardPayment = $cardOffline ? null : \App\Models\Payment::where('booking_id', $booking->id)->first();
     $cardPaid    = $cardOffline || ($cardPayment && $cardPayment->status === 'paid');
+
+    // Batas waktu bayar (dihitung sejak booking dibuat)
+    $cardAwaiting = ! $cardOffline
+        && ($booking->status ?? null) === 'pending'
+        && (! $cardPayment || in_array($cardPayment->status, ['unpaid', 'pending'], true));
+    $cardCreated  = $cardAwaiting
+        ? ($booking->getAttributes()['created_at'] ?? \App\Models\Booking::whereKey($booking->id)->value('created_at'))
+        : null;
+    $cardDeadline = $cardCreated
+        ? \Illuminate\Support\Carbon::parse($cardCreated)->addMinutes(\App\Support\BookingRules::paymentDeadlineMinutes())
+        : null;
 @endphp
 
 @once
@@ -40,7 +51,45 @@
         }
 
         .pay-status.paid a { background: transparent; border: 1px solid rgba(184, 255, 0, .35); color: #b8ff00; }
+
+        .pay-deadline { display: block; margin-top: 4px; font-size: 11px; font-weight: 700; color: #ffd45c; }
+        .pay-deadline strong { font-size: 13px; font-variant-numeric: tabular-nums; }
+        .pay-deadline.urgent { color: #ff9a9a; }
     </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var items = document.querySelectorAll('[data-pay-deadline]');
+            if (!items.length) return;
+
+            var pad = function (n) { return String(n).padStart(2, '0'); };
+            var reloading = false;
+
+            function tick() {
+                items.forEach(function (el) {
+                    var left = Math.max(0, Math.floor((new Date(el.dataset.payDeadline).getTime() - Date.now()) / 1000));
+                    var timer = el.querySelector('strong');
+
+                    if (left === 0) {
+                        el.textContent = 'Waktu bayar habis, booking dibatalkan.';
+                        el.classList.add('urgent');
+                        if (!reloading) {
+                            reloading = true;
+                            setTimeout(function () { window.location.reload(); }, 2000);
+                        }
+                        return;
+                    }
+
+                    if (!timer) return;
+                    timer.textContent = pad(Math.floor(left / 60)) + ':' + pad(left % 60);
+                    el.classList.toggle('urgent', left <= 300);
+                });
+            }
+
+            tick();
+            setInterval(tick, 1000);
+        });
+    </script>
 @endonce
 
 <div class="pay-status {{ $cardPaid ? 'paid' : 'unpaid' }}">
@@ -57,6 +106,10 @@
             ◷ Menunggu pembayaran · {{ $cardPayment->amount_label }}
         @else
             ! Belum dibayar
+        @endif
+
+        @if ($cardDeadline)
+            <span class="pay-deadline" data-pay-deadline="{{ $cardDeadline->toIso8601String() }}">Bayar dalam <strong>--:--</strong> atau booking dibatalkan otomatis</span>
         @endif
     </span>
 

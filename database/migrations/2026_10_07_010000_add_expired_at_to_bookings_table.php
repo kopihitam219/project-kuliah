@@ -1,0 +1,29 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Waktu booking dinyatakan gagal karena tidak dibayar dalam batas waktu.
+     */
+    public function up(): void
+    {
+        Schema::table('bookings', function (Blueprint $table) {
+            if (! Schema::hasColumn('bookings', 'expired_at')) {
+                $table->timestamp('expired_at')->nullable()->after('status');
+            }
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('bookings', function (Blueprint $table) {
+            if (Schema::hasColumn('bookings', 'expired_at')) {
+                $table->dropColumn('expired_at');
+            }
+        });
+    }
+};

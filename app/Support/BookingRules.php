@@ -21,6 +21,7 @@ class BookingRules
         'auto_approve_paid'    => '0',
         'price_per_hour'       => '900000',
         'payment_expiry_hours' => '24',
+        'payment_deadline_minutes' => '30',
         'require_paid'         => '0',
         'payment_mode'         => 'demo',
         'course_enabled'       => '1',
@@ -116,6 +117,12 @@ class BookingRules
     public static function pricePerHour(): int
     {
         return max(0, (int) self::value('price_per_hour'));
+    }
+
+    /** Batas waktu bayar sejak booking dibuat (menit) */
+    public static function paymentDeadlineMinutes(): int
+    {
+        return max(5, (int) self::value('payment_deadline_minutes'));
     }
 
     public static function paymentExpiryHours(): int

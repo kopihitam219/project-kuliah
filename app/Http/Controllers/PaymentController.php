@@ -28,6 +28,10 @@ class PaymentController extends Controller
             return $redirect;
         }
 
+        // Lewat batas waktu bayar: booking digagalkan
+        \App\Support\BookingExpiry::expireIfDue($booking);
+        $booking->refresh();
+
         $payment = Payment::forBooking($booking);
         $payment->releaseIfExpired();
 
@@ -39,6 +43,8 @@ class PaymentController extends Controller
         $payment = $payment->fresh();
 
         return view('payments.booking', [
+            'deadline'     => \App\Support\BookingExpiry::deadline($booking),
+            'awaiting'     => \App\Support\BookingExpiry::awaitingPayment($booking, $payment),
             'booking'      => $booking,
             'payment'      => $payment,
             'methods'      => Payment::methods($booking),
@@ -53,6 +59,10 @@ class PaymentController extends Controller
         if ($redirect = $this->redirectIfOffline($booking)) {
             return $redirect;
         }
+
+        // Lewat batas waktu bayar: booking digagalkan
+        \App\Support\BookingExpiry::expireIfDue($booking);
+        $booking->refresh();
 
         $validated = $request->validate([
             'method' => ['required', Rule::in(array_keys(Payment::methods($booking)))],
@@ -88,7 +98,7 @@ class PaymentController extends Controller
             'method'     => $validated['method'],
             'status'     => 'pending',
             'va_number'  => null,
-            'expires_at' => now()->addHours(BookingRules::paymentExpiryHours()),
+            'expires_at' => \App\Support\BookingExpiry::deadline($booking),
         ]);
 
         return redirect()->route('payment.booking', $booking);
@@ -101,6 +111,10 @@ class PaymentController extends Controller
         if ($redirect = $this->redirectIfOffline($booking)) {
             return $redirect;
         }
+
+        // Lewat batas waktu bayar: booking digagalkan
+        \App\Support\BookingExpiry::expireIfDue($booking);
+        $booking->refresh();
 
         $payment = Payment::forBooking($booking);
 
@@ -127,6 +141,10 @@ class PaymentController extends Controller
             return $redirect;
         }
 
+        // Lewat batas waktu bayar: booking digagalkan
+        \App\Support\BookingExpiry::expireIfDue($booking);
+        $booking->refresh();
+
         $payment = Payment::forBooking($booking);
         $payment->releaseIfExpired();
 
@@ -142,7 +160,7 @@ class PaymentController extends Controller
 
         // Bukti pembayaran: wajib di mode live, opsional di mode demo
         $request->validate([
-            'proof' => [$payment->needsVerification() ? 'required' : 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ], [
             'proof.required' => 'Upload bukti pembayaran (screenshot / foto bukti transfer) terlebih dahulu.',
             'proof.image'    => 'Bukti pembayaran harus berupa gambar.',

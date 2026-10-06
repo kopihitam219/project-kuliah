@@ -308,6 +308,9 @@
         .db-receipt-rows span:first-child { color: #66706b; }
         .db-receipt-rows span:last-child { font-weight: 700; text-align: right; }
         .db-receipt-rows div[hidden] { display: none; }
+        .db-receipt-proof { padding: 0 20px 14px; }
+        .db-receipt-proof small { display: block; margin-bottom: 6px; color: #66706b; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+        .db-receipt-proof img { display: block; max-width: 100%; max-height: 260px; margin: 0 auto; border: 1px solid #e3e7e4; border-radius: 8px; object-fit: contain; background: #f6f8f6; }
         .db-modal-box { max-height: calc(100vh - 40px); overflow-y: auto; }
         .db-modal-foot { display: flex; gap: 8px; padding: 14px 20px 18px; }
         .db-modal-foot a, .db-modal-foot button {
@@ -617,6 +620,13 @@
                 <div id="rReceivedRow"><span>Diterima oleh</span><span id="rReceivedBy">-</span></div>
             </div>
 
+            <div class="db-receipt-proof" id="rProofBox" hidden>
+                <small>Bukti transfer dari customer</small>
+                <a href="#" id="rProofLink" target="_blank" rel="noopener" title="Buka ukuran penuh">
+                    <img src="" alt="Bukti transfer dari customer" id="rProofImg">
+                </a>
+            </div>
+
             <div class="db-modal-foot">
                 <button type="button" data-close-receipt>Tutup</button>
                 <a href="#" id="rPrint" target="_blank" rel="noopener">Cetak bukti</a>
@@ -812,6 +822,12 @@
                 $('rSubmittedRow').hidden = !p.submittedAt;
                 setText('rReceivedBy', p.receivedBy || '-');
                 $('rReceivedRow').hidden = !p.receivedBy;
+
+                $('rProofBox').hidden = !p.proofUrl;
+                if (p.proofUrl) {
+                    $('rProofLink').href = p.proofUrl;
+                    $('rProofImg').src = p.proofUrl;
+                }
 
                 const print = $('rPrint');
                 print.href = p.receiptUrl || '#';

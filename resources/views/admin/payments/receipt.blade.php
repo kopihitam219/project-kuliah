@@ -163,6 +163,13 @@
         @if ($payment->received_by)
             <div class="row"><span>Diterima oleh</span><span>{{ $payment->received_by }}</span></div>
         @endif
+        @if (method_exists($payment, 'hasProof') && $payment->hasProof())
+            <div class="row" style="display: block">
+                <span style="display: block; margin-bottom: 6px">Bukti transfer dari customer</span>
+                <img src="{{ route('admin.payments.proof', $payment) }}" alt="Bukti transfer dari customer"
+                     style="display: block; max-width: 100%; max-height: 420px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px">
+            </div>
+        @endif
     </div>
 
     @if (\App\Support\BookingRules::isDemoPayment())
