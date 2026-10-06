@@ -150,9 +150,24 @@
             <div class="row"><span>Jam</span><span>{{ substr($booking->start_time, 0, 5) }} – {{ substr($booking->end_time, 0, 5) }}</span></div>
         @endif
         <div class="row"><span>Durasi</span><span>{{ $payment->duration_label }}</span></div>
+        @if ($booking)
+            <div class="row"><span>Jenis lesson</span><span>{{ $booking->lesson_label }}</span></div>
+            @if ($booking->place_label)
+                <div class="row"><span>Lapangan</span><span>{{ $booking->place_label }}</span></div>
+            @endif
+            <div class="row"><span>Booking dibuat</span><span>{{ $booking->created_at?->locale('id')->translatedFormat('d M Y, H:i') }} WIB</span></div>
+        @endif
+        @if ($payment->submitted_at)
+            <div class="row"><span>Dikirim customer</span><span>{{ $payment->submitted_at->locale('id')->translatedFormat('d M Y, H:i') }} WIB</span></div>
+        @endif
+        @if ($payment->received_by)
+            <div class="row"><span>Diterima oleh</span><span>{{ $payment->received_by }}</span></div>
+        @endif
     </div>
 
+    @if (\App\Support\BookingRules::isDemoPayment())
     <div class="note">Mode demo: bukti ini berasal dari pembayaran simulasi dan bukan transaksi sungguhan.</div>
+    @endif
 </div>
 
 <div class="actions">

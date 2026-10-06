@@ -307,6 +307,8 @@
         .db-receipt-rows div { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; font-size: 12px; }
         .db-receipt-rows span:first-child { color: #66706b; }
         .db-receipt-rows span:last-child { font-weight: 700; text-align: right; }
+        .db-receipt-rows div[hidden] { display: none; }
+        .db-modal-box { max-height: calc(100vh - 40px); overflow-y: auto; }
         .db-modal-foot { display: flex; gap: 8px; padding: 14px 20px 18px; }
         .db-modal-foot a, .db-modal-foot button {
             flex: 1;
@@ -606,8 +608,13 @@
                 <div><span>Customer</span><span id="rName">-</span></div>
                 <div><span>Metode</span><span id="rMethod">-</span></div>
                 <div id="rVaRow"><span>No. VA</span><span id="rVa">-</span></div>
-                <div><span>Jadwal</span><span id="rSchedule">-</span></div>
+                <div><span>Jenis lesson</span><span id="rLesson">-</span></div>
+                <div><span>Lapangan</span><span id="rPlace">-</span></div>
+                <div><span>Jadwal lesson</span><span id="rSchedule">-</span></div>
                 <div><span>Durasi</span><span id="rDuration">-</span></div>
+                <div><span>Booking dibuat</span><span id="rCreatedAt">-</span></div>
+                <div id="rSubmittedRow"><span>Dikirim customer</span><span id="rSubmittedAt">-</span></div>
+                <div id="rReceivedRow"><span>Diterima oleh</span><span id="rReceivedBy">-</span></div>
             </div>
 
             <div class="db-modal-foot">
@@ -789,15 +796,22 @@
                 if (!current) return;
                 const p = current.payment;
 
-                setText('rPaidAt', p.paidAt ? p.paidAt + ' WIB' : '-');
+                setText('rPaidAt', p.paidAt ? 'Dibayar ' + p.paidAt : '-');
                 setText('rAmount', p.amount);
                 setText('rRef', p.reference);
                 setText('rName', current.name);
                 setText('rMethod', p.method);
                 setText('rVa', p.va);
                 $('rVaRow').hidden = !p.va;
-                setText('rSchedule', current.date + ', ' + current.start + '–' + current.end);
+                setText('rSchedule', current.day + ', ' + current.date + ' · ' + current.start + '–' + current.end + ' WIB');
                 setText('rDuration', p.duration);
+                setText('rLesson', current.lesson || 'Lesson Driving Range');
+                setText('rPlace', current.place && current.place !== '-' ? current.place : '-');
+                setText('rCreatedAt', current.createdAt || '-');
+                setText('rSubmittedAt', p.submittedAt || '-');
+                $('rSubmittedRow').hidden = !p.submittedAt;
+                setText('rReceivedBy', p.receivedBy || '-');
+                $('rReceivedRow').hidden = !p.receivedBy;
 
                 const print = $('rPrint');
                 print.href = p.receiptUrl || '#';
