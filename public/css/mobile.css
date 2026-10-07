@@ -1,0 +1,61 @@
+/* ======================================================================
+   Golf Booking Lesson - penyesuaian tampilan HP
+   Dimuat otomatis di semua halaman oleh App\Http\Middleware\MobileResponsive.
+   Semua aturan hanya aktif di layar kecil, tampilan desktop tidak berubah.
+   ====================================================================== */
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+img, video, iframe, canvas { max-width: 100%; }
+
+.m-table-scroll { max-width: 100%; }
+
+/* ---------- Tablet & HP ---------- */
+@media (max-width: 820px) {
+    body { overflow-x: clip; overflow-wrap: break-word; }
+
+    /* Tabel lebar bisa digeser ke samping, halaman tidak ikut melebar */
+    .m-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+    .m-table-scroll > table th { white-space: nowrap; }
+    pre { white-space: pre-wrap; word-break: break-word; }
+
+    /* Panel admin: daftar booking & kepala kartu */
+    .db-card-head { height: auto; min-height: 52px; flex-wrap: wrap; gap: 6px; padding: 10px 14px; }
+    .db-grid, .db-grid.detail-hidden { grid-template-columns: minmax(0, 1fr); }
+
+    /* Tab Settings digeser ke samping, tidak menumpuk */
+    .st-tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .st-tabs::-webkit-scrollbar { display: none; }
+    .st-tab { flex: 0 0 auto; white-space: nowrap; }
+}
+
+/* ---------- HP ---------- */
+@media (max-width: 600px) {
+    /* Form: huruf 16px agar iPhone tidak zoom otomatis saat mengetik */
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+    select,
+    textarea { font-size: 16px !important; }
+
+    /* Dashboard admin */
+    .db-filter { grid-template-columns: minmax(0, 1fr) !important; }
+    .db-filter > * { grid-column: auto !important; }
+    .db-actions { grid-template-columns: minmax(0, 1fr); }
+    .db-btn { min-height: 36px; }
+
+    /* Modal bukti pembayaran muncul dari bawah, selebar layar */
+    .db-modal { padding: 0; align-items: flex-end; }
+    .db-modal-box { max-width: 100%; max-height: 92vh; border-radius: 16px 16px 0 0; }
+    .db-modal-foot { position: sticky; bottom: 0; background: #fff; flex-wrap: wrap; }
+    .db-modal-foot a, .db-modal-foot button { min-height: 44px; }
+
+    /* Halaman booking customer */
+    .booking-card-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .lesson-options, .location-options { grid-template-columns: minmax(0, 1fr); }
+    .calendar-day { touch-action: manipulation; }
+    .slot-list button, .slot-list a { min-height: 40px; }
+}
+
+@media (max-width: 380px) {
+    .booking-card-grid { grid-template-columns: minmax(0, 1fr); }
+    .slot-list { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .weekdays, .calendar-grid { gap: 3px; }
+}
