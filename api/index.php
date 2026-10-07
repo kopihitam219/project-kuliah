@@ -62,7 +62,15 @@ if (($_GET['diag'] ?? '') === 'golf') {
             }
         } else {
             echo "Panjang halaman: " . strlen((string) $response->getContent()) . " byte\n\n";
-            echo substr((string) $response->getContent(), 0, 1500);
+            echo "--- Tes terminate ---\n";
+            try {
+                $kernel->terminate($request, $response);
+                echo "terminate OK\n";
+            } catch (Throwable $t) {
+                echo "TERMINATE ERROR: " . get_class($t) . ": " . $t->getMessage() . "\n" . $t->getFile() . ":" . $t->getLine() . "\n\n" . $t->getTraceAsString();
+            }
+            $last = error_get_last();
+            if ($last) { echo "\n\nPHP error terakhir: " . $last["message"] . " di " . $last["file"] . ":" . $last["line"]; }
         }
     } catch (Throwable $e) {
         echo get_class($e) . ': ' . $e->getMessage() . "\n" . $e->getFile() . ':' . $e->getLine() . "\n\n" . $e->getTraceAsString();
