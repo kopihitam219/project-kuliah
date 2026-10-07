@@ -46,6 +46,14 @@ class BookingController extends Controller
          * CANCELLED tidak dimasukkan karena slot tersebut
          * sudah kembali tersedia.
          */
+        /*
+         * Booking yang lewat batas waktu bayar digagalkan dulu,
+         * supaya slotnya langsung tersedia lagi.
+         */
+        if (class_exists(\App\Support\BookingExpiry::class)) {
+            \App\Support\BookingExpiry::sweep(true);
+        }
+
         $bookings = Booking::query()
             ->whereDate('booking_date', $selectedDate)
             ->whereIn('status', ['pending', 'booked'])
@@ -57,6 +65,8 @@ class BookingController extends Controller
                 'start_time',
                 'end_time',
                 'status',
+                'source',
+                'created_at',
             ]);
 
         $pendingBookings = $bookings

@@ -66,6 +66,34 @@
 
     /*
     |--------------------------------------------------------------------------
+    | Booking pending yang belum dibayar: ditahan sampai batas waktu bayar
+    |--------------------------------------------------------------------------
+    */
+
+    $pendingIds     = collect($pendingBookings)->pluck('id');
+    $paymentStatus  = $pendingIds->isNotEmpty()
+        ? \App\Models\Payment::whereIn('booking_id', $pendingIds)->pluck('status', 'booking_id')
+        : collect();
+    $deadlineMinutes = \App\Support\BookingRules::paymentDeadlineMinutes();
+
+    $holdList = collect($pendingBookings)
+        ->filter(fn ($b) =>
+            $b->user_id
+            && ($b->getAttributes()['source'] ?? null) !== 'offline'
+            && ($b->getAttributes()['created_at'] ?? null)
+            && in_array($paymentStatus[$b->id] ?? 'unpaid', ['unpaid', 'pending'], true)
+        )
+        ->map(fn ($b) => $toRange($b) + [
+            'deadline' => Carbon::parse($b->getAttributes()['created_at'])->addMinutes($deadlineMinutes),
+        ]);
+
+    $holdFor = fn ($s, $e) => optional($holdList->first(
+        fn ($r) => $r['start']->lt($e) && $r['end']->gt($s)
+    ))['deadline'];
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Semua slot 30 menit (07:00 - 20:00) beserta statusnya
     |--------------------------------------------------------------------------
     | Status: available | pending | booked | mine | past
@@ -105,7 +133,10 @@
 
         $counts[$status]++;
 
+        $slotHold = in_array($status, ['mine', 'pending'], true) ? $holdFor($slotStart, $slotEnd) : null;
+
         $slotMap[] = [
+            'hold'   => $slotHold?->toIso8601String(),
             'start'  => $slotStart->format('H:i'),
             'end'    => $slotEnd->format('H:i'),
             'status' => $status,
@@ -467,6 +498,14 @@
             font-size: 13px; font-weight: 800;
         }
         .contact-admin:hover { background: #3fe07a; }
+        .slot-hold {
+            display: inline-flex; align-items: center; gap: 4px; margin-top: 3px;
+            padding: 2px 8px; border-radius: 999px; background: rgba(255, 196, 0, .12);
+            color: #ffd45c; font-size: 10px; font-weight: 800; letter-spacing: .2px;
+        }
+        .slot-hold b { font-variant-numeric: tabular-nums; }
+        .slot-hold.urgent { background: rgba(255, 92, 92, .14); color: #ff9a9a; }
+
         [hidden] { display: none !important; }
     </style>
     @include('partials.brand-head')
@@ -753,6 +792,12 @@
                         <div class="slot slot-{{ $slot['status'] }}">
                             {{ $slot['start'] }} - {{ $slot['end'] }}
                             <small>{{ $statusLabels[$slot['status']] }}</small>
+                            @if(! empty($slot['hold']))
+                                <span class="slot-hold" data-hold-deadline="{{ $slot['hold'] }}"
+                                      title="{{ $slot['status'] === 'mine' ? 'Bayar sebelum waktu habis' : 'Tersedia lagi jika tidak dibayar' }}">
+                                    {{ $slot['status'] === 'mine' ? 'Bayar' : 'Tersedia lagi' }} <b>--:--</b>
+                                </span>
+                            @endif
                         </div>
                     @endif
                 @endforeach
@@ -1243,5 +1288,39 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+
+<script>
+    /* Hitung mundur slot yang ditahan menunggu pembayaran */
+    (function () {
+        var holds = document.querySelectorAll('[data-hold-deadline]');
+        if (!holds.length) return;
+
+        var pad = function (n) { return String(n).padStart(2, '0'); };
+        var reloading = false;
+
+        function tick() {
+            holds.forEach(function (el) {
+                var left = Math.max(0, Math.floor((new Date(el.dataset.holdDeadline).getTime() - Date.now()) / 1000));
+                var b = el.querySelector('b');
+
+                if (left === 0) {
+                    el.textContent = 'Waktu bayar habis';
+                    el.classList.add('urgent');
+                    if (!reloading) {
+                        reloading = true;
+                        setTimeout(function () { window.location.reload(); }, 2000);
+                    }
+                    return;
+                }
+
+                if (b) b.textContent = pad(Math.floor(left / 60)) + ':' + pad(left % 60);
+                el.classList.toggle('urgent', left <= 300);
+            });
+        }
+
+        tick();
+        setInterval(tick, 1000);
+    })();
+</script>
 </body>
 </html>
