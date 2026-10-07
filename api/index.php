@@ -38,4 +38,5 @@ foreach ($defaults as $key => $value) {
     }
 }
 
+putenv('APP_DEBUG=true'); $_ENV['APP_DEBUG'] = $_SERVER['APP_DEBUG'] = 'true'; // SEMENTARA
 require __DIR__ . '/../public/index.php';
