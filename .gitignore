@@ -42,3 +42,5 @@ yarn-error.log
 *.bak-*
 *.bak
 install-*.php
+.env.vercel
+cek-*.txt

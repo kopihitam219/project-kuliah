@@ -28,7 +28,7 @@ class AdminPaymentController extends Controller
     {
         abort_unless($payment->hasProof(), 404);
 
-        return response()->file(\Illuminate\Support\Facades\Storage::disk(Payment::PROOF_DISK)->path($payment->proof_path));
+        return \Illuminate\Support\Facades\Storage::disk(Payment::PROOF_DISK)->response($payment->proof_path);
     }
 
     /**

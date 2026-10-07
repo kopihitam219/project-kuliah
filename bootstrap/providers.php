@@ -7,4 +7,5 @@ return [
     AppServiceProvider::class,
     FortifyServiceProvider::class,
     App\Providers\SecurityServiceProvider::class,
+    App\Providers\CloudServiceProvider::class,
 ];
