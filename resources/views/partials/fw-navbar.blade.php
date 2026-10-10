@@ -42,6 +42,7 @@
     </nav>
 
     <div class="fw-nav-right">
+        <button type="button" class="fw-theme-btn" data-theme-toggle aria-label="Ganti mode terang/gelap" title="Mode terang/gelap">{!! Icons::svg('moon', 'i-moon') !!}{!! Icons::svg('sun', 'i-sun') !!}</button>
         @auth
             @includeIf('partials.notification-bell')
 

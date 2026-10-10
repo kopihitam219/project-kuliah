@@ -19,14 +19,14 @@
     .ev { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 0; overflow: hidden; }
     .ev-poster { background: var(--fw-bg-2); display: grid; place-items: center; }
     .ev-poster img { width: 100%; height: 100%; max-height: 640px; object-fit: contain; }
-    .ev-ph { width: 100%; min-height: 280px; display: grid; place-items: center; background: linear-gradient(140deg, #1f4d33, #3d7d57); color: rgba(255, 255, 255, .7); }
+    .ev-ph { width: 100%; min-height: 280px; display: grid; place-items: center; background: linear-gradient(140deg, var(--d-btn, #1f4d33), var(--d-btn-2, #3d7d57)); color: rgba(255, 255, 255, .7); }
     .ev-ph svg { width: 54px; height: 54px; }
     .ev-body { padding: 26px; display: flex; flex-direction: column; gap: 16px; }
     .ev-body h2 { font-family: var(--fw-serif); font-size: clamp(26px, 3vw, 34px); font-weight: 600; line-height: 1.15; }
     .ev-body > p { color: var(--fw-text-2); font-size: 14.5px; line-height: 1.7; white-space: pre-line; }
     .ev-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .ev-info div { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border-radius: 14px; background: var(--fw-surface-2); }
-    .ev-info i { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border-radius: 10px; background: var(--fw-tint); color: var(--fw-green); }
+    .ev-info i { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border-radius: 10px; background: var(--fw-tint); color: var(--d-ink-green, var(--fw-green)); }
     .ev-info i svg { width: 17px; height: 17px; }
     .ev-info small { display: block; color: var(--fw-muted); font-size: 11.5px; }
     .ev-info strong { font-size: 13.5px; font-weight: 600; }

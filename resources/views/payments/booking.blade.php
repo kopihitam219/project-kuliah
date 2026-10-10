@@ -60,14 +60,14 @@
     .pb .step.done .step-number { background: var(--fw-green); color: #fff; }
     .pb .step.current { color: var(--fw-text); font-weight: 600; }
     @media (max-width: 480px) { .pb .steps { gap: 6px; font-size: 12px; } .pb .steps .step-line { min-width: 10px; } }
-    .pb .step.current .step-number { background: var(--fw-lime); color: var(--fw-green); }
+    .pb .step.current .step-number { background: var(--fw-lime); color: var(--d-ink-green, var(--fw-green)); }
     .pb .step-line { flex: 1; min-width: 20px; height: 2px; background: var(--fw-line-2); border-radius: 2px; }
     .pb .page-heading h1 { font-family: var(--fw-serif); font-size: clamp(26px, 3.6vw, 36px); font-weight: 600; letter-spacing: -.4px; }
     .pb .page-heading p { margin: 4px 0 18px; color: var(--fw-muted); font-size: 14px; }
-    .pb .demo-banner { margin-bottom: 14px; padding: 12px 16px; border-radius: 14px; background: var(--fw-orange-tint); border: 1px solid rgba(233, 162, 59, .35); color: #8a5608; font-size: 13.5px; line-height: 1.55; }
+    .pb .demo-banner { margin-bottom: 14px; padding: 12px 16px; border-radius: 14px; background: var(--fw-orange-tint); border: 1px solid rgba(233, 162, 59, .35); color: var(--d-orange-ink, #8a5608); font-size: 13.5px; line-height: 1.55; }
     .pb .alert { margin-bottom: 14px; padding: 12px 16px; border-radius: 14px; font-size: 14px; }
-    .pb .alert-success { background: var(--fw-tint); border: 1px solid rgba(31, 77, 51, .2); color: var(--fw-green); }
-    .pb .alert-error { background: var(--fw-red-tint); border: 1px solid rgba(201, 65, 58, .3); color: #8f2a24; }
+    .pb .alert-success { background: var(--fw-tint); border: 1px solid rgba(var(--d-green-rgb, 31, 77, 51), .2); color: var(--d-ink-green, var(--fw-green)); }
+    .pb .alert-error { background: var(--fw-red-tint); border: 1px solid rgba(201, 65, 58, .3); color: var(--d-red-ink, #8f2a24); }
     .pb .layout { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 18px; align-items: start; }
     .pb .panel { padding: 22px; border: 1px solid var(--fw-line); border-radius: 22px; background: var(--fw-surface); box-shadow: var(--fw-shadow); }
     .pb .panel-title { margin-bottom: 14px; font-family: var(--fw-serif); font-size: 21px; font-weight: 600; }
@@ -76,7 +76,7 @@
     .pb .summary-row span:last-child { font-weight: 600; text-align: right; }
     .pb .pill { display: inline-flex; padding: 3px 10px; border-radius: 99px; background: var(--fw-bg-2); color: var(--fw-text-2); font-size: 11.5px; font-weight: 600; }
     .pb .pill.paid { background: var(--fw-green); color: #fff; }
-    .pb .pill.verifying, .pb .pill.pending, .pb .pill.unpaid { background: var(--fw-orange-tint); color: #a2650c; }
+    .pb .pill.verifying, .pb .pill.pending, .pb .pill.unpaid { background: var(--fw-orange-tint); color: var(--d-orange-ink, #a2650c); }
     .pb .pill.cash { background: var(--fw-blue-tint); color: var(--fw-blue); }
     .pb .pill.cancelled { background: var(--fw-red-tint); color: var(--fw-red); }
     .pb .summary-total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 14px; padding: 14px 16px; border-radius: 16px; background: var(--fw-green); color: #fff; }
@@ -89,17 +89,17 @@
     .pb .btn-ghost:hover { background: var(--fw-surface-2); }
     .pb .success, .pb .verify-box, .pb .cash-box { text-align: center; }
     .pb .success-icon, .pb .verify-icon, .pb .cash-icon { width: 64px; height: 64px; margin: 4px auto 12px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-green); color: #fff; font-size: 26px; font-weight: 700; }
-    .pb .verify-icon { background: var(--fw-orange-tint); color: #a2650c; }
+    .pb .verify-icon { background: var(--fw-orange-tint); color: var(--d-orange-ink, #a2650c); }
     .pb .cash-icon { background: var(--fw-blue-tint); color: var(--fw-blue); font-size: 18px; }
     .pb .success h2, .pb .verify-box h2, .pb .cash-box h2 { font-family: var(--fw-serif); font-size: 24px; font-weight: 600; }
     .pb .success p, .pb .verify-box p, .pb .cash-box p { margin-top: 8px; color: var(--fw-text-2); font-size: 14px; line-height: 1.65; }
     .pb .receipt { margin-top: 16px; padding: 4px 16px; border-radius: 16px; background: var(--fw-surface-2); text-align: left; }
-    .pb .cash-amount { margin-top: 12px; font-family: var(--fw-serif); font-size: 32px; font-weight: 600; color: var(--fw-green); }
+    .pb .cash-amount { margin-top: 12px; font-family: var(--fw-serif); font-size: 32px; font-weight: 600; color: var(--d-ink-green, var(--fw-green)); }
     .pb .cash-steps, .pb .how-to { margin: 14px 0 0; padding-left: 20px; display: grid; gap: 8px; text-align: left; color: var(--fw-text-2); font-size: 13.5px; line-height: 1.55; }
     .pb .proof-thumb { display: block; width: 160px; margin: 14px auto 6px; border-radius: 14px; overflow: hidden; border: 1px solid var(--fw-line); }
-    .pb .proof-link { display: inline-block; margin-top: 6px; color: var(--fw-green); font-size: 13px; font-weight: 600; }
-    .pb .blocked { padding: 16px; border-radius: 16px; background: var(--fw-red-tint); color: #8f2a24; font-size: 14px; line-height: 1.6; }
-    .pb .countdown { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; padding: 12px 16px; border-radius: 14px; background: var(--fw-orange-tint); color: #8a5608; font-size: 13px; }
+    .pb .proof-link { display: inline-block; margin-top: 6px; color: var(--d-ink-green, var(--fw-green)); font-size: 13px; font-weight: 600; }
+    .pb .blocked { padding: 16px; border-radius: 16px; background: var(--fw-red-tint); color: var(--d-red-ink, #8f2a24); font-size: 14px; line-height: 1.6; }
+    .pb .countdown { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; padding: 12px 16px; border-radius: 14px; background: var(--fw-orange-tint); color: var(--d-orange-ink, #8a5608); font-size: 13px; }
     .pb .countdown strong { font-size: 20px; font-variant-numeric: tabular-nums; }
     .pb .countdown.urgent { background: var(--fw-red-tint); color: var(--fw-red); }
     .pb .step-head { display: flex; gap: 12px; align-items: center; margin: 4px 0 12px; }
@@ -107,17 +107,17 @@
     .pb .step-head small { color: var(--fw-muted); font-size: 12.5px; }
     .pb .step-badge { width: 30px; height: 30px; flex: 0 0 30px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-green); color: #fff; font-size: 13px; font-weight: 700; }
     .pb .qr-box { display: grid; justify-items: center; gap: 6px; padding: 18px; border-radius: 18px; background: var(--fw-surface-2); border: 1px solid var(--fw-line); }
-    .pb .qr-box svg, .pb .qr-real { width: 220px; height: 220px; padding: 10px; border-radius: 14px; background: #fff; }
+    .pb .qr-box svg, .pb .qr-real { width: 220px; height: 220px; padding: 10px; border-radius: 14px; background: var(--d-surface, #fff); }
     .pb .qr-box small { color: var(--fw-muted); font-size: 12px; }
     .pb .amount-line { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--fw-tint-2); font-size: 13.5px; }
-    .pb .amount-line strong { font-size: 20px; color: var(--fw-green); }
+    .pb .amount-line strong { font-size: 20px; color: var(--d-ink-green, var(--fw-green)); }
     .pb .va-box { padding: 16px; border-radius: 18px; background: var(--fw-surface-2); border: 1px solid var(--fw-line); }
     .pb .va-label { color: var(--fw-muted); font-size: 12.5px; }
     .pb .va-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0 8px; }
     .pb .va-number { font-size: 22px; font-weight: 700; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
-    .pb .copy-btn { height: 34px; padding: 0 14px; border: 1px solid var(--fw-line-2); border-radius: 99px; background: #fff; color: var(--fw-green); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+    .pb .copy-btn { height: 34px; padding: 0 14px; border: 1px solid var(--fw-line-2); border-radius: 99px; background: var(--d-surface, #fff); color: var(--d-ink-green, var(--fw-green)); font-size: 12.5px; font-weight: 600; cursor: pointer; }
     .pb .proof-card { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--fw-line); }
-    .pb .proof-drop { position: relative; display: grid; justify-items: center; gap: 4px; padding: 22px 16px; border: 2px dashed rgba(31, 77, 51, .3); border-radius: 18px; background: var(--fw-tint-2); text-align: center; cursor: pointer; font-size: 13.5px; }
+    .pb .proof-drop { position: relative; display: grid; justify-items: center; gap: 4px; padding: 22px 16px; border: 2px dashed rgba(var(--d-green-rgb, 31, 77, 51), .3); border-radius: 18px; background: var(--fw-tint-2); text-align: center; cursor: pointer; font-size: 13.5px; }
     .pb .proof-drop.dragging { border-color: var(--fw-green); background: var(--fw-tint); }
     .pb .proof-drop small { color: var(--fw-muted); font-size: 12px; }
     .pb .proof-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
@@ -130,10 +130,10 @@
     .pb .method-card { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1.5px solid var(--fw-line); border-radius: 16px; background: var(--fw-surface); cursor: pointer; }
     .pb .method-option input:checked + .method-card { border-color: var(--fw-green); background: var(--fw-tint-2); }
     .pb .method-logo { width: 62px; height: 40px; flex: 0 0 62px; display: grid; place-items: center; border-radius: 10px; background: var(--fw-bg-2); color: var(--fw-text); font-size: 12px; font-weight: 800; letter-spacing: .3px; }
-    .pb .method-logo.qris { background: #fde8ec; color: #c3162e; }
-    .pb .method-logo.mandiri { background: #e6eef9; color: #0b3d91; text-transform: lowercase; }
-    .pb .method-logo.bca { background: #e6eef9; color: #1a4fa0; }
-    .pb .method-logo.cash { background: var(--fw-tint); color: var(--fw-green); }
+    .pb .method-logo.qris { background: var(--d-red-tint, #fde8ec); color: var(--d-red-ink, #c3162e); }
+    .pb .method-logo.mandiri { background: var(--d-blue-tint, #e6eef9); color: var(--d-blue-ink, #0b3d91); text-transform: lowercase; }
+    .pb .method-logo.bca { background: var(--d-blue-tint, #e6eef9); color: var(--d-blue-ink, #1a4fa0); }
+    .pb .method-logo.cash { background: var(--fw-tint); color: var(--d-ink-green, var(--fw-green)); }
     .pb .method-text { flex: 1; min-width: 0; }
     .pb .method-text strong { display: block; font-size: 14.5px; }
     .pb .method-text small { color: var(--fw-muted); font-size: 12.5px; }
@@ -221,7 +221,7 @@
                 @if ($isCourse)
                     1 sesi Course Lesson ({{ rtrim(rtrim(number_format($hours, 2, ',', '.'), '0'), ',') }} jam)
                     @if (\App\Support\BookingRules::courseNote())
-                        <br><span style="color: #a2650c; font-weight: 600">* {{ \App\Support\BookingRules::courseNote() }}</span>
+                        <br><span style="color: var(--d-orange-ink, #a2650c); font-weight: 600">* {{ \App\Support\BookingRules::courseNote() }}</span>
                     @endif
                 @else
                     {{ rtrim(rtrim(number_format($hours, 2, ',', '.'), '0'), ',') }} jam × {{ Payment::formatRupiah($rate) }}

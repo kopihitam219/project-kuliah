@@ -17,7 +17,7 @@
         .fa-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(23, 56, 37, .35) 0%, rgba(23, 56, 37, .1) 40%, rgba(23, 56, 37, .88) 100%); }
         .fa-art > * { position: relative; z-index: 1; }
         .fa-art .fw-brand { color: #fff; }
-        .fa-art .fw-acc { color: var(--fw-lime); }
+        .fa-art .fw-acc { color: #cde8a3; }
         .fa-quote h2 { font-family: var(--fw-serif); font-size: clamp(30px, 3.4vw, 44px); font-weight: 600; line-height: 1.12; }
         .fa-quote p { margin-top: 10px; max-width: 40ch; color: rgba(255, 255, 255, .82); font-size: 15px; line-height: 1.6; }
         .fa-form { display: flex; align-items: center; justify-content: center; padding: 40px 24px; }

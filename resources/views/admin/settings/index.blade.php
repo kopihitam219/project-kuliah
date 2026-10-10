@@ -23,20 +23,20 @@
             gap: 8px;
             height: 42px;
             padding: 0 16px;
-            border: 1px solid rgba(31, 77, 51, 0.2);
+            border: 1px solid rgba(var(--d-green-rgb, 31, 77, 51), 0.2);
             border-radius: 999px;
-            background: #ffffff;
-            color: #3c4a42;
+            background: var(--d-surface, #ffffff);
+            color: var(--d-text-2, #3c4a42);
             font-size: 12px;
             font-weight: 800;
             text-decoration: none;
         }
 
-        .st-tab:hover { border-color: rgba(31, 77, 51, 0.5); }
+        .st-tab:hover { border-color: rgba(var(--d-green-rgb, 31, 77, 51), 0.5); }
         .st-tab.active { background: var(--lime); border-color: var(--lime); color: var(--ink-dark); }
 
         .st-tab.soon { opacity: .55; cursor: not-allowed; }
-        .st-tab small { padding: 2px 7px; border-radius: 999px; background: rgba(23, 46, 33, 0.060); font-size: 9px; }
+        .st-tab small { padding: 2px 7px; border-radius: 999px; background: rgba(var(--d-ink-rgb, 23, 46, 33), 0.060); font-size: 9px; }
 
         .st-card { padding: 22px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel); }
         .st-card h2 { font-size: 17px; font-weight: 900; }
@@ -45,7 +45,7 @@
         .st-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
         .st-grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 
-        .st-box { padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: #f8f7f2; }
+        .st-box { padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--d-surface-2, #f8f7f2); }
 
         .st-upload { display: flex; gap: 14px; align-items: center; }
         .st-upload.stack { flex-direction: column; align-items: stretch; }
@@ -55,9 +55,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px dashed rgba(31, 77, 51, 0.35);
+            border: 1px dashed rgba(var(--d-green-rgb, 31, 77, 51), 0.35);
             border-radius: 10px;
-            background: #f8f7f2;
+            background: var(--d-surface-2, #f8f7f2);
             color: var(--text-muted);
             font-size: 11px;
             font-weight: 700;
@@ -83,13 +83,13 @@
         .st-toggle small { display: block; margin-top: 3px; color: var(--text-muted); font-size: 11px; line-height: 1.5; }
         .st-toggle input { width: 20px; height: 20px; flex: 0 0 20px; accent-color: var(--lime); }
 
-        .st-remove { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; color: #c9413a; font-size: 11px; font-weight: 700; cursor: pointer; }
+        .st-remove { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; color: var(--d-red-ink, #c9413a); font-size: 11px; font-weight: 700; cursor: pointer; }
         .st-remove input { accent-color: #d8233d; }
 
         .st-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
 
         .st-soon { padding: 50px 20px; text-align: center; color: var(--text-muted); font-size: 13px; line-height: 1.7; }
-        .st-soon strong { display: block; color: #17261d; font-size: 16px; margin-bottom: 6px; }
+        .st-soon strong { display: block; color: var(--d-text, #17261d); font-size: 16px; margin-bottom: 6px; }
 
         .st-hero-preview {
             padding: 22px;
@@ -98,29 +98,29 @@
             background-position: center;
         }
 
-        .st-hero-preview small { color: var(--lime); font-size: 10px; font-weight: 800; letter-spacing: 2px; }
+        .st-hero-preview small { color: var(--d-ink-green, var(--lime)); font-size: 10px; font-weight: 800; letter-spacing: 2px; }
         .st-hero-preview h3 { margin-top: 6px; font-family: var(--fw-serif, Georgia, serif); font-size: 28px; font-weight: 600; line-height: 1.1; }
-        .st-hero-preview h3 span { color: var(--lime); }
-        .st-hero-preview p { margin-top: 8px; max-width: 460px; color: #3c4a42; font-size: 12px; line-height: 1.5; }
+        .st-hero-preview h3 span { color: var(--d-ink-green, var(--lime)); }
+        .st-hero-preview p { margin-top: 8px; max-width: 460px; color: var(--d-text-2, #3c4a42); font-size: 12px; line-height: 1.5; }
 
         .st-check { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--line); }
         .st-check:last-child { border-bottom: 0; }
         .st-check strong { display: block; font-size: 13px; }
         .st-check small { display: block; margin-top: 2px; color: var(--text-muted); font-size: 11px; line-height: 1.5; }
         .st-badge { flex: 0 0 auto; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 900; white-space: nowrap; }
-        .st-badge.ok { background: rgba(31, 77, 51, 0.16); color: var(--lime); }
-        .st-badge.warn { background: rgba(255, 120, 130, .16); color: #c9413a; }
-        .st-badge.muted { background: rgba(23, 46, 33, 0.048); color: var(--text-soft); }
+        .st-badge.ok { background: rgba(var(--d-green-rgb, 31, 77, 51), 0.16); color: var(--d-ink-green, var(--lime)); }
+        .st-badge.warn { background: rgba(255, 120, 130, .16); color: var(--d-red-ink, #c9413a); }
+        .st-badge.muted { background: rgba(var(--d-ink-rgb, 23, 46, 33), 0.048); color: var(--text-soft); }
         .st-row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .st-mini-btn {
             height: 32px; padding: 0 12px; display: inline-flex; align-items: center;
             border: 1px solid var(--line); border-radius: 7px; background: transparent;
             color: var(--text-soft); font-size: 11px; font-weight: 800; text-decoration: none; cursor: pointer;
         }
-        .st-mini-btn:hover { border-color: rgba(31, 77, 51, 0.45); color: var(--lime); }
-        .st-mini-btn.danger:hover { border-color: rgba(216, 35, 61, .7); color: #c9413a; }
+        .st-mini-btn:hover { border-color: rgba(var(--d-green-rgb, 31, 77, 51), 0.45); color: var(--d-ink-green, var(--lime)); }
+        .st-mini-btn.danger:hover { border-color: rgba(216, 35, 61, .7); color: var(--d-red-ink, #c9413a); }
         .st-disabled { opacity: .55; }
-        .st-code { font-family: Consolas, Menlo, monospace; font-size: 11px; color: var(--lime); }
+        .st-code { font-family: Consolas, Menlo, monospace; font-size: 11px; color: var(--d-ink-green, var(--lime)); }
 
         @media (max-width: 1050px) { .st-grid-3 { grid-template-columns: 1fr; } }
         @media (max-width: 760px) { .st-grid-2 { grid-template-columns: 1fr; } }
@@ -177,7 +177,7 @@
                         <label for="sName">Nama usaha</label>
                         <input type="text" name="site_name" id="sName" class="input" maxlength="60" required
                                value="{{ old('site_name', Brand::name()) }}">
-                        <p class="field-hint">Kata di tengah tampil hijau, misalnya Golf <strong style="color: var(--lime)">Booking</strong> Lesson.</p>
+                        <p class="field-hint">Kata di tengah tampil hijau, misalnya Golf <strong style="color: var(--d-ink-green, var(--lime))">Booking</strong> Lesson.</p>
                     </div>
                     <div class="field">
                         <label for="sTagline">Slogan</label>
@@ -231,7 +231,7 @@
                 @if (\Illuminate\Support\Facades\Route::has('admin.contact.index'))
                     <p class="field-hint" style="margin-top: 14px">
                         Alamat lokasi, nomor WhatsApp publik, email, dan jam operasional diatur di menu
-                        <a href="{{ route('admin.contact.index') }}" style="color: var(--lime)">Contact</a>.
+                        <a href="{{ route('admin.contact.index') }}" style="color: var(--d-ink-green, var(--lime))">Contact</a>.
                     </p>
                 @endif
             </section>
@@ -320,7 +320,7 @@
 
                 <div class="st-hero-preview" style="background-image: linear-gradient(90deg, rgba(245,242,232,.97), rgba(245,242,232,.55)), url('{{ Brand::background('public') }}')">
                     <small id="pLabel">{{ $hero['hero_label'] }}</small>
-                    <h3><span style="color: #17261d" id="pTitle1">{{ $hero['hero_title_1'] }}</span><br><span style="color: #17261d" id="pTitle2">{{ $hero['hero_title_2'] }}</span> <span id="pHighlight">{{ $hero['hero_highlight'] }}</span></h3>
+                    <h3><span style="color: var(--d-text, #17261d)" id="pTitle1">{{ $hero['hero_title_1'] }}</span><br><span style="color: var(--d-text, #17261d)" id="pTitle2">{{ $hero['hero_title_2'] }}</span> <span id="pHighlight">{{ $hero['hero_highlight'] }}</span></h3>
                     <p id="pText">{{ $hero['hero_text'] }}</p>
                 </div>
 
@@ -574,11 +574,11 @@
                         </label>
 
                         <div class="st-upload">
-                            <div class="st-preview logo" style="width: 96px; height: 96px; background: #fff">
+                            <div class="st-preview logo" style="width: 96px; height: 96px; background: var(--d-surface, #fff)">
                                 @if ($qris['image'])
                                     <img src="{{ $qris['image'] }}" alt="QRIS saat ini">
                                 @else
-                                    <span style="color: #666">QR dummy</span>
+                                    <span style="color: var(--d-muted, #666)">QR dummy</span>
                                 @endif
                             </div>
                             <div style="flex: 1; min-width: 0">
@@ -866,7 +866,7 @@
                         Admin harus memasukkan kode dari aplikasi authenticator (Google Authenticator, dsb.) setiap login.
                         Admin yang belum mengaktifkan 2FA akan diarahkan ke halaman pengaturan 2FA.
                         @if ($user->two_factor_confirmed_at)
-                            <strong style="color: var(--lime)">2FA akun Anda sudah aktif.</strong>
+                            <strong style="color: var(--d-ink-green, var(--lime))">2FA akun Anda sudah aktif.</strong>
                         @else
                             Aktifkan dulu 2FA di akun Anda sendiri.
                         @endif
@@ -1045,7 +1045,7 @@
             <h2>Verifikasi 2 langkah (2FA)</h2>
             <p class="st-sub" style="margin-bottom: 0">
                 @if ($user->two_factor_confirmed_at ?? null)
-                    <strong style="color: var(--lime)">Aktif.</strong> Akun admin terlindungi kode dari aplikasi authenticator.
+                    <strong style="color: var(--d-ink-green, var(--lime))">Aktif.</strong> Akun admin terlindungi kode dari aplikasi authenticator.
                 @else
                     Belum aktif. Aktifkan agar akun admin tetap aman walaupun password diketahui orang lain.
                 @endif

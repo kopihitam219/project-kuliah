@@ -44,7 +44,7 @@ img, video, iframe, canvas { max-width: 100%; }
     /* Modal bukti pembayaran muncul dari bawah, selebar layar */
     .db-modal { padding: 0; align-items: flex-end; }
     .db-modal-box { max-width: 100%; max-height: 92vh; border-radius: 16px 16px 0 0; }
-    .db-modal-foot { position: sticky; bottom: 0; background: #fff; flex-wrap: wrap; }
+    .db-modal-foot { position: sticky; bottom: 0; background: var(--d-surface, #fff); flex-wrap: wrap; }
     .db-modal-foot a, .db-modal-foot button { min-height: 44px; }
 
     /* Halaman booking customer */
@@ -72,7 +72,7 @@ img, video, iframe, canvas { max-width: 100%; }
 @media (max-width: 820px) {
     html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
     body { -webkit-font-smoothing: antialiased; }
-    ::selection { background: #cde8a3; color: #1f4d33; }
+    ::selection { background: var(--d-lime, #cde8a3); color: var(--d-ink-green, #1f4d33); }
 }
 
 /* ---------- Navbar situs (visitor & customer): satu baris rapi ---------- */
@@ -97,7 +97,7 @@ img, video, iframe, canvas { max-width: 100%; }
         position: sticky; top: 0; z-index: 200;
         height: 60px !important; padding: 0 14px !important;
         -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
-        background: rgba(243, 241, 234, .92) !important;
+        background: rgba(var(--d-bg-rgb, 243, 241, 234), .92) !important;
     }
     .admin-page .top-left, .admin-page .top-right { gap: 10px !important; }
     .admin-page .brand { font-size: 16px !important; white-space: nowrap; letter-spacing: -.4px !important; }
@@ -122,15 +122,15 @@ img, video, iframe, canvas { max-width: 100%; }
     .db-table tbody tr {
         display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 10px;
         margin: 0 10px 10px; padding: 14px;
-        border: 1px solid rgba(23, 46, 33, .09); border-radius: 16px;
-        background: #fff;
+        border: 1px solid rgba(var(--d-ink-rgb, 23, 46, 33), .09); border-radius: 16px;
+        background: var(--d-surface, #fff);
     }
     .db-table tbody tr:first-child { margin-top: 10px; }
     .db-table tbody td { display: block; padding: 0 !important; border: 0 !important; min-width: 0; }
     .db-table tbody td:nth-child(1) { display: none; }
     .db-table tbody td:nth-child(2) { grid-column: 1; grid-row: 1; }
     .db-table tbody td:nth-child(6) { grid-column: 2; grid-row: 1; justify-self: end; align-self: start; }
-    .db-table tbody td:nth-child(3) { grid-column: 1 / -1; padding-top: 10px !important; border-top: 1px dashed rgba(23, 46, 33, .12) !important; }
+    .db-table tbody td:nth-child(3) { grid-column: 1 / -1; padding-top: 10px !important; border-top: 1px dashed rgba(var(--d-ink-rgb, 23, 46, 33), .12) !important; }
     .db-table tbody td:nth-child(4), .db-table tbody td:nth-child(5) { grid-column: auto; }
     .db-table tbody td[colspan] { grid-column: 1 / -1; display: block; text-align: center; }
     .db-table-wrap { overflow: visible !important; }

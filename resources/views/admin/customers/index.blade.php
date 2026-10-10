@@ -7,7 +7,7 @@
         .stat-row { grid-template-columns: repeat(5, minmax(0, 1fr)); }
         .alert-warning { padding: 11px 14px; border: 1px solid rgba(255, 198, 45, .4); border-radius: 9px; background: rgba(255, 198, 45, .08); color: #ffd56a; font-size: 12px; line-height: 1.5; }
         .btn-danger { border-color: rgba(216, 35, 61, .7); background: rgba(216, 35, 61, .12); color: #ff8a9a; }
-        .btn-danger:hover { background: #d8233d; color: #17261d; }
+        .btn-danger:hover { background: #d8233d; color: var(--d-text, #17261d); }
         @media (max-width: 1100px) { .stat-row { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         @media (max-width: 760px) { .stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         .m-only { display: none !important; }
@@ -182,7 +182,7 @@
                                     <td>
                                         {{ $formatDate($customer->last_active_at) }}
                                         @if ($customer->last_active_at && $customer->last_active_at->lt(now()->subMonths(6)))
-                                            <small style="display: block; color: #a2650c; font-size: 10px">Tidak aktif {{ $customer->last_active_at->locale('id')->diffForHumans(null, true) }}</small>
+                                            <small style="display: block; color: var(--d-orange-ink, #a2650c); font-size: 10px">Tidak aktif {{ $customer->last_active_at->locale('id')->diffForHumans(null, true) }}</small>
                                         @endif
                                     </td>
                                     <td>

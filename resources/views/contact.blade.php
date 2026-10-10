@@ -18,7 +18,7 @@
     .kt-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 22px; align-items: start; }
     .kt-loc { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 16px; background: var(--fw-surface); border: 1.5px solid var(--fw-line); text-align: left; cursor: pointer; font: inherit; color: inherit; }
     .kt-loc.active { border-color: var(--fw-green); background: var(--fw-tint-2); }
-    .kt-loc .num { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-tint); color: var(--fw-green); font-weight: 700; }
+    .kt-loc .num { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-tint); color: var(--d-ink-green, var(--fw-green)); font-weight: 700; }
     .kt-loc.active .num { background: var(--fw-green); color: #fff; }
     .kt-loc strong { display: block; font-size: 14.5px; font-weight: 600; }
     .kt-loc small { color: var(--fw-muted); font-size: 12.5px; }

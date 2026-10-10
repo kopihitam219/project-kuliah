@@ -89,6 +89,7 @@
     <div class="mn-group">
         <h2>Bantuan</h2>
         <div class="fw-menu">
+            <button type="button" data-theme-toggle aria-label="Ganti mode terang/gelap"><span class="ic">{!! Icons::svg('moon') !!}</span><span class="lbl">Mode gelap</span><span class="fw-theme-switch" aria-hidden="true"></span></button>
             {!! $item(route('contact'), 'help', 'Bantuan & Kontak') !!}
             {!! $item(route('home'), 'info', 'Tentang ' . \App\Support\Brand::name()) !!}
             @if ($user)

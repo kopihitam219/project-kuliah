@@ -1,26 +1,26 @@
 {{-- Isian profil About Coach. Dipakai di Admin > About Coach dan panel edit di halaman Home. Variabel: $coach --}}
 @once
 <style>
-    .cf { display: grid; gap: 14px; font-family: inherit; color: #17261d; }
-    .cf-sec { margin-top: 6px; padding-top: 14px; border-top: 1px solid rgba(23, 46, 33, .09); color: #2a6444; font-size: 11.5px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; }
+    .cf { display: grid; gap: 14px; font-family: inherit; color: var(--d-text, #17261d); }
+    .cf-sec { margin-top: 6px; padding-top: 14px; border-top: 1px solid rgba(var(--d-ink-rgb, 23, 46, 33), .09); color: var(--d-ink-green-2, #2a6444); font-size: 11.5px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; }
     .cf-sec:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
     .cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .cf-f { display: grid; gap: 6px; min-width: 0; align-content: start; }
-    .cf-f > label, .cf-lbl { color: #3c4a42; font-size: 13px; font-weight: 600; }
+    .cf-f > label, .cf-lbl { color: var(--d-text-2, #3c4a42); font-size: 13px; font-weight: 600; }
     .cf-f input[type=text], .cf-f input[type=number], .cf-f input[type=email], .cf-f textarea {
-        width: 100%; min-height: 44px; padding: 10px 14px; border: 1px solid rgba(23, 46, 33, .16); border-radius: 12px;
-        background: #fff; color: #17261d; font: inherit; font-size: 14.5px; line-height: 1.45; outline: none;
+        width: 100%; min-height: 44px; padding: 10px 14px; border: 1px solid rgba(var(--d-ink-rgb, 23, 46, 33), .16); border-radius: 12px;
+        background: var(--d-surface, #fff); color: var(--d-text, #17261d); font: inherit; font-size: 14.5px; line-height: 1.45; outline: none;
     }
     .cf-f textarea { min-height: 96px; resize: vertical; }
     .cf-f textarea.tall { min-height: 130px; }
-    .cf-f input:focus, .cf-f textarea:focus { border-color: #1f4d33; box-shadow: 0 0 0 4px rgba(31, 77, 51, .1); }
-    .cf-hint { color: #77837b; font-size: 12px; line-height: 1.45; }
+    .cf-f input:focus, .cf-f textarea:focus { border-color: var(--d-ink-green, #1f4d33); box-shadow: 0 0 0 4px rgba(var(--d-green-rgb, 31, 77, 51), .1); }
+    .cf-hint { color: var(--d-muted, #77837b); font-size: 12px; line-height: 1.45; }
     .cf-photo { display: flex; gap: 14px; align-items: flex-start; }
-    .cf-photo-prev { flex: 0 0 110px; aspect-ratio: 4 / 5; border-radius: 16px; border: 1px solid rgba(23, 46, 33, .1); background: #e5eee6 center top / cover; display: grid; place-items: center; color: #77837b; font-size: 11px; text-align: center; padding: 6px; }
+    .cf-photo-prev { flex: 0 0 110px; aspect-ratio: 4 / 5; border-radius: 16px; border: 1px solid rgba(var(--d-ink-rgb, 23, 46, 33), .1); background: var(--d-tint, #e5eee6) center top / cover; display: grid; place-items: center; color: var(--d-muted, #77837b); font-size: 11px; text-align: center; padding: 6px; }
     .cf-photo > div:last-child { flex: 1; min-width: 0; display: grid; gap: 8px; }
-    .cf-file { display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 16px; border: 1px dashed #3d7d57; border-radius: 12px; color: #1f4d33; background: #f0f5ef; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+    .cf-file { display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 16px; border: 1px dashed #3d7d57; border-radius: 12px; color: var(--d-ink-green, #1f4d33); background: var(--d-tint-2, #f0f5ef); font-size: 13.5px; font-weight: 600; cursor: pointer; }
     .cf-file input { display: none; }
-    .cf-check { display: flex; align-items: center; gap: 9px; color: #3c4a42; font-size: 13.5px; cursor: pointer; }
+    .cf-check { display: flex; align-items: center; gap: 9px; color: var(--d-text-2, #3c4a42); font-size: 13.5px; cursor: pointer; }
     .cf-check input { width: 17px; height: 17px; accent-color: #1f4d33; }
     @media (max-width: 600px) { .cf-row { grid-template-columns: 1fr; } }
 </style>

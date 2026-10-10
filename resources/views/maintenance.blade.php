@@ -14,18 +14,20 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
-            color: #17261d; font-family: Inter, Arial, Helvetica, sans-serif;
-            background: linear-gradient(180deg, rgba(243, 241, 234, .55), #f3f1ea 70%), url('{{ Brand::background('public') }}') center top / cover no-repeat;
+            color: var(--d-text, #17261d); font-family: Inter, Arial, Helvetica, sans-serif;
+            background: linear-gradient(180deg, rgba(var(--d-bg-rgb, 243, 241, 234), .55), var(--d-bg, #f3f1ea) 70%), url('{{ Brand::background('public') }}') center top / cover no-repeat;
         }
-        .card { width: 100%; max-width: 480px; padding: 34px 28px; text-align: center; border: 1px solid rgba(23, 46, 33, .09); border-radius: 24px; background: #ffffff; box-shadow: 0 24px 60px rgba(23, 46, 33, .12); }
+        .card { width: 100%; max-width: 480px; padding: 34px 28px; text-align: center; border: 1px solid rgba(var(--d-ink-rgb, 23, 46, 33), .09); border-radius: 24px; background: var(--d-surface, #ffffff); box-shadow: 0 24px 60px rgba(var(--d-shadow-rgb, 23, 46, 33), .12); }
         .brand { display: inline-flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; }
         .brand-icon { font-size: 28px; }
-        .brand .accent { color: #3d7d57; }
-        .icon { width: 64px; height: 64px; margin: 26px auto 16px; display: grid; place-items: center; border-radius: 50%; background: #fdf1de; color: #e9a23b; font-size: 28px; }
+        .brand .accent { color: var(--d-ink-green-2, #3d7d57); }
+        .icon { width: 64px; height: 64px; margin: 26px auto 16px; display: grid; place-items: center; border-radius: 50%; background: var(--d-orange-tint, #fdf1de); color: #e9a23b; font-size: 28px; }
         h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 28px; font-weight: 700; }
-        p { margin-top: 10px; color: #3c4a42; font-size: 14.5px; line-height: 1.65; }
-        small { display: block; margin-top: 22px; color: #77837b; font-size: 12px; }
+        p { margin-top: 10px; color: var(--d-text-2, #3c4a42); font-size: 14.5px; line-height: 1.65; }
+        small { display: block; margin-top: 22px; color: var(--d-muted, #77837b); font-size: 12px; }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/fw.css') }}?v={{ substr(md5((string) @filemtime(public_path('css/fw.css'))), 0, 8) }}">
+    @include('partials.theme-script')
 </head>
 <body>
     <main class="card">

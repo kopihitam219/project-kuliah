@@ -44,8 +44,8 @@
     .bd-hello p { margin-top: 4px; color: var(--fw-muted); font-size: 14px; }
 
     .bd-top { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; margin-top: 22px; }
-    .bd-hero { position: relative; min-height: 200px; padding: 22px; border-radius: 24px; overflow: hidden; color: #fff; background: linear-gradient(100deg, rgba(23, 56, 37, .97) 0%, rgba(31, 77, 51, .9) 45%, rgba(31, 77, 51, .25) 100%), var(--bd-photo) center / cover no-repeat; box-shadow: var(--fw-shadow-lg); display: flex; flex-direction: column; justify-content: space-between; }
-    .bd-hero .tag { align-self: flex-start; padding: 5px 11px; border-radius: 99px; background: rgba(255, 255, 255, .14); font-size: 11.5px; font-weight: 600; }
+    .bd-hero { position: relative; min-height: 200px; padding: 22px; border-radius: 24px; overflow: hidden; color: #fff; background: linear-gradient(100deg, rgba(23, 56, 37, .97) 0%, rgba(var(--d-green-rgb, 31, 77, 51), .9) 45%, rgba(var(--d-green-rgb, 31, 77, 51), .25) 100%), var(--bd-photo) center / cover no-repeat; box-shadow: var(--fw-shadow-lg); display: flex; flex-direction: column; justify-content: space-between; }
+    .bd-hero .tag { align-self: flex-start; padding: 5px 11px; border-radius: 99px; background: rgba(var(--d-glass-rgb, 255, 255, 255), .14); font-size: 11.5px; font-weight: 600; }
     .bd-hero h2 { margin-top: 12px; font-family: var(--fw-serif); font-size: clamp(24px, 3vw, 30px); font-weight: 600; line-height: 1.15; max-width: 14ch; }
     .bd-hero .info { margin-top: 10px; display: grid; gap: 4px; font-size: 13.5px; color: rgba(255, 255, 255, .85); }
     .bd-hero .info span { display: inline-flex; align-items: center; gap: 7px; }
@@ -56,10 +56,10 @@
 
     .bd-quick { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
     .bd-quick a { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 6px; border-radius: 18px; background: var(--fw-surface); border: 1px solid var(--fw-line); box-shadow: var(--fw-shadow); color: var(--fw-text-2); font-size: 12.5px; font-weight: 500; text-align: center; }
-    .bd-quick a:hover { border-color: rgba(31, 77, 51, .35); color: var(--fw-green); }
-    .bd-quick .ic { position: relative; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-tint); color: var(--fw-green); }
+    .bd-quick a:hover { border-color: rgba(var(--d-green-rgb, 31, 77, 51), .35); color: var(--d-ink-green, var(--fw-green)); }
+    .bd-quick .ic { position: relative; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-tint); color: var(--d-ink-green, var(--fw-green)); }
     .bd-quick .ic svg { width: 21px; height: 21px; }
-    .bd-quick .ic b { position: absolute; top: -3px; right: -3px; min-width: 18px; height: 18px; padding: 0 4px; display: grid; place-items: center; border-radius: 99px; background: var(--fw-red); color: #fff; font-size: 10px; box-shadow: 0 0 0 2px #fff; }
+    .bd-quick .ic b { position: absolute; top: -3px; right: -3px; min-width: 18px; height: 18px; padding: 0 4px; display: grid; place-items: center; border-radius: 99px; background: var(--fw-red); color: #fff; font-size: 10px; box-shadow: 0 0 0 2px var(--d-surface, #fff); }
 
     .bd-cols { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; }
     .bd-coach { display: flex; gap: 16px; align-items: center; padding: 18px; }
@@ -69,8 +69,8 @@
     .bd-coach p { margin-top: 6px; color: var(--fw-text-2); font-size: 13.5px; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
     .bd-prog { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-    .bd-prog a { position: relative; height: 120px; border-radius: 18px; overflow: hidden; background: #cfd8c9 center / cover no-repeat; }
-    .bd-prog a::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, rgba(23, 46, 33, .82)); }
+    .bd-prog a { position: relative; height: 120px; border-radius: 18px; overflow: hidden; background: var(--d-bg-2, #cfd8c9) center / cover no-repeat; }
+    .bd-prog a::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, rgba(var(--d-ink-rgb, 23, 46, 33), .82)); }
     .bd-prog span { position: absolute; z-index: 1; left: 12px; right: 12px; bottom: 10px; color: #fff; font-size: 14px; font-weight: 600; }
     .bd-prog small { display: block; opacity: .8; font-size: 11px; font-weight: 500; }
 

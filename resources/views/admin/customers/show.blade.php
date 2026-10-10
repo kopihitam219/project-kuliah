@@ -4,9 +4,9 @@
 
 @push('styles')
     <style>
-        .alert-warning { padding: 11px 14px; border: 1px solid rgba(255, 198, 45, .4); border-radius: 9px; background: #fdf1de; color: #8a5608; font-size: 12px; line-height: 1.5; }
+        .alert-warning { padding: 11px 14px; border: 1px solid rgba(255, 198, 45, .4); border-radius: 9px; background: var(--d-orange-tint, #fdf1de); color: var(--d-orange-ink, #8a5608); font-size: 12px; line-height: 1.5; }
         .btn-danger { border-color: rgba(216, 35, 61, .7); background: rgba(216, 35, 61, .12); color: #ff8a9a; }
-        .btn-danger:hover { background: #d8233d; color: #17261d; }
+        .btn-danger:hover { background: #d8233d; color: var(--d-text, #17261d); }
     </style>
 @endpush
 
@@ -30,7 +30,7 @@
     </section>
 
     @if (session('new_account'))
-        <section class="form-card" style="margin-bottom: 16px; border-color: rgba(31, 77, 51, 0.45)">
+        <section class="form-card" style="margin-bottom: 16px; border-color: rgba(var(--d-green-rgb, 31, 77, 51), 0.45)">
             <h2 style="font-size: 16px; font-weight: 900">Akun berhasil dibuat</h2>
             <p class="field-hint" style="margin: 4px 0 12px">
                 Berikan data login ini ke customer. Password hanya ditampilkan <strong>sekali</strong>, setelah halaman ditutup tidak bisa dilihat lagi.
@@ -38,7 +38,7 @@
             </p>
             <div class="profile-list" style="max-width: 520px">
                 <div><span>Email</span><span>{{ session('new_account')['email'] }}</span></div>
-                <div><span>Password</span><span style="font-family: Consolas, Menlo, monospace; color: var(--lime)" id="newPassword">{{ session('new_account')['password'] }}</span></div>
+                <div><span>Password</span><span style="font-family: Consolas, Menlo, monospace; color: var(--d-ink-green, var(--lime))" id="newPassword">{{ session('new_account')['password'] }}</span></div>
             </div>
             <button type="button" class="btn btn-outline" style="margin-top: 12px" id="copyAccount"
                     data-text="Email: {{ session('new_account')['email'] }}&#10;Password: {{ session('new_account')['password'] }}&#10;Login: {{ route('login') }}">
@@ -103,7 +103,7 @@
             @include('admin.customers._history', ['bookings' => $bookings, 'statuses' => $statuses])
 
             <section class="form-card" style="margin-top: 16px; border-color: rgba(216, 35, 61, .35)">
-                <h2 style="font-size: 16px; font-weight: 900; color: #c9413a">Hapus akun customer</h2>
+                <h2 style="font-size: 16px; font-weight: 900; color: var(--d-red-ink, #c9413a)">Hapus akun customer</h2>
                 <p class="field-hint" style="margin: 4px 0 12px">
                     Akun dihapus permanen dan customer tidak bisa login lagi.
                     Riwayat booking & pembayaran <strong>tetap tersimpan</strong> atas nama {{ $user->name }}, sehingga dashboard dan laporan tetap lengkap.

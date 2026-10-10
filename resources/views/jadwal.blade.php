@@ -113,9 +113,9 @@
                         @if ($offline)
                             <span>Pembayaran: <b>Lunas · dibayar di tempat</b></span>
                         @elseif ($isPaid)
-                            <span>Pembayaran: <b style="color:var(--fw-green)">Lunas</b> @if ($pay?->amount_label) · {{ $pay->amount_label }} @endif</span>
+                            <span>Pembayaran: <b style="color:var(--d-ink-green, var(--fw-green))">Lunas</b> @if ($pay?->amount_label) · {{ $pay->amount_label }} @endif</span>
                         @else
-                            <span>Pembayaran: <b style="color:#a2650c">{{ $pay?->status_label ?? 'Belum dibayar' }}</b></span>
+                            <span>Pembayaran: <b style="color:var(--d-orange-ink, #a2650c)">{{ $pay?->status_label ?? 'Belum dibayar' }}</b></span>
                             @if (Route::has('payment.booking'))
                                 <a href="{{ route('payment.booking', $b) }}" class="fw-btn sm">Bayar</a>
                             @endif

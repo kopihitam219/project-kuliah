@@ -17,17 +17,17 @@
 <style>
     .gl-tabs { margin-bottom: 18px; }
     .gl-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-flow: dense; gap: 12px; }
-    .gl-item { position: relative; aspect-ratio: 1; padding: 0; border: 0; border-radius: 18px; overflow: hidden; background: #cfd8c9 center / cover no-repeat; cursor: pointer; box-shadow: var(--fw-shadow); }
+    .gl-item { position: relative; aspect-ratio: 1; padding: 0; border: 0; border-radius: 18px; overflow: hidden; background: var(--d-bg-2, #cfd8c9) center / cover no-repeat; cursor: pointer; box-shadow: var(--fw-shadow); }
     .gl-item.wide { grid-column: span 2; aspect-ratio: 2 / 1; }
     .gl-item img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; }
     .gl-item:hover img { transform: scale(1.04); }
-    .gl-item .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 30px 12px 10px; background: linear-gradient(180deg, transparent, rgba(23, 46, 33, .8)); color: #fff; font-size: 13px; font-weight: 600; text-align: left; opacity: 0; transition: opacity .2s; }
+    .gl-item .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 30px 12px 10px; background: linear-gradient(180deg, transparent, rgba(var(--d-ink-rgb, 23, 46, 33), .8)); color: #fff; font-size: 13px; font-weight: 600; text-align: left; opacity: 0; transition: opacity .2s; }
     .gl-item:hover .cap, .gl-item:focus-visible .cap { opacity: 1; }
-    .gl-item .play { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(23, 46, 33, .15); }
-    .gl-item .play span { width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: rgba(255, 255, 255, .94); color: var(--fw-green); box-shadow: var(--fw-shadow-lg); }
+    .gl-item .play { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(var(--d-ink-rgb, 23, 46, 33), .15); }
+    .gl-item .play span { width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: rgba(var(--d-glass-rgb, 255, 255, 255), .94); color: var(--d-ink-green, var(--fw-green)); box-shadow: var(--fw-shadow-lg); }
     .gl-item .play svg { width: 22px; height: 22px; margin-left: 3px; }
     .gl-item .vtitle { position: absolute; left: 12px; bottom: 10px; right: 12px; color: #fff; font-size: 13px; font-weight: 600; text-align: left; text-shadow: 0 1px 6px rgba(0, 0, 0, .4); }
-    .gl-ph { width: 100%; height: 100%; display: grid; place-items: center; background: linear-gradient(140deg, #1f4d33, #3d7d57); color: rgba(255, 255, 255, .8); }
+    .gl-ph { width: 100%; height: 100%; display: grid; place-items: center; background: linear-gradient(140deg, var(--d-btn, #1f4d33), var(--d-btn-2, #3d7d57)); color: rgba(255, 255, 255, .8); }
 
     .lb { position: fixed; inset: 0; z-index: 330; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(15, 26, 19, .88); }
     .lb.open { display: flex; }
@@ -39,7 +39,7 @@
     .lb-cap { margin-top: 12px; color: #fff; }
     .lb-cap strong { display: block; font-size: 16px; }
     .lb-cap span { color: rgba(255, 255, 255, .7); font-size: 13.5px; }
-    .lb-x { position: absolute; top: 16px; right: 16px; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .14); color: #fff; cursor: pointer; }
+    .lb-x { position: absolute; top: 16px; right: 16px; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgba(var(--d-glass-rgb, 255, 255, 255), .14); color: #fff; cursor: pointer; }
     .lb-x svg { width: 20px; height: 20px; }
     @media (max-width: 960px) { .gl-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     @media (max-width: 820px) {

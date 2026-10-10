@@ -60,30 +60,30 @@
             position: fixed; left: 0; right: 0; bottom: 0; z-index: 250;
             display: grid; grid-template-columns: repeat(5, 1fr); align-items: end;
             height: calc(70px + env(safe-area-inset-bottom)); padding: 0 6px env(safe-area-inset-bottom);
-            border-top: 1px solid rgba(23, 46, 33, .07); border-radius: 22px 22px 0 0;
-            background: rgba(255, 255, 255, .97);
+            border-top: 1px solid rgba(var(--d-ink-rgb, 23, 46, 33), .07); border-radius: 22px 22px 0 0;
+            background: rgba(var(--d-glass-rgb, 255, 255, 255), .97);
             -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
-            box-shadow: 0 -8px 30px rgba(23, 46, 33, .08);
+            box-shadow: 0 -8px 30px rgba(var(--d-shadow-rgb, 23, 46, 33), .08);
             font-family: Inter, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
         }
         .mt-item {
             position: relative; height: 70px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px;
-            padding-bottom: 10px; color: #8a958e; font-size: 11px; font-weight: 500; text-decoration: none;
+            padding-bottom: 10px; color: var(--d-muted, #8a958e); font-size: 11px; font-weight: 500; text-decoration: none;
             -webkit-tap-highlight-color: transparent;
         }
         .mt-ico { position: relative; width: 26px; height: 26px; display: grid; place-items: center; transition: transform .2s ease; }
         .mt-ico svg { width: 23px; height: 23px; }
-        .mt-item.on { color: #1f4d33; font-weight: 600; }
+        .mt-item.on { color: var(--d-ink-green, #1f4d33); font-weight: 600; }
         .mt-item.on .mt-ico {
             width: 46px; height: 46px; margin-top: -24px; border-radius: 50%;
-            background: #1f4d33; color: #fff; box-shadow: 0 8px 18px rgba(31, 77, 51, .35), 0 0 0 5px #fff;
+            background: var(--d-btn, #1f4d33); color: #fff; box-shadow: 0 8px 18px rgba(var(--d-green-rgb, 31, 77, 51), .35), 0 0 0 5px var(--d-bg, #fff);
         }
         .mt-item.on .mt-ico svg { width: 22px; height: 22px; }
         .mt-item:active .mt-ico { transform: scale(.92); }
         .mt-dot {
             position: absolute; top: -5px; right: -9px; min-width: 17px; height: 17px; padding: 0 4px;
             display: grid; place-items: center; border-radius: 99px; background: #c9413a; color: #fff;
-            font-size: 9.5px; font-weight: 700; box-shadow: 0 0 0 2px #fff;
+            font-size: 9.5px; font-weight: 700; box-shadow: 0 0 0 2px var(--d-surface, #fff);
         }
         .mt-item.on .mt-dot { top: -2px; right: -4px; }
     }

@@ -48,7 +48,7 @@
         .rs-rows { display: grid; gap: 8px; padding: 14px 0; border-bottom: 1px solid var(--line); }
         .rs-row { display: grid; grid-template-columns: 100px 1fr; gap: 8px; font-size: 12px; }
         .rs-row span:first-child { color: var(--text-muted); }
-        .rs-row span:last-child { color: #17261d; font-weight: 700; }
+        .rs-row span:last-child { color: var(--d-text, #17261d); font-weight: 700; }
 
         .rs-warning {
             margin-top: 14px;
@@ -56,12 +56,12 @@
             border-radius: 9px;
             background: rgba(216, 35, 61, .1);
             border: 1px solid rgba(216, 35, 61, .35);
-            color: #c9413a;
+            color: var(--d-red-ink, #c9413a);
             font-size: 12px;
             line-height: 1.5;
         }
 
-        .rs-info { margin-top: 14px; padding: 10px 12px; border-radius: 9px; background: rgba(23, 46, 33, 0.030); color: var(--text-muted); font-size: 11px; line-height: 1.5; }
+        .rs-info { margin-top: 14px; padding: 10px 12px; border-radius: 9px; background: rgba(var(--d-ink-rgb, 23, 46, 33), 0.030); color: var(--text-muted); font-size: 11px; line-height: 1.5; }
 
         .rs-contact { display: grid; gap: 8px; margin-top: 14px; }
         .rs-contact .btn { width: 100%; }
@@ -88,14 +88,14 @@
 
         .rs-slot small { font-size: 9px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; opacity: .85; }
 
-        .rs-slot.available { color: var(--lime); background: rgba(31, 77, 51, 0.05); border-color: rgba(31, 77, 51, 0.3); cursor: pointer; }
-        .rs-slot.available:hover { background: rgba(31, 77, 51, 0.14); }
+        .rs-slot.available { color: var(--d-ink-green, var(--lime)); background: rgba(var(--d-green-rgb, 31, 77, 51), 0.05); border-color: rgba(var(--d-green-rgb, 31, 77, 51), 0.3); cursor: pointer; }
+        .rs-slot.available:hover { background: rgba(var(--d-green-rgb, 31, 77, 51), 0.14); }
         .rs-slot.current   { color: #8ec7ff; background: rgba(92, 168, 255, .08); border-color: rgba(92, 168, 255, .4); cursor: pointer; }
-        .rs-slot.selected  { color: #17261d !important; background: var(--lime) !important; border-color: var(--lime) !important; }
-        .rs-slot.booked    { color: #8f2a24; background: rgba(255, 92, 92, .07); border-color: rgba(255, 92, 92, .25); }
-        .rs-slot.pending   { color: #8a5608; background: rgba(255, 196, 0, .06); border-color: rgba(255, 196, 0, .25); }
-        .rs-slot.blocked   { color: #c9413a; background: repeating-linear-gradient(135deg, rgba(216, 35, 61, .10) 0 6px, rgba(216, 35, 61, .04) 6px 12px); border-color: rgba(216, 35, 61, .35); }
-        .rs-slot.past      { color: #77837b; background: rgba(23, 46, 33, 0.012); border-color: rgba(23, 46, 33, 0.09); text-decoration: line-through; }
+        .rs-slot.selected  { color: var(--d-text, #17261d) !important; background: var(--lime) !important; border-color: var(--lime) !important; }
+        .rs-slot.booked    { color: var(--d-red-ink, #8f2a24); background: rgba(255, 92, 92, .07); border-color: rgba(255, 92, 92, .25); }
+        .rs-slot.pending   { color: var(--d-orange-ink, #8a5608); background: rgba(255, 196, 0, .06); border-color: rgba(255, 196, 0, .25); }
+        .rs-slot.blocked   { color: var(--d-red-ink, #c9413a); background: repeating-linear-gradient(135deg, rgba(216, 35, 61, .10) 0 6px, rgba(216, 35, 61, .04) 6px 12px); border-color: rgba(216, 35, 61, .35); }
+        .rs-slot.past      { color: var(--d-muted, #77837b); background: rgba(var(--d-ink-rgb, 23, 46, 33), 0.012); border-color: rgba(var(--d-ink-rgb, 23, 46, 33), 0.09); text-decoration: line-through; }
         button.rs-slot { font-family: inherit; }
         div.rs-slot { cursor: not-allowed; }
 
@@ -107,12 +107,12 @@
             margin: 4px 0 14px;
             padding: 12px 14px;
             border-radius: 9px;
-            background: rgba(31, 77, 51, 0.06);
-            border: 1px solid rgba(31, 77, 51, 0.2);
+            background: rgba(var(--d-green-rgb, 31, 77, 51), 0.06);
+            border: 1px solid rgba(var(--d-green-rgb, 31, 77, 51), 0.2);
             font-size: 12px;
         }
 
-        .rs-summary strong { color: var(--lime); font-size: 15px; }
+        .rs-summary strong { color: var(--d-ink-green, var(--lime)); font-size: 15px; }
 
         .rs-actions { display: grid; grid-template-columns: auto 1fr; gap: 8px; }
 
@@ -207,7 +207,7 @@
             </form>
 
             <div class="rs-legend">
-                <span><i style="background: #1f4d33;"></i>Tersedia</span>
+                <span><i style="background: var(--d-btn, #1f4d33);"></i>Tersedia</span>
                 <span><i style="background: #5ca8ff;"></i>Jadwal lama</span>
                 <span><i style="background: #ff5c5c;"></i>Booked</span>
                 <span><i style="background: #ffc400;"></i>Pending</span>

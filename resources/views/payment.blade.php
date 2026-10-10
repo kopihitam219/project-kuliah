@@ -23,7 +23,7 @@
     .ep-pay { padding: 22px; }
     .ep-pay h2 { font-family: var(--fw-serif); font-size: 22px; font-weight: 600; }
     .ep-qr { display: grid; justify-items: center; gap: 8px; margin: 16px 0; padding: 18px; border-radius: 18px; background: var(--fw-surface-2); border: 1px solid var(--fw-line); }
-    .ep-qr svg { width: 200px; height: 200px; padding: 8px; border-radius: 14px; background: #fff; }
+    .ep-qr svg { width: 200px; height: 200px; padding: 8px; border-radius: 14px; background: var(--d-surface, #fff); }
     .ep-method { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--fw-line); background: var(--fw-surface); }
     .ep-method b { width: 62px; height: 38px; flex: 0 0 62px; display: grid; place-items: center; border-radius: 10px; background: var(--fw-blue-tint); color: var(--fw-blue); font-size: 11.5px; }
     .ep-method span { flex: 1; font-size: 14px; font-weight: 500; }
