@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ChatBroadcast;
 use App\Models\ChatMessage;
+use App\Models\Coach;
 use App\Models\User;
 use App\Notifications\ChatActivity;
 use Illuminate\Http\JsonResponse;
@@ -68,6 +69,8 @@ class AdminChatController extends Controller
             'search'     => $search,
             'broadcasts' => ChatBroadcast::latest()->limit(5)->get(),
             'memberCount'=> User::where('role', 'customer')->count(),
+            'allMembers' => User::where('role', 'customer')->orderBy('name')->get(['id', 'name', 'email']),
+            'coachName'  => Coach::chatName(),
         ]);
     }
 
@@ -101,26 +104,33 @@ class AdminChatController extends Controller
             'body'        => trim($data['body']),
         ]);
 
-        $member->notify(new ChatActivity('chat', 'Pesan baru dari Admin', Str::limit($message->body, 140), '/chat'));
+        $member->notify(new ChatActivity('chat', 'Pesan baru dari ' . Coach::chatName(), Str::limit($message->body, 140), '/chat'));
 
         return response()->json(['message' => $message->toChatArray(ChatMessage::FROM_ADMIN)]);
     }
 
-    /** Kirim informasi penting ke semua member: masuk ke chat & notifikasi masing-masing. */
+    /** Kirim informasi penting ke semua member atau member pilihan: masuk ke chat & notifikasi masing-masing. */
     public function broadcast(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'title' => ['required', 'string', 'max:120'],
-            'body'  => ['required', 'string', 'max:2000'],
+            'title'        => ['required', 'string', 'max:120'],
+            'body'         => ['required', 'string', 'max:2000'],
+            'target'       => ['nullable', 'in:all,selected'],
+            'member_ids'   => ['nullable', 'array'],
+            'member_ids.*' => ['integer'],
         ], [
             'title.required' => 'Judul pengumuman wajib diisi.',
             'body.required'  => 'Isi pengumuman wajib diisi.',
         ]);
 
-        $members = User::where('role', 'customer')->get(['id', 'name', 'email', 'role']);
+        $selected = ($data['target'] ?? 'all') === 'selected';
+
+        $members = User::where('role', 'customer')
+            ->when($selected, fn ($q) => $q->whereIn('id', $data['member_ids'] ?? []))
+            ->get(['id', 'name', 'email', 'role']);
 
         if ($members->isEmpty()) {
-            return back()->with('error', 'Belum ada member untuk menerima pengumuman.');
+            return back()->withInput()->with('error', $selected ? 'Pilih minimal 1 member penerima.' : 'Belum ada member untuk menerima pengumuman.');
         }
 
         $admin = $request->user();
@@ -150,12 +160,15 @@ class AdminChatController extends Controller
 
         Notification::send($members, new ChatActivity(
             'broadcast',
-            'Pengumuman: ' . $broadcast->title,
+            'Pengumuman dari ' . Coach::chatName() . ': ' . $broadcast->title,
             Str::limit($broadcast->body, 160),
             '/chat',
         ));
 
-        return redirect()->route('admin.chat.index')->with('success', 'Pengumuman terkirim ke ' . $members->count() . ' member.');
+        $to = $members->count() === 1 ? $members->first()->name : $members->count() . ' member';
+
+        return redirect()->route('admin.chat.index', $members->count() === 1 ? ['member' => $members->first()->id] : [])
+            ->with('success', 'Pesan terkirim ke ' . $to . '.');
     }
 
     private function markRead(int $memberId): void

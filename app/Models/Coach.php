@@ -11,7 +11,7 @@ class Coach extends Model
 {
     protected $fillable = [
         'name', 'role', 'badge', 'years_experience', 'students', 'skills', 'quote', 'photo', 'sort_order', 'is_active',
-        'bio', 'experiences', 'certifications', 'achievements',
+        'bio', 'experiences', 'certifications', 'achievements', 'section_label', 'section_title',
     ];
 
     protected $casts = [
@@ -52,6 +52,44 @@ class Coach extends Model
     public static function main(): ?self
     {
         return static::ordered()->first();
+    }
+
+    /** Nama yang tampil ke member di chat & notifikasi (admin = coach). */
+    public static function chatName(): string
+    {
+        try {
+            $name = static::main()?->name;
+        } catch (\Throwable $e) {
+            $name = null;
+        }
+
+        return $name ?: 'Admin ' . \App\Support\Brand::name();
+    }
+
+    public static function chatPhoto(): ?string
+    {
+        try {
+            return static::main()?->photo_url;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    /** Label kecil di atas judul bagian, contoh: "About coach". */
+    public function getSectionLabelTextAttribute(): string
+    {
+        return $this->section_label ?: 'About coach';
+    }
+
+    /** Judul bagian; kata di dalam [kurung siku] tampil hijau. */
+    public function getSectionTitleTextAttribute(): string
+    {
+        return $this->section_title ?: 'Kenali [coach] Anda';
+    }
+
+    public function getSectionTitleHtmlAttribute(): string
+    {
+        return preg_replace('/\[(.+?)\]/u', '<span>$1</span>', e($this->section_title_text));
     }
 
     public function getSkillsTextAttribute(): string

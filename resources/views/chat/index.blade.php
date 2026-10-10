@@ -1,6 +1,6 @@
 @extends('notifications.customer-layout')
 
-@section('title', 'Chat Admin')
+@section('title', 'Chat Coach')
 
 @section('content')
     <style>
@@ -17,9 +17,9 @@
 
     <div class="chat-page">
         <div>
-            <h1>Chat <span>Admin</span></h1>
+            <h1>Chat <span>Coach</span></h1>
         </div>
-        <p>Tanya jadwal, pembayaran, atau perubahan booking langsung ke admin. Pengumuman penting dari admin juga muncul di sini.</p>
+        <p>Tanya jadwal, teknik, pembayaran, atau perubahan booking langsung ke {{ $coachName }}. Pengumuman penting juga muncul di sini.</p>
 
         <div class="chat-box">
             @include('partials.chat-thread', [
@@ -27,8 +27,10 @@
                 'pollUrl'   => route('chat.poll'),
                 'sendUrl'   => route('chat.send'),
                 'viewer'    => 'member',
-                'peerName'  => 'Admin ' . \App\Support\Brand::name(),
-                'emptyText' => 'Belum ada pesan. Kirim pertanyaan Anda, admin akan membalas di sini.',
+                'peerName'  => $coachName,
+                'peerPhoto' => $coachPhoto,
+                'peerSub'   => 'Coach · biasanya membalas di jam operasional',
+                'emptyText' => 'Belum ada pesan. Kirim pertanyaan Anda, coach akan membalas di sini.',
             ])
         </div>
     </div>

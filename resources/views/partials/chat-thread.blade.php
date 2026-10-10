@@ -36,10 +36,14 @@
 <div class="ct" id="chatThread"
      data-poll="{{ $pollUrl }}" data-send="{{ $sendUrl }}" data-viewer="{{ $viewer }}">
     <div class="ct-head">
-        <div class="ct-avatar">{{ mb_strtoupper(mb_substr($peerName, 0, 1)) }}</div>
+        @if (! empty($peerPhoto))
+            <div class="ct-avatar" style="background:url('{{ $peerPhoto }}') center top / cover;color:transparent">{{ mb_strtoupper(mb_substr($peerName, 0, 1)) }}</div>
+        @else
+            <div class="ct-avatar">{{ mb_strtoupper(mb_substr($peerName, 0, 1)) }}</div>
+        @endif
         <div>
             <strong>{{ $peerName }}</strong>
-            <small><i></i>{{ $viewer === 'member' ? 'Admin biasanya membalas di jam operasional' : 'Member' }}</small>
+            <small><i></i>{{ $peerSub ?? ($viewer === 'member' ? 'Coach biasanya membalas di jam operasional' : 'Member') }}</small>
         </div>
     </div>
 
@@ -85,7 +89,7 @@
         var node;
         if (m.broadcast) {
             node = el('div', 'ct-msg ct-bc');
-            node.appendChild(el('b', null, '📢 Pengumuman admin'));
+            node.appendChild(el('b', null, '📢 Pengumuman'));
             if (m.title) node.appendChild(el('strong', null, m.title));
             node.appendChild(document.createTextNode(m.body));
         } else {

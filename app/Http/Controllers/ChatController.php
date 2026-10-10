@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChatMessage;
+use App\Models\Coach;
 use App\Models\User;
 use App\Notifications\ChatActivity;
 use Illuminate\Http\JsonResponse;
@@ -27,7 +28,9 @@ class ChatController extends Controller
         $this->markRead($member->id);
 
         return view('chat.index', [
-            'messages' => $messages->map(fn ($m) => $m->toChatArray(ChatMessage::FROM_MEMBER)),
+            'messages'   => $messages->map(fn ($m) => $m->toChatArray(ChatMessage::FROM_MEMBER)),
+            'coachName'  => Coach::chatName(),
+            'coachPhoto' => Coach::chatPhoto(),
         ]);
     }
 

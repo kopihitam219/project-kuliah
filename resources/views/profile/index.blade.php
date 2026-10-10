@@ -85,7 +85,7 @@
 
         <div class="pf-links">
             @if (Route::has('booking'))<a href="{{ route('booking') }}"><i>📅</i>Booking</a>@endif
-            @if (Route::has('chat'))<a href="{{ route('chat') }}"><i>💬</i>Chat admin</a>@endif
+            @if (Route::has('chat'))<a href="{{ route('chat') }}"><i>💬</i>Chat coach</a>@endif
             @if (Route::has('notifications.index'))<a href="{{ route('notifications.index') }}"><i>🔔</i>Notifikasi</a>@endif
         </div>
     </section>

@@ -1,8 +1,11 @@
 {{-- Bagian "About Coach" di halaman Home: profil 1 coach. Data dari menu admin About Coach. --}}
 @php
-    $hcCoach = class_exists(\App\Models\Coach::class) && \Illuminate\Support\Facades\Schema::hasTable('coaches')
-        ? \App\Models\Coach::active()->ordered()->first()
-        : null;
+    $hcReady   = class_exists(\App\Models\Coach::class) && \Illuminate\Support\Facades\Schema::hasTable('coaches');
+    $hcIsAdmin = auth()->check() && auth()->user()->role === 'admin';
+    $hcCoach   = $hcReady ? ($hcIsAdmin ? \App\Models\Coach::main() : \App\Models\Coach::active()->ordered()->first()) : null;
+    if (! $hcCoach && $hcIsAdmin && $hcReady) {
+        $hcCoach = new \App\Models\Coach(['name' => 'Nama Coach', 'is_active' => true, 'skills' => []]);
+    }
 @endphp
 
 @if ($hcCoach)
@@ -109,8 +112,8 @@
         </div>
 
         <div class="hc-head">
-            <span class="hc-eyebrow">About coach</span>
-            <h2 id="hcTitle">Kenali <span>coach</span> Anda</h2>
+            <span class="hc-eyebrow">{{ $hcCoach->section_label_text }}</span>
+            <h2 id="hcTitle">{!! $hcCoach->section_title_html !!}</h2>
             <div class="hc-role">{{ $hcCoach->name }}@if ($hcCoach->role) · {{ $hcCoach->role }}@endif</div>
         </div>
 
@@ -160,6 +163,9 @@
             </div>
         </div>
     </div>
+    @if ($hcIsAdmin)
+        @include('partials.home-coach-editor', ['coach' => $hcCoach])
+    @endif
 </section>
 
 <script>

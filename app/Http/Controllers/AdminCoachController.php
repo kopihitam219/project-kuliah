@@ -53,6 +53,8 @@ class AdminCoachController extends Controller
     private function save(Request $request, Coach $coach): RedirectResponse
     {
         $request->validate([
+            'section_label'    => ['nullable', 'string', 'max:60'],
+            'section_title'    => ['nullable', 'string', 'max:120'],
             'name'             => ['required', 'string', 'max:100'],
             'role'             => ['nullable', 'string', 'max:120'],
             'badge'            => ['nullable', 'string', 'max:40'],
@@ -81,6 +83,8 @@ class AdminCoachController extends Controller
             })->values()->all();
 
         $coach->fill([
+            'section_label'    => $request->input('section_label'),
+            'section_title'    => $request->input('section_title'),
             'name'             => trim($request->input('name')),
             'role'             => $request->input('role'),
             'badge'            => $request->input('badge'),
@@ -106,6 +110,10 @@ class AdminCoachController extends Controller
         }
 
         $coach->save();
+
+        if ($request->input('return') === 'home') {
+            return redirect()->to(route('home') . '#coach')->with('coach_saved', 'Profil coach berhasil disimpan.');
+        }
 
         return redirect()->route('admin.coaches.index')->with('success', 'Profil coach berhasil disimpan.');
     }
