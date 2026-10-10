@@ -11,137 +11,36 @@
 
     @once
         <style>
-            .nb { position: relative; display: inline-flex; font-family: Arial, Helvetica, sans-serif; }
-
-            .nb-button {
-                position: relative;
-                width: 40px;
-                height: 40px;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                border: 1px solid rgba(255, 255, 255, .12);
-                border-radius: 50%;
-                background: rgba(255, 255, 255, .04);
-                color: #e4ece7;
-                cursor: pointer;
-                transition: border-color .2s ease, color .2s ease;
-            }
-
-            .nb-button:hover,
-            .nb.open .nb-button { border-color: rgba(156, 255, 0, .5); color: #9cff38; }
+            .nb { position: relative; display: inline-flex; font-family: var(--fw-sans, Inter, Arial, sans-serif); }
+            .nb-button { position: relative; width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid rgba(23, 46, 33, .1); border-radius: 50%; background: #fff; color: #17261d; cursor: pointer; transition: border-color .2s, color .2s; }
+            .nb-button:hover, .nb.open .nb-button { border-color: #1f4d33; color: #1f4d33; }
             .nb-button svg { width: 19px; height: 19px; }
-
-            .nb-badge {
-                position: absolute;
-                top: -5px;
-                right: -6px;
-                min-width: 19px;
-                height: 19px;
-                padding: 0 5px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 999px;
-                background: #ff4d5e;
-                color: #ffffff;
-                font-size: 10px;
-                font-weight: 900;
-                box-shadow: 0 0 0 2px #03150f;
-            }
-
-            .nb-panel {
-                position: absolute;
-                top: calc(100% + 10px);
-                right: 0;
-                z-index: 500;
-                width: 340px;
-                max-width: calc(100vw - 24px);
-                border: 1px solid rgba(156, 255, 0, .22);
-                border-radius: 12px;
-                background: #03150f;
-                box-shadow: 0 18px 45px rgba(0, 0, 0, .55);
-                overflow: hidden;
-                text-align: left;
-            }
-
-            .nb-head {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 10px;
-                padding: 13px 15px;
-                border-bottom: 1px solid rgba(255, 255, 255, .08);
-            }
-
-            .nb-head strong { color: #ffffff; font-size: 14px; font-weight: 900; }
+            .nb-badge { position: absolute; top: -4px; right: -5px; min-width: 19px; height: 19px; padding: 0 5px; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: #c9413a; color: #fff; font-size: 10px; font-weight: 700; box-shadow: 0 0 0 2px #f3f1ea; }
+            .nb-panel { position: absolute; top: calc(100% + 10px); right: 0; z-index: 500; width: 360px; max-width: calc(100vw - 24px); border: 1px solid rgba(23, 46, 33, .1); border-radius: 18px; background: #fff; box-shadow: 0 18px 50px rgba(23, 46, 33, .16); overflow: hidden; text-align: left; color: #17261d; }
+            .nb-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; border-bottom: 1px solid rgba(23, 46, 33, .08); }
+            .nb-head strong { font-size: 15px; font-weight: 700; }
             .nb-head form { margin: 0; }
-
-            .nb-read-all {
-                border: 0;
-                background: transparent;
-                color: #9cff38;
-                font-size: 11px;
-                font-weight: 800;
-                cursor: pointer;
-            }
-
-            .nb-list { max-height: 360px; overflow-y: auto; }
-
-            .nb-item {
-                display: flex;
-                gap: 11px;
-                padding: 12px 15px;
-                border-bottom: 1px solid rgba(255, 255, 255, .05);
-                color: rgba(255, 255, 255, .78);
-                text-decoration: none;
-                transition: background .15s ease;
-            }
-
+            .nb-read-all { border: 0; background: transparent; color: #1f4d33; font-size: 12px; font-weight: 600; cursor: pointer; }
+            .nb-list { max-height: 380px; overflow-y: auto; }
+            .nb-item { display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid rgba(23, 46, 33, .06); color: #3c4a42; text-decoration: none; transition: background .15s; }
             .nb-item:last-child { border-bottom: 0; }
-            .nb-item:hover { background: rgba(156, 255, 0, .06); }
-            .nb-item.unread { background: rgba(156, 255, 0, .045); }
-
-            .nb-icon {
-                width: 30px;
-                height: 30px;
-                flex: 0 0 30px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 50%;
-                font-size: 13px;
-                font-weight: 900;
-            }
-
-            .nb-icon.created     { background: rgba(92, 168, 255, .16); color: #8ec7ff; }
-            .nb-icon.rescheduled { background: rgba(245, 174, 0, .16);  color: #ffc62d; }
-            .nb-icon.cancelled,
-            .nb-icon.rejected    { background: rgba(255, 77, 94, .16);  color: #ff8a96; }
-            .nb-icon.approved    { background: rgba(67, 190, 77, .18);  color: #68ed62; }
-            .nb-icon.paid        { background: rgba(184, 255, 0, .16);  color: #b8ff00; font-size: 10px; }
-
+            .nb-item:hover { background: #f8f7f2; }
+            .nb-item.unread { background: #f0f5ef; }
+            .nb-icon { width: 34px; height: 34px; flex: 0 0 34px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #e5eee6; color: #1f4d33; font-size: 13px; font-weight: 700; }
+            .nb-icon.created { background: #e6eef9; color: #3b6fb6; }
+            .nb-icon.rescheduled { background: #fdf1de; color: #a2650c; }
+            .nb-icon.cancelled, .nb-icon.rejected { background: #fbe7e5; color: #c9413a; }
+            .nb-icon.approved, .nb-icon.paid { background: #e5eee6; color: #1f4d33; }
+            .nb-icon.paid { font-size: 10px; }
             .nb-text { min-width: 0; flex: 1; }
-            .nb-text strong { display: flex; align-items: center; gap: 6px; color: #ffffff; font-size: 12px; font-weight: 800; }
-            .nb-text p { margin-top: 3px; font-size: 11px; line-height: 1.45; color: rgba(255, 255, 255, .68); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-            .nb-text small { display: block; margin-top: 5px; color: rgba(255, 255, 255, .38); font-size: 10px; }
-
-            .nb-unread-dot { width: 7px; height: 7px; border-radius: 50%; background: #9cff38; }
-
-            .nb-footer {
-                display: block;
-                padding: 12px 15px;
-                border-top: 1px solid rgba(255, 255, 255, .08);
-                color: #9cff38;
-                font-size: 12px;
-                font-weight: 800;
-                text-align: center;
-                text-decoration: none;
-            }
-
-            .nb-footer:hover { background: rgba(156, 255, 0, .06); }
-
-            .nb-empty { padding: 30px 15px; text-align: center; color: rgba(255, 255, 255, .45); font-size: 12px; }
+            .nb-text strong { display: flex; align-items: center; gap: 6px; color: #17261d; font-size: 13px; font-weight: 600; }
+            .nb-text p { margin: 3px 0 0; font-size: 12px; line-height: 1.45; color: #6b776f; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+            .nb-text small { display: block; margin-top: 5px; color: #9aa59e; font-size: 11px; }
+            .nb-unread-dot { width: 7px; height: 7px; border-radius: 50%; background: #e9a23b; }
+            .nb-footer { display: block; padding: 13px 16px; border-top: 1px solid rgba(23, 46, 33, .08); color: #1f4d33; font-size: 13px; font-weight: 600; text-align: center; text-decoration: none; }
+            .nb-footer:hover { background: #f8f7f2; }
+            .nb-empty { padding: 30px 16px; text-align: center; color: #77837b; font-size: 13px; }
+            @media (max-width: 820px) { .nb-panel { position: fixed; top: 70px; left: 12px; right: 12px; width: auto; } }
         </style>
 
         <script>

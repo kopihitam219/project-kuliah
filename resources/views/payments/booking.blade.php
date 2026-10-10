@@ -47,321 +47,107 @@
         return false;
     };
 @endphp
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pembayaran | {{ \App\Support\Brand::name() }}</title>
-    @include('partials.brand-head')
+@extends('layouts.fw')
 
-    <style>
-        :root {
-            --lime: #b8ff00;
-            --yellow: #ffc400;
-            --red: #ff5c5c;
-            --blue: #5ca8ff;
-            --text: #f4f7f4;
-            --muted: #8a9690;
-            --border: rgba(184, 255, 0, .16);
-            --line: rgba(255, 255, 255, .08);
-        }
+@section('title', 'Pembayaran')
+@section('no_footer', true)
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { min-height: 100%; }
+@push('head')
+<style>
+    .pb .steps { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; color: var(--fw-muted); font-size: 13px; overflow-x: auto; scrollbar-width: none; }
+    .pb .step { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .pb .step-number { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-bg-2); color: var(--fw-muted); font-size: 12px; font-weight: 700; }
+    .pb .step.done .step-number { background: var(--fw-green); color: #fff; }
+    .pb .step.current { color: var(--fw-text); font-weight: 600; }
+    @media (max-width: 480px) { .pb .steps { gap: 6px; font-size: 12px; } .pb .steps .step-line { min-width: 10px; } }
+    .pb .step.current .step-number { background: var(--fw-lime); color: var(--fw-green); }
+    .pb .step-line { flex: 1; min-width: 20px; height: 2px; background: var(--fw-line-2); border-radius: 2px; }
+    .pb .page-heading h1 { font-family: var(--fw-serif); font-size: clamp(26px, 3.6vw, 36px); font-weight: 600; letter-spacing: -.4px; }
+    .pb .page-heading p { margin: 4px 0 18px; color: var(--fw-muted); font-size: 14px; }
+    .pb .demo-banner { margin-bottom: 14px; padding: 12px 16px; border-radius: 14px; background: var(--fw-orange-tint); border: 1px solid rgba(233, 162, 59, .35); color: #8a5608; font-size: 13.5px; line-height: 1.55; }
+    .pb .alert { margin-bottom: 14px; padding: 12px 16px; border-radius: 14px; font-size: 14px; }
+    .pb .alert-success { background: var(--fw-tint); border: 1px solid rgba(31, 77, 51, .2); color: var(--fw-green); }
+    .pb .alert-error { background: var(--fw-red-tint); border: 1px solid rgba(201, 65, 58, .3); color: #8f2a24; }
+    .pb .layout { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 18px; align-items: start; }
+    .pb .panel { padding: 22px; border: 1px solid var(--fw-line); border-radius: 22px; background: var(--fw-surface); box-shadow: var(--fw-shadow); }
+    .pb .panel-title { margin-bottom: 14px; font-family: var(--fw-serif); font-size: 21px; font-weight: 600; }
+    .pb .summary-row { display: flex; justify-content: space-between; gap: 14px; padding: 9px 0; border-bottom: 1px dashed var(--fw-line-2); font-size: 13.5px; }
+    .pb .summary-row span:first-child { color: var(--fw-muted); }
+    .pb .summary-row span:last-child { font-weight: 600; text-align: right; }
+    .pb .pill { display: inline-flex; padding: 3px 10px; border-radius: 99px; background: var(--fw-bg-2); color: var(--fw-text-2); font-size: 11.5px; font-weight: 600; }
+    .pb .pill.paid { background: var(--fw-green); color: #fff; }
+    .pb .pill.verifying, .pb .pill.pending, .pb .pill.unpaid { background: var(--fw-orange-tint); color: #a2650c; }
+    .pb .pill.cash { background: var(--fw-blue-tint); color: var(--fw-blue); }
+    .pb .pill.cancelled { background: var(--fw-red-tint); color: var(--fw-red); }
+    .pb .summary-total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 14px; padding: 14px 16px; border-radius: 16px; background: var(--fw-green); color: #fff; }
+    .pb .summary-total strong { font-family: var(--fw-serif); font-size: 26px; font-weight: 600; }
+    .pb .summary-note { margin-top: 8px; color: var(--fw-muted); font-size: 12.5px; }
+    .pb .btn { width: 100%; height: 48px; margin-top: 14px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 99px; background: var(--fw-green); color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; }
+    .pb .btn:hover { background: var(--fw-green-2); }
+    .pb .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .pb .btn-ghost { background: var(--fw-surface); border: 1px solid var(--fw-line-2); color: var(--fw-text); }
+    .pb .btn-ghost:hover { background: var(--fw-surface-2); }
+    .pb .success, .pb .verify-box, .pb .cash-box { text-align: center; }
+    .pb .success-icon, .pb .verify-icon, .pb .cash-icon { width: 64px; height: 64px; margin: 4px auto 12px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-green); color: #fff; font-size: 26px; font-weight: 700; }
+    .pb .verify-icon { background: var(--fw-orange-tint); color: #a2650c; }
+    .pb .cash-icon { background: var(--fw-blue-tint); color: var(--fw-blue); font-size: 18px; }
+    .pb .success h2, .pb .verify-box h2, .pb .cash-box h2 { font-family: var(--fw-serif); font-size: 24px; font-weight: 600; }
+    .pb .success p, .pb .verify-box p, .pb .cash-box p { margin-top: 8px; color: var(--fw-text-2); font-size: 14px; line-height: 1.65; }
+    .pb .receipt { margin-top: 16px; padding: 4px 16px; border-radius: 16px; background: var(--fw-surface-2); text-align: left; }
+    .pb .cash-amount { margin-top: 12px; font-family: var(--fw-serif); font-size: 32px; font-weight: 600; color: var(--fw-green); }
+    .pb .cash-steps, .pb .how-to { margin: 14px 0 0; padding-left: 20px; display: grid; gap: 8px; text-align: left; color: var(--fw-text-2); font-size: 13.5px; line-height: 1.55; }
+    .pb .proof-thumb { display: block; width: 160px; margin: 14px auto 6px; border-radius: 14px; overflow: hidden; border: 1px solid var(--fw-line); }
+    .pb .proof-link { display: inline-block; margin-top: 6px; color: var(--fw-green); font-size: 13px; font-weight: 600; }
+    .pb .blocked { padding: 16px; border-radius: 16px; background: var(--fw-red-tint); color: #8f2a24; font-size: 14px; line-height: 1.6; }
+    .pb .countdown { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; padding: 12px 16px; border-radius: 14px; background: var(--fw-orange-tint); color: #8a5608; font-size: 13px; }
+    .pb .countdown strong { font-size: 20px; font-variant-numeric: tabular-nums; }
+    .pb .countdown.urgent { background: var(--fw-red-tint); color: var(--fw-red); }
+    .pb .step-head { display: flex; gap: 12px; align-items: center; margin: 4px 0 12px; }
+    .pb .step-head strong { display: block; font-size: 15px; }
+    .pb .step-head small { color: var(--fw-muted); font-size: 12.5px; }
+    .pb .step-badge { width: 30px; height: 30px; flex: 0 0 30px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-green); color: #fff; font-size: 13px; font-weight: 700; }
+    .pb .qr-box { display: grid; justify-items: center; gap: 6px; padding: 18px; border-radius: 18px; background: var(--fw-surface-2); border: 1px solid var(--fw-line); }
+    .pb .qr-box svg, .pb .qr-real { width: 220px; height: 220px; padding: 10px; border-radius: 14px; background: #fff; }
+    .pb .qr-box small { color: var(--fw-muted); font-size: 12px; }
+    .pb .amount-line { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--fw-tint-2); font-size: 13.5px; }
+    .pb .amount-line strong { font-size: 20px; color: var(--fw-green); }
+    .pb .va-box { padding: 16px; border-radius: 18px; background: var(--fw-surface-2); border: 1px solid var(--fw-line); }
+    .pb .va-label { color: var(--fw-muted); font-size: 12.5px; }
+    .pb .va-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0 8px; }
+    .pb .va-number { font-size: 22px; font-weight: 700; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+    .pb .copy-btn { height: 34px; padding: 0 14px; border: 1px solid var(--fw-line-2); border-radius: 99px; background: #fff; color: var(--fw-green); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+    .pb .proof-card { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--fw-line); }
+    .pb .proof-drop { position: relative; display: grid; justify-items: center; gap: 4px; padding: 22px 16px; border: 2px dashed rgba(31, 77, 51, .3); border-radius: 18px; background: var(--fw-tint-2); text-align: center; cursor: pointer; font-size: 13.5px; }
+    .pb .proof-drop.dragging { border-color: var(--fw-green); background: var(--fw-tint); }
+    .pb .proof-drop small { color: var(--fw-muted); font-size: 12px; }
+    .pb .proof-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .pb .proof-drop img { max-width: 100%; max-height: 220px; margin-top: 8px; border-radius: 12px; }
+    .pb .proof-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-green); color: #fff; font-size: 18px; }
+    .pb .proof-name { margin-top: 6px; color: var(--fw-muted); font-size: 12.5px; }
+    .pb .real-note { margin-top: 10px; color: var(--fw-muted); font-size: 12.5px; }
+    .pb .method-list { display: grid; gap: 10px; }
+    .pb .method-option input { position: absolute; opacity: 0; pointer-events: none; }
+    .pb .method-card { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1.5px solid var(--fw-line); border-radius: 16px; background: var(--fw-surface); cursor: pointer; }
+    .pb .method-option input:checked + .method-card { border-color: var(--fw-green); background: var(--fw-tint-2); }
+    .pb .method-logo { width: 62px; height: 40px; flex: 0 0 62px; display: grid; place-items: center; border-radius: 10px; background: var(--fw-bg-2); color: var(--fw-text); font-size: 12px; font-weight: 800; letter-spacing: .3px; }
+    .pb .method-logo.qris { background: #fde8ec; color: #c3162e; }
+    .pb .method-logo.mandiri { background: #e6eef9; color: #0b3d91; text-transform: lowercase; }
+    .pb .method-logo.bca { background: #e6eef9; color: #1a4fa0; }
+    .pb .method-logo.cash { background: var(--fw-tint); color: var(--fw-green); }
+    .pb .method-text { flex: 1; min-width: 0; }
+    .pb .method-text strong { display: block; font-size: 14.5px; }
+    .pb .method-text small { color: var(--fw-muted); font-size: 12.5px; }
+    .pb .method-check { width: 22px; height: 22px; flex: 0 0 22px; border-radius: 50%; border: 2px solid var(--fw-line-2); }
+    .pb .method-option input:checked + .method-card .method-check { border: 6px solid var(--fw-green); }
+    @media (max-width: 900px) { .pb .layout { grid-template-columns: minmax(0, 1fr); } .pb .layout > .panel:last-child { order: -1; } }
+    @media (max-width: 560px) { .pb .panel { padding: 16px; } }
+</style>
+@endpush
 
-        body {
-            color: var(--text);
-            background:
-                linear-gradient(rgba(1, 12, 9, .80), rgba(1, 12, 9, .92)),
-                url('{{ \App\Support\Brand::background('public') }}') center / cover fixed no-repeat;
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
+@section('content')
+<div class="pb">
+    <div class="fw-pagehead-title" style="margin-bottom:12px"><a href="{{ Route::has('jadwal') ? route('jadwal') : route('booking') }}" class="fw-back" aria-label="Kembali">{!! \App\Support\Icons::svg('back') !!}</a></div>
 
-        a { color: inherit; text-decoration: none; }
-        button { font: inherit; }
-
-        /* NAVBAR */
-        .navbar {
-            min-height: 64px;
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            background: rgba(2, 15, 11, .92);
-            border-bottom: 1px solid rgba(184, 255, 0, .10);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .brand { font-size: 20px; font-weight: 800; letter-spacing: -.6px; white-space: nowrap; }
-        .brand span { color: var(--lime); }
-        .nav-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        .nav-link { padding: 8px 11px; border-radius: 8px; color: #cbd2cf; font-size: 13px; font-weight: 600; }
-        .nav-link:hover { color: var(--lime); }
-        .booking-nav { padding: 9px 18px; border-radius: 9px; background: var(--lime); color: #071000; font-size: 12px; font-weight: 800; }
-        .user-name { padding: 8px 12px; color: #cbd2cf; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .07); border-radius: 9px; font-size: 12px; font-weight: 600; }
-        .logout-button { padding: 8px 10px; border: 0; background: transparent; color: #aab3af; font-size: 12px; font-weight: 600; cursor: pointer; }
-
-        /* PAGE */
-        .page { width: min(1180px, calc(100% - 40px)); margin: auto; padding: 30px 0 40px; }
-
-        .steps { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; color: var(--muted); font-size: 12px; font-weight: 700; flex-wrap: wrap; }
-        .step { display: flex; align-items: center; gap: 7px; }
-        .step-number { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .2); font-size: 11px; }
-        .step.done .step-number { background: var(--lime); border-color: var(--lime); color: #071000; }
-        .step.current { color: #fff; }
-        .step.current .step-number { border-color: var(--lime); color: var(--lime); }
-        .step-line { width: 28px; height: 1px; background: rgba(255, 255, 255, .15); }
-
-        .page-heading h1 { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
-        .page-heading p { margin-top: 6px; color: var(--muted); font-size: 14px; }
-
-        .demo-banner {
-            margin: 16px 0;
-            padding: 10px 14px;
-            border: 1px dashed rgba(255, 196, 0, .45);
-            border-radius: 10px;
-            background: rgba(255, 196, 0, .06);
-            color: #ffd45c;
-            font-size: 12px;
-            line-height: 1.5;
-        }
-
-        .alert { margin-bottom: 14px; padding: 12px 15px; border-radius: 10px; font-size: 13px; }
-        .alert-success { color: #d9ff79; background: rgba(67, 105, 12, .22); border: 1px solid rgba(184, 255, 0, .25); }
-        .alert-error { color: #ffb4b4; background: rgba(80, 15, 15, .35); border: 1px solid rgba(255, 92, 92, .35); }
-
-        .layout { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 20px; align-items: start; }
-
-        .panel {
-            padding: 22px;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            background: linear-gradient(145deg, rgba(7, 30, 23, .95), rgba(2, 18, 13, .94));
-            box-shadow: 0 15px 45px rgba(0, 0, 0, .22);
-        }
-
-        .panel-title { margin-bottom: 16px; font-size: 17px; font-weight: 800; }
-
-        /* RINGKASAN */
-        .summary-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
-        .summary-row span:first-child { color: var(--muted); }
-        .summary-row span:last-child { font-weight: 700; text-align: right; }
-        .summary-total { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 16px; }
-        .summary-total span { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-        .summary-total strong { color: var(--lime); font-size: 30px; font-weight: 900; line-height: 1; }
-        .summary-note { margin-top: 8px; color: var(--muted); font-size: 11px; text-align: right; }
-
-        .pill { display: inline-flex; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; }
-        .pill.unpaid    { background: rgba(255, 255, 255, .08); color: #d5ddd8; }
-        .pill.pending   { background: rgba(255, 196, 0, .16); color: #ffd45c; border: 1px solid rgba(255, 196, 0, .3); }
-        .pill.paid      { background: rgba(184, 255, 0, .14); color: var(--lime); }
-        .pill.verifying { background: rgba(92, 168, 255, .16); color: #9ccdff; }
-        .verify-box { padding: 22px; text-align: center; }
-        .verify-icon { width: 64px; height: 64px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 50%; background: rgba(92, 168, 255, .16); color: #9ccdff; font-size: 28px; }
-        .verify-box h2 { font-size: 20px; font-weight: 800; }
-        .verify-box p { margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.6; }
-        .qr-real { width: 240px; max-width: 100%; height: auto; border-radius: 8px; }
-        .real-note { margin-top: 14px; padding: 10px 12px; border-radius: 9px; background: rgba(92, 168, 255, .08); border: 1px solid rgba(92, 168, 255, .25); color: #b9dcff; font-size: 12px; line-height: 1.5; }
-
-        /* Langkah */
-        .step-head { display: flex; align-items: center; gap: 10px; margin: 6px 0 12px; }
-        .step-badge {
-            width: 26px; height: 26px; flex: 0 0 26px; display: grid; place-items: center;
-            border-radius: 50%; background: var(--lime); color: #071000; font-size: 12px; font-weight: 900;
-        }
-        .step-head strong { display: block; font-size: 14px; font-weight: 800; }
-        .step-head small { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
-
-        /* Upload bukti */
-        .proof-card { margin-top: 18px; padding-top: 16px; border-top: 1px dashed rgba(255, 255, 255, .12); }
-
-        .proof-drop {
-            position: relative;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-            min-height: 150px; padding: 16px;
-            border: 2px dashed rgba(184, 255, 0, .35); border-radius: 12px;
-            background: rgba(184, 255, 0, .03);
-            color: var(--muted); font-size: 12px; text-align: center;
-            cursor: pointer; transition: border-color .15s ease, background .15s ease;
-        }
-        .proof-drop:hover, .proof-drop.dragging { border-color: var(--lime); background: rgba(184, 255, 0, .07); }
-        .proof-drop strong { color: var(--lime); font-size: 13px; }
-        .proof-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-        .proof-drop img { max-width: 100%; max-height: 260px; border-radius: 8px; }
-        .proof-icon { font-size: 26px; color: var(--lime); }
-        .proof-name { margin-top: 6px; color: var(--muted); font-size: 11px; text-align: center; word-break: break-all; }
-
-        .proof-thumb {
-            display: block; margin: 14px auto 0; max-width: 240px;
-            border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
-        }
-        .proof-thumb img { display: block; width: 100%; height: auto; }
-        .proof-link { display: inline-block; margin-top: 8px; color: var(--lime); font-size: 12px; font-weight: 700; }
-        .pill.cancelled { background: rgba(255, 92, 92, .14); color: #ff9a9a; }
-
-        /* METODE */
-        .method-list { display: grid; gap: 10px; }
-        .method-option { position: relative; display: block; cursor: pointer; }
-        .method-option input { position: absolute; opacity: 0; pointer-events: none; }
-
-        .method-card {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 15px 16px;
-            border: 1px solid rgba(255, 255, 255, .10);
-            border-radius: 12px;
-            background: rgba(255, 255, 255, .03);
-            transition: border-color .15s ease, background .15s ease;
-        }
-
-        .method-option:hover .method-card { border-color: rgba(184, 255, 0, .35); }
-        .method-option input:checked + .method-card { border-color: var(--lime); background: rgba(184, 255, 0, .07); }
-        .method-option input:focus-visible + .method-card { outline: 2px solid var(--lime); outline-offset: 2px; }
-
-        .method-logo {
-            width: 64px;
-            height: 40px;
-            flex: 0 0 64px;
-            display: grid;
-            place-items: center;
-            border-radius: 8px;
-            background: #ffffff;
-            font-size: 13px;
-            font-weight: 900;
-            letter-spacing: -.3px;
-        }
-
-        .method-logo.qris    { color: #d4145a; }
-        .method-logo.mandiri { color: #003d79; }
-        .method-logo.bca     { color: #0060af; }
-        .method-logo.cash    { color: #2e7d32; }
-        .pill.cash      { background: rgba(255, 196, 0, .16); color: #ffd45c; border: 1px solid rgba(255, 196, 0, .3); }
-        .cash-box { padding: 22px; text-align: center; }
-        .cash-icon { width: 64px; height: 64px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 50%; background: rgba(255, 196, 0, .14); color: #ffd45c; font-size: 26px; font-weight: 900; }
-        .cash-box h2 { font-size: 20px; font-weight: 800; }
-        .cash-box p { margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.6; }
-        .cash-amount { margin: 16px auto 4px; color: var(--lime); font-size: 30px; font-weight: 900; }
-        .cash-steps { max-width: 420px; margin: 14px auto 18px; padding-left: 18px; text-align: left; color: var(--muted); font-size: 13px; line-height: 1.7; }
-
-        .method-text strong { display: block; font-size: 14px; }
-        .method-text small { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
-
-        .method-check {
-            margin-left: auto;
-            width: 20px;
-            height: 20px;
-            flex: 0 0 20px;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, .25);
-        }
-
-        .method-option input:checked + .method-card .method-check { border-color: var(--lime); background: radial-gradient(var(--lime) 45%, transparent 50%); }
-
-        .btn {
-            width: 100%;
-            height: 50px;
-            margin-top: 14px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 0;
-            border-radius: 10px;
-            background: var(--lime);
-            color: #071000;
-            font-size: 14px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: background .15s ease;
-        }
-
-        .btn:hover { background: #d0ff45; }
-        .btn:disabled { opacity: .5; cursor: not-allowed; }
-        .btn-ghost { background: transparent; color: #aab3af; border: 1px solid rgba(255, 255, 255, .12); height: 42px; font-size: 12px; }
-        .btn-ghost:hover { background: rgba(255, 255, 255, .05); color: #fff; }
-
-        /* INSTRUKSI */
-        .countdown {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 16px;
-            padding: 11px 14px;
-            border-radius: 10px;
-            background: rgba(255, 196, 0, .08);
-            border: 1px solid rgba(255, 196, 0, .22);
-            color: #ffd45c;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .countdown strong { font-size: 16px; font-variant-numeric: tabular-nums; }
-        .countdown.urgent { border-color: rgba(255, 92, 92, .45); background: rgba(255, 92, 92, .08); color: #ff9a9a; }
-        #confirmButton:disabled { opacity: .45; cursor: not-allowed; }
-
-        .qr-box { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px; border-radius: 12px; background: #ffffff; color: #111; }
-        .qr-box svg { width: 210px; height: 210px; }
-        .qr-box strong { font-size: 13px; }
-        .qr-box small { color: #666; font-size: 11px; }
-
-        .va-box { padding: 16px; border-radius: 12px; border: 1px solid var(--line); background: rgba(0, 0, 0, .2); }
-        .va-label { color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-        .va-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
-        .va-number { font-size: 24px; font-weight: 900; letter-spacing: 1.5px; font-variant-numeric: tabular-nums; }
-
-        .copy-btn {
-            height: 34px;
-            padding: 0 14px;
-            border: 1px solid rgba(184, 255, 0, .4);
-            border-radius: 8px;
-            background: transparent;
-            color: var(--lime);
-            font-size: 12px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        .copy-btn:hover { background: rgba(184, 255, 0, .1); }
-
-        .amount-line { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
-        .amount-line span { color: var(--muted); font-size: 12px; }
-        .amount-line strong { color: var(--lime); font-size: 20px; font-weight: 900; }
-
-        .how-to { margin-top: 16px; padding-left: 18px; color: #c5cdc9; font-size: 12px; line-height: 1.8; }
-
-        /* SUKSES */
-        .success { text-align: center; padding: 10px 0; }
-        .success-icon { width: 64px; height: 64px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 50%; background: var(--lime); color: #071000; font-size: 30px; font-weight: 900; }
-        .success h2 { font-size: 22px; font-weight: 800; }
-        .success p { margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.6; }
-        .receipt { margin-top: 18px; text-align: left; }
-
-        .blocked { padding: 26px; text-align: center; color: var(--muted); font-size: 13px; line-height: 1.6; }
-
-        @media (max-width: 900px) {
-            .layout { grid-template-columns: 1fr; }
-            .nav-link { display: none; }
-        }
-
-        @media (max-width: 520px) {
-            .page { width: calc(100% - 20px); }
-            .panel { padding: 16px; }
-            .va-number { font-size: 19px; }
-            .logout-button { display: none; }
-        }
-    </style>
-</head>
-<body>
-
-@include('partials.site-navbar')
-
-{{-- ============================== PAGE ============================== --}}
-<main class="page">
 
     <div class="steps">
         <span class="step done"><span class="step-number">✓</span> Pilih jadwal</span>
@@ -371,7 +157,7 @@
         </span>
         <span class="step-line"></span>
         <span class="step {{ $booking->status === 'booked' ? 'done' : (in_array($payment->status, ['paid', 'verifying'], true) ? 'current' : '') }}">
-            <span class="step-number">{{ $booking->status === 'booked' ? '✓' : '3' }}</span> Konfirmasi admin
+            <span class="step-number">{{ $booking->status === 'booked' ? '✓' : '3' }}</span> Konfirmasi
         </span>
     </div>
 
@@ -435,7 +221,7 @@
                 @if ($isCourse)
                     1 sesi Course Lesson ({{ rtrim(rtrim(number_format($hours, 2, ',', '.'), '0'), ',') }} jam)
                     @if (\App\Support\BookingRules::courseNote())
-                        <br><span style="color: #ffd45c; font-weight: 700">* {{ \App\Support\BookingRules::courseNote() }}</span>
+                        <br><span style="color: #a2650c; font-weight: 600">* {{ \App\Support\BookingRules::courseNote() }}</span>
                     @endif
                 @else
                     {{ rtrim(rtrim(number_format($hours, 2, ',', '.'), '0'), ',') }} jam × {{ Payment::formatRupiah($rate) }}
@@ -479,7 +265,7 @@
                         @endif
                     </div>
 
-                    <a href="{{ route('booking', ['date' => $date->format('Y-m-d')]) }}" class="btn">Kembali ke halaman booking</a>
+                    <a href="{{ (Route::has('jadwal') ? route('jadwal') : route('booking', ['date' => $date->format('Y-m-d')])) }}" class="btn">Lihat Jadwal Saya</a>
                 </div>
 
             @elseif ($payment->status === 'verifying')
@@ -504,7 +290,7 @@
                         <span class="proof-link">Bukti pembayaran terkirim {{ $payment->proof_uploaded_at?->locale('id')->diffForHumans() }}</span>
                     @endif
 
-                    <a href="{{ route('booking', ['date' => $date->format('Y-m-d')]) }}" class="btn">Kembali ke halaman booking</a>
+                    <a href="{{ (Route::has('jadwal') ? route('jadwal') : route('booking', ['date' => $date->format('Y-m-d')])) }}" class="btn">Lihat Jadwal Saya</a>
                 </div>
 
             @elseif (! $bookingActive)
@@ -539,7 +325,7 @@
                         <li>Admin akan menandai pembayaran Anda lunas, dan Anda akan menerima notifikasi.</li>
                     </ol>
 
-                    <a href="{{ route('booking', ['date' => $date->format('Y-m-d')]) }}" class="btn">Kembali ke halaman booking</a>
+                    <a href="{{ (Route::has('jadwal') ? route('jadwal') : route('booking', ['date' => $date->format('Y-m-d')])) }}" class="btn">Lihat Jadwal Saya</a>
 
                     <form method="POST" action="{{ route('payment.booking.reset', $booking) }}" style="margin-top: 10px">
                         @csrf
@@ -722,8 +508,11 @@
 
     </div>
 
-</main>
 
+</div>
+@endsection
+
+@push('scripts')
 <script>
     (() => {
         /* Aktifkan tombol setelah memilih metode */
@@ -842,6 +631,4 @@
         }
     })();
 </script>
-
-</body>
-</html>
+@endpush

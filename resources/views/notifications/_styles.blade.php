@@ -1,115 +1,75 @@
-{{-- Style halaman notifikasi (admin & customer) --}}
+{{-- Style halaman notifikasi (admin & customer), tema Fairway --}}
 @once
     <style>
-        .nf-wrap { max-width: 860px; }
+        .nf-wrap { max-width: 860px; margin: 0 auto; color: #17261d; }
 
         .nf-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
-        .nf-head h1 { font-size: 28px; font-weight: 900; letter-spacing: -.8px; }
-        .nf-head p { margin-top: 6px; color: rgba(255, 255, 255, .6); font-size: 13px; }
+        .nf-head h1 { font-family: var(--fw-serif, "Playfair Display", Georgia, serif); font-size: clamp(26px, 3.6vw, 36px); font-weight: 600; letter-spacing: -.4px; }
+        .nf-head p { margin-top: 6px; color: #77837b; font-size: 14px; }
 
-        .nf-btn {
-            height: 38px;
-            padding: 0 16px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            border: 1px solid transparent;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 800;
-            text-decoration: none;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .nf-btn-primary { background: #9cff38; color: #07120c; }
-        .nf-btn-primary:hover { background: #b4ff66; }
-        .nf-btn-outline { border-color: rgba(156, 255, 0, .5); background: transparent; color: #9cff38; }
-        .nf-btn-outline:hover { background: rgba(156, 255, 0, .1); }
-        .nf-btn-ghost { border-color: rgba(255, 255, 255, .14); background: transparent; color: rgba(255, 255, 255, .78); }
-        .nf-btn-ghost:hover { border-color: rgba(255, 90, 90, .6); color: #ff8a96; }
+        .nf-btn { height: 38px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid transparent; border-radius: 99px; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; white-space: nowrap; font-family: inherit; }
+        .nf-btn-primary { background: #1f4d33; color: #fff; }
+        .nf-btn-primary:hover { background: #2a6444; }
+        .nf-btn-outline { border-color: rgba(31, 77, 51, .35); background: #fff; color: #1f4d33; }
+        .nf-btn-outline:hover { background: #f0f5ef; }
+        .nf-btn-ghost { border-color: rgba(23, 46, 33, .14); background: #fff; color: #3c4a42; }
+        .nf-btn-ghost:hover { border-color: rgba(201, 65, 58, .45); color: #c9413a; }
 
         .nf-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
-        .nf-tab {
-            padding: 8px 14px;
-            border-radius: 999px;
-            border: 1px solid rgba(156, 255, 0, .18);
-            color: rgba(255, 255, 255, .78);
-            font-size: 12px;
-            font-weight: 800;
-            text-decoration: none;
-        }
+        .nf-tab { height: 36px; padding: 0 16px; display: inline-flex; align-items: center; border-radius: 999px; border: 1px solid rgba(23, 46, 33, .1); background: #fff; color: #3c4a42; font-size: 13px; font-weight: 500; text-decoration: none; }
         .nf-tab span { margin-left: 6px; opacity: .6; }
-        .nf-tab.active { background: #9cff38; border-color: #9cff38; color: #07120c; }
+        .nf-tab.active { background: #1f4d33; border-color: #1f4d33; color: #fff; }
 
-        .nf-flash { margin-bottom: 14px; padding: 11px 14px; border-radius: 9px; border: 1px solid rgba(156, 255, 0, .3); background: rgba(156, 255, 0, .07); color: #c9ff8a; font-size: 13px; }
+        .nf-flash { margin-bottom: 14px; padding: 12px 16px; border-radius: 14px; border: 1px solid rgba(31, 77, 51, .2); background: #e5eee6; color: #1f4d33; font-size: 14px; }
 
         .nf-list { display: grid; gap: 10px; }
+        .nf-card { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 14px; align-items: start; padding: 16px; border: 1px solid rgba(23, 46, 33, .09); border-radius: 18px; background: #fff; box-shadow: 0 1px 2px rgba(23, 46, 33, .04), 0 8px 24px rgba(23, 46, 33, .05); }
+        .nf-card.unread { border-color: rgba(31, 77, 51, .3); background: #f6faf4; }
 
-        .nf-card {
-            display: grid;
-            grid-template-columns: 40px minmax(0, 1fr) auto;
-            gap: 14px;
-            align-items: start;
-            padding: 16px;
-            border: 1px solid rgba(255, 255, 255, .08);
-            border-radius: 12px;
-            background: rgba(1, 20, 13, .82);
-        }
-
-        .nf-card.unread { border-color: rgba(156, 255, 0, .35); background: rgba(156, 255, 0, .05); }
-
-        .nf-icon {
-            width: 40px;
-            height: 40px;
-            display: grid;
-            place-items: center;
-            border-radius: 50%;
-            font-size: 15px;
-            font-weight: 900;
-        }
-
-        .nf-icon.created     { background: rgba(92, 168, 255, .16); color: #8ec7ff; }
-        .nf-icon.rescheduled { background: rgba(245, 174, 0, .16);  color: #ffc62d; }
+        .nf-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: #e5eee6; color: #1f4d33; font-size: 15px; font-weight: 700; }
+        .nf-icon.created     { background: #e6eef9; color: #3b6fb6; }
+        .nf-icon.rescheduled { background: #fdf1de; color: #a2650c; }
         .nf-icon.cancelled,
-        .nf-icon.rejected    { background: rgba(255, 77, 94, .16);  color: #ff8a96; }
-        .nf-icon.approved    { background: rgba(67, 190, 77, .18);  color: #68ed62; }
-        .nf-icon.paid        { background: rgba(184, 255, 0, .16);  color: #b8ff00; font-size: 12px; }
+        .nf-icon.rejected    { background: #fbe7e5; color: #c9413a; }
+        .nf-icon.approved, .nf-icon.paid { background: #e5eee6; color: #1f4d33; }
+        .nf-icon.paid        { font-size: 12px; }
+        .nf-icon.broadcast   { background: #fdf1de; }
 
-        .nf-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: #fff; font-size: 14px; font-weight: 800; }
-        .nf-badge { padding: 3px 8px; border-radius: 999px; background: rgba(255, 255, 255, .08); color: rgba(255, 255, 255, .7); font-size: 10px; font-weight: 800; }
-        .nf-new { padding: 3px 8px; border-radius: 999px; background: #9cff38; color: #07120c; font-size: 10px; font-weight: 900; }
-        .nf-message { margin-top: 6px; color: rgba(255, 255, 255, .8); font-size: 13px; line-height: 1.6; }
-        .nf-time { margin-top: 8px; color: rgba(255, 255, 255, .42); font-size: 11px; }
+        .nf-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: #17261d; font-size: 14.5px; font-weight: 600; }
+        .nf-badge { padding: 3px 9px; border-radius: 999px; background: #ecebe3; color: #66716a; font-size: 11px; font-weight: 600; }
+        .nf-new { padding: 3px 9px; border-radius: 999px; background: #e9a23b; color: #fff; font-size: 11px; font-weight: 600; }
+        .nf-message { margin-top: 6px; color: #3c4a42; font-size: 13.5px; line-height: 1.6; }
+        .nf-time { margin-top: 8px; color: #9aa59e; font-size: 12px; }
 
         .nf-actions { display: flex; gap: 6px; }
         .nf-actions form { margin: 0; }
 
-        .nf-empty { padding: 50px 20px; text-align: center; border: 1px dashed rgba(156, 255, 0, .25); border-radius: 12px; color: rgba(255, 255, 255, .55); font-size: 13px; }
+        .nf-empty { padding: 50px 20px; text-align: center; border: 1px dashed rgba(23, 46, 33, .18); border-radius: 18px; background: #fff; color: #77837b; font-size: 14px; }
 
-        .nf-pager { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; color: rgba(255, 255, 255, .5); font-size: 12px; }
+        .nf-pager { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; color: #77837b; font-size: 12.5px; }
         .nf-pager div { display: flex; gap: 6px; }
 
         /* Detail */
-        .nf-detail { padding: 24px; border: 1px solid rgba(156, 255, 0, .2); border-radius: 14px; background: rgba(1, 20, 13, .86); }
-        .nf-detail-head { display: flex; gap: 14px; align-items: center; padding-bottom: 18px; border-bottom: 1px solid rgba(255, 255, 255, .08); }
-        .nf-detail-head .nf-icon { width: 52px; height: 52px; font-size: 20px; }
-        .nf-detail-head h1 { font-size: 22px; font-weight: 900; }
-        .nf-detail-message { padding: 18px 0; color: rgba(255, 255, 255, .88); font-size: 15px; line-height: 1.7; border-bottom: 1px solid rgba(255, 255, 255, .08); }
+        .nf-detail { padding: 24px; border: 1px solid rgba(23, 46, 33, .09); border-radius: 22px; background: #fff; box-shadow: 0 8px 24px rgba(23, 46, 33, .06); }
+        .nf-detail-head { display: flex; gap: 14px; align-items: center; padding-bottom: 18px; border-bottom: 1px solid rgba(23, 46, 33, .08); }
+        .nf-detail-head .nf-icon { width: 54px; height: 54px; font-size: 20px; }
+        .nf-detail-head h1 { font-family: var(--fw-serif, "Playfair Display", Georgia, serif); font-size: 24px; font-weight: 600; }
+        .nf-detail-message { padding: 18px 0; color: #3c4a42; font-size: 15px; line-height: 1.75; border-bottom: 1px solid rgba(23, 46, 33, .08); white-space: pre-line; }
 
-        .nf-section-title { margin: 18px 0 10px; color: #9cff38; font-size: 11px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; }
+        .nf-section-title { margin: 18px 0 10px; color: #2a6444; font-size: 11.5px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; }
         .nf-rows { display: grid; gap: 8px; }
-        .nf-row { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 10px; font-size: 13px; }
-        .nf-row span:first-child { color: rgba(255, 255, 255, .5); }
-        .nf-row span:last-child { color: #fff; font-weight: 700; }
+        .nf-row { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 10px; padding: 10px 12px; border-radius: 12px; background: #f8f7f2; font-size: 13.5px; }
+        .nf-row span:first-child { color: #77837b; }
+        .nf-row span:last-child { color: #17261d; font-weight: 600; }
 
-        .nf-detail-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, .08); }
+        .nf-detail-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(23, 46, 33, .08); }
 
         @media (max-width: 640px) {
-            .nf-card { grid-template-columns: 36px minmax(0, 1fr); }
+            .nf-card { grid-template-columns: 40px minmax(0, 1fr); padding: 14px; }
+            .nf-icon { width: 40px; height: 40px; }
             .nf-actions { grid-column: 1 / -1; }
             .nf-row { grid-template-columns: 1fr; gap: 2px; }
+            .nf-detail { padding: 18px; }
         }
     </style>
 @endonce

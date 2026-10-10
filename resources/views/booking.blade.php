@@ -204,529 +204,319 @@
         'location' => $locationId,
     ]);
 @endphp
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Booking | {{ \App\Support\Brand::name() }}</title>
+@php
+    $Icons = \App\Support\Icons::class;
+    $stripDays = collect(range(0, 20))->map(fn ($i) => $today->copy()->addDays($i));
+    if (! $stripDays->contains(fn ($d) => $d->isSameDay($selected))) {
+        $stripDays->push($selected->copy());
+    }
+    $upcomingCount = collect($yourBookings)->count();
+    $slotHint = \App\Support\BookingRules::slotMinutes() >= 60 ? 'per jam' : 'per ' . \App\Support\BookingRules::slotMinutes() . ' menit';
+@endphp
+@extends('layouts.fw')
 
-    <style>
-        :root {
-            --lime: #b8ff00;
-            --yellow: #ffc400;
-            --red: #ff5c5c;
-            --blue: #5ca8ff;
-            --text: #f4f7f4;
-            --muted: #8a9690;
-            --border: rgba(184,255,0,.16);
+@section('title', 'Booking Lesson')
+@section('no_footer', true)
+
+@push('head')
+<style>
+    .bk-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 22px; align-items: start; }
+    .bk-step { margin-bottom: 22px; }
+    .bk-step-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .bk-step-title h2 { display: flex; align-items: center; gap: 8px; font-size: 15.5px; font-weight: 700; }
+    .bk-step-title h2 b { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-green); color: #fff; font-size: 11px; }
+    .bk-step-title small { color: var(--fw-muted); font-size: 12.5px; }
+
+    /* Strip tanggal */
+    .bk-days { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; padding: 2px 2px 6px; margin: 0 -2px; scrollbar-width: thin; }
+    .bk-day { flex: 0 0 64px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; border-radius: 16px; background: var(--fw-surface); border: 1px solid var(--fw-line); color: var(--fw-text-2); font-size: 12px; text-align: center; }
+    .bk-day strong { font-size: 13px; font-weight: 600; color: var(--fw-text); }
+    .bk-day:hover { border-color: var(--fw-line-2); }
+    .bk-day.selected { background: var(--fw-green); border-color: var(--fw-green); color: rgba(255, 255, 255, .8); box-shadow: 0 8px 18px rgba(31, 77, 51, .25); }
+    .bk-day.selected strong { color: #fff; }
+    .bk-day.today:not(.selected) { border-color: rgba(31, 77, 51, .4); }
+    .bk-more { position: relative; flex: 0 0 64px; display: grid; place-items: center; gap: 2px; padding: 10px 4px; border-radius: 16px; background: var(--fw-tint); color: var(--fw-green); font-size: 11.5px; font-weight: 600; cursor: pointer; }
+    .bk-more svg { width: 18px; height: 18px; }
+    .bk-more input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .bk-month { color: var(--fw-muted); font-size: 12.5px; }
+
+    /* Jenis lesson & lokasi */
+    .bk-opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .bk-opt input { position: absolute; opacity: 0; pointer-events: none; }
+    .bk-opt-card { height: 100%; display: flex; gap: 12px; padding: 14px; border-radius: 16px; background: var(--fw-surface); border: 1.5px solid var(--fw-line); cursor: pointer; transition: border-color .15s, background .15s; }
+    .bk-opt-card:hover { border-color: var(--fw-line-2); }
+    .bk-opt input:checked + .bk-opt-card { border-color: var(--fw-green); background: var(--fw-tint-2); box-shadow: 0 0 0 3px rgba(31, 77, 51, .08); }
+    .bk-opt input:focus-visible + .bk-opt-card { outline: 2px solid var(--fw-green); outline-offset: 2px; }
+    .bk-opt-ic { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border-radius: 12px; background: var(--fw-tint); color: var(--fw-green); }
+    .bk-opt input:checked + .bk-opt-card .bk-opt-ic { background: var(--fw-green); color: #fff; }
+    .bk-opt-ic svg { width: 20px; height: 20px; }
+    .bk-opt-card strong { display: block; font-size: 14.5px; font-weight: 600; }
+    .bk-opt-card .price { display: block; margin-top: 2px; color: var(--fw-green); font-size: 13px; font-weight: 600; }
+    .bk-opt-card .desc { display: block; margin-top: 4px; color: var(--fw-muted); font-size: 12px; line-height: 1.45; }
+    .bk-venue { margin-top: 2px; }
+
+    /* Slot */
+    .bk-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 10px; color: var(--fw-muted); font-size: 12px; }
+    .bk-legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .bk-legend i { width: 8px; height: 8px; border-radius: 50%; background: var(--fw-green-3); }
+    .bk-legend i.pending { background: var(--fw-orange); } .bk-legend i.booked { background: var(--fw-red); } .bk-legend i.mine { background: var(--fw-blue); } .bk-legend i.off { background: #b9c0bb; }
+    .bk-slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    @media (max-width: 1180px) { .bk-slots { grid-template-columns: minmax(0, 1fr); } }
+    .bk-slot { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--fw-surface); border: 1.5px solid var(--fw-line); text-align: left; font: inherit; color: var(--fw-text); }
+    .bk-slot .dot { width: 9px; height: 9px; flex: 0 0 9px; border-radius: 50%; background: var(--fw-green-3); }
+    .bk-slot .tm { flex: 1; min-width: 0; }
+    .bk-slot .tm strong { display: block; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .bk-slot .tm small { display: inline-flex; align-items: center; gap: 4px; color: var(--fw-muted); font-size: 12px; }
+    .bk-slot .act { flex: 0 0 auto; height: 34px; padding: 0 16px; display: inline-flex; align-items: center; border-radius: 99px; background: var(--fw-green); color: #fff; font-size: 12.5px; font-weight: 600; }
+    button.bk-slot { cursor: pointer; }
+    button.bk-slot:hover { border-color: rgba(31, 77, 51, .35); }
+    button.bk-slot.selected { border-color: var(--fw-green); background: var(--fw-tint-2); }
+    button.bk-slot.selected .act { background: var(--fw-lime); color: var(--fw-green); }
+    button.bk-slot.selected .act::before { content: "✓ "; white-space: pre; }
+    div.bk-slot { background: var(--fw-surface-2); color: var(--fw-muted); }
+    div.bk-slot .tm strong { color: var(--fw-muted); }
+    div.bk-slot.slot-pending .dot { background: var(--fw-orange); }
+    div.bk-slot.slot-booked .dot { background: var(--fw-red); }
+    div.bk-slot.slot-mine { background: var(--fw-blue-tint); border-color: rgba(59, 111, 182, .25); }
+    div.bk-slot.slot-mine .dot { background: var(--fw-blue); }
+    div.bk-slot.slot-mine .tm strong { color: var(--fw-blue); }
+    div.bk-slot.slot-past .dot, div.bk-slot.slot-blocked .dot { background: #b9c0bb; }
+    .slot-hold { padding: 4px 9px; border-radius: 99px; background: var(--fw-orange-tint); color: #8a5608; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .slot-hold.urgent { background: var(--fw-red-tint); color: var(--fw-red); }
+
+    /* Ringkasan */
+    .bk-summary { position: sticky; top: 92px; padding: 20px; }
+    .bk-summary h2 { font-family: var(--fw-serif); font-size: 22px; font-weight: 600; margin-bottom: 14px; }
+    .bk-sum-row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px dashed var(--fw-line-2); font-size: 13.5px; }
+    .bk-sum-row span:first-child { color: var(--fw-muted); }
+    .bk-sum-row span:last-child { font-weight: 600; text-align: right; }
+    .bk-sum-total { display: flex; justify-content: space-between; align-items: baseline; margin: 14px 0; }
+    .bk-sum-total strong { font-family: var(--fw-serif); font-size: 26px; color: var(--fw-green); }
+    .bk-times { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .bk-times select { height: 44px; font-size: 14px; padding: 0 10px; }
+    .bk-note { margin-top: 12px; color: var(--fw-muted); font-size: 12px; line-height: 1.55; }
+    .course-box { display: grid; gap: 6px; margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--fw-tint-2); border: 1px solid var(--fw-line); font-size: 13px; }
+    .course-box span { color: var(--fw-muted); }
+    .course-box .course-ok { color: var(--fw-green); font-style: normal; font-weight: 600; }
+    .course-box .course-no { color: var(--fw-red); font-style: normal; }
+    .course-box .course-note { color: var(--fw-muted); }
+    .bk-mine { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 14px; }
+
+    /* Bar bawah HP */
+    .bk-bar { display: none; }
+
+    @media (max-width: 1000px) {
+        .bk-layout { grid-template-columns: minmax(0, 1fr); }
+        .bk-summary { position: static; }
+    }
+    @media (max-width: 820px) {
+        .bk-opts { grid-template-columns: 1fr; }
+        .bk-day { flex-basis: 58px; }
+        .bk-bar {
+            position: fixed; left: 10px; right: 10px; bottom: calc(82px + env(safe-area-inset-bottom)); z-index: 240;
+            display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 16px; border-radius: 20px;
+            background: var(--fw-green); color: #fff; box-shadow: 0 12px 30px rgba(23, 46, 33, .35);
+            transform: translateY(160%); visibility: hidden; transition: transform .25s ease, visibility .25s;
         }
+        .bk-bar.show { transform: none; visibility: visible; }
+        .bk-bar div { flex: 1; min-width: 0; line-height: 1.25; }
+        .bk-bar small { display: block; color: rgba(255, 255, 255, .7); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bk-bar strong { font-size: 17px; }
+        .bk-bar .fw-btn { height: 42px; padding: 0 16px; }
+        body.bk-has-bar .fw-main { padding-bottom: 90px; }
+    }
+</style>
+@endpush
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { min-height: 100%; }
-
-        body {
-            color: var(--text);
-            background:
-                linear-gradient(rgba(1,12,9,.78), rgba(1,12,9,.90)),
-                url('{{ \App\Support\Brand::background('public') }}') center / cover fixed no-repeat;
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            overflow-x: hidden;
-        }
-
-        a { color: inherit; text-decoration: none; }
-        button, select, input { font: inherit; }
-
-        /* NAVBAR */
-        .navbar {
-            min-height: 64px; padding: 0 24px;
-            display: flex; align-items: center; justify-content: space-between; gap: 15px;
-            background: rgba(2,15,11,.92); border-bottom: 1px solid rgba(184,255,0,.10);
-            position: sticky; top: 0; z-index: 100;
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-        }
-        .brand { font-size: 20px; font-weight: 800; letter-spacing: -.6px; white-space: nowrap; }
-        .brand span { color: var(--lime); }
-        .nav-right { display: flex; align-items: center; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
-        .nav-link { padding: 8px 11px; border-radius: 8px; color: #cbd2cf; font-size: 13px; font-weight: 600; transition: .18s ease; }
-        .nav-link:hover { color: var(--lime); background: rgba(184,255,0,.06); }
-        .booking-nav { padding: 9px 18px; border-radius: 9px; background: var(--lime); color: #071000; font-size: 12px; font-weight: 800; letter-spacing: .4px; }
-        .user-name {
-            max-width: 130px; padding: 8px 12px; color: #cbd2cf; background: rgba(255,255,255,.04);
-            border: 1px solid rgba(255,255,255,.07); border-radius: 9px; font-size: 12px; font-weight: 600;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
-        .logout-button { padding: 8px 10px; border: 0; background: transparent; color: #aab3af; font-size: 12px; font-weight: 600; cursor: pointer; }
-        .logout-button:hover { color: #fff; }
-
-        /* PAGE */
-        .page { width: min(1400px, calc(100% - 40px)); margin: auto; padding: 32px 0 36px; }
-        .page-heading { margin-bottom: 20px; }
-        .eyebrow { margin-bottom: 6px; color: var(--lime); font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
-        .page-heading h1 { font-size: 36px; line-height: 1.1; font-weight: 800; letter-spacing: -1.2px; }
-        .page-heading p { max-width: 760px; margin-top: 8px; color: var(--muted); font-size: 14px; line-height: 1.55; }
-
-        /* ALERT */
-        .alert { margin-bottom: 14px; padding: 12px 15px; border-radius: 10px; font-size: 13px; line-height: 1.45; }
-        .alert-success { color: #d9ff79; background: rgba(67,105,12,.22); border: 1px solid rgba(184,255,0,.25); }
-        .alert-error { color: #ffb4b4; background: rgba(80,15,15,.35); border: 1px solid rgba(255,92,92,.35); }
-        .alert-error strong { display: block; margin-bottom: 3px; }
-        .alert-error ul { margin-left: 18px; }
-
-        /* LAYOUT */
-        .booking-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-        .panel {
-            padding: 22px; border: 1px solid var(--border); border-radius: 16px;
-            background: linear-gradient(145deg, rgba(7,30,23,.95), rgba(2,18,13,.94));
-            box-shadow: 0 15px 45px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.02);
-        }
-        .section-title { display: flex; align-items: center; gap: 11px; margin-bottom: 18px; font-size: 20px; font-weight: 800; letter-spacing: -.4px; }
-        .section-title svg { width: 22px; height: 22px; flex: 0 0 22px; stroke: var(--lime); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-        .section-title .sub { margin-left: auto; color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: 0; }
-
-        /* CALENDAR */
-        .calendar-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-        .calendar-month { font-size: 24px; font-weight: 800; letter-spacing: -.6px; }
-        .month-actions { display: flex; gap: 8px; }
-        .month-button {
-            width: 40px; height: 40px; display: grid; place-items: center;
-            border: 1px solid rgba(255,255,255,.10); border-radius: 10px;
-            background: rgba(255,255,255,.04); color: #fff; font-size: 21px; cursor: pointer;
-        }
-        .month-button:hover:not(:disabled) { color: var(--lime); border-color: rgba(184,255,0,.35); }
-        .month-button:disabled { opacity: .22; cursor: not-allowed; }
-        .weekdays, .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-        .weekdays { margin-bottom: 6px; }
-        .weekday { text-align: center; color: #69736f; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-        .calendar-day {
-            min-height: 44px; display: grid; place-items: center;
-            border: 1px solid transparent; border-radius: 9px; background: rgba(255,255,255,.035);
-            color: #d3dad7; font-size: 14px; font-weight: 700; transition: .15s ease;
-        }
-        a.calendar-day:hover { background: rgba(184,255,0,.07); border-color: rgba(184,255,0,.30); }
-        .calendar-day.empty { visibility: hidden; }
-        .calendar-day.disabled { color: #48534e; background: rgba(255,255,255,.015); cursor: not-allowed; }
-        .calendar-day.selected { color: #071000; background: var(--lime); border-color: var(--lime); font-weight: 800; }
-        .calendar-day.today { border-color: rgba(184,255,0,.45); }
-
-        /* FORM */
-        .divider { height: 1px; margin: 18px 0; background: rgba(255,255,255,.07); }
-        .form-title { margin-bottom: 10px; color: #cdd5d1; font-size: 13px; font-weight: 800; letter-spacing: .9px; text-transform: uppercase; }
-        .time-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .field label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 12px; font-weight: 600; }
-        .field select {
-            width: 100%; height: 46px; padding: 0 12px; color: #fff; background: rgba(0,0,0,.25);
-            border: 1px solid rgba(255,255,255,.10); border-radius: 9px; outline: none; font-size: 14px; font-weight: 600;
-        }
-        .field select:focus { border-color: rgba(184,255,0,.5); }
-        .field select:disabled { opacity: .5; cursor: not-allowed; }
-        .field select option { color: #fff; background: #081812; }
-        .field select option:disabled { color: #55605b; }
-        .duration-box {
-            margin-top: 12px; padding: 11px 14px; color: var(--muted);
-            background: rgba(184,255,0,.045); border: 1px solid rgba(184,255,0,.08); border-radius: 9px; font-size: 13px;
-        }
-        .duration-box strong { color: var(--lime); font-size: 14px; font-weight: 800; }
-        .book-button {
-            width: 100%; height: 52px; margin-top: 12px; border: 0; border-radius: 10px;
-            background: var(--lime); color: #071000; font-size: 14px; font-weight: 800; letter-spacing: .4px;
-            cursor: pointer; transition: .18s ease;
-        }
-        .book-button:hover:not(:disabled) { background: #d0ff45; transform: translateY(-1px); }
-        .book-button:disabled { background: rgba(255,255,255,.06); color: #6a756f; border: 1px dashed rgba(255,255,255,.14); cursor: not-allowed; }
-        .booking-note { margin-top: 12px; color: #7d8883; font-size: 12px; line-height: 1.5; text-align: center; }
-
-        /* SLOT GRID */
-        .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 14px; }
-        .legend-item { display: flex; align-items: center; gap: 7px; color: #b6bfba; font-size: 12px; font-weight: 600; }
-        .legend-dot { width: 9px; height: 9px; border-radius: 50%; }
-        .legend-dot.available { background: var(--lime); }
-        .legend-dot.pending { background: var(--yellow); }
-        .legend-dot.booked { background: var(--red); }
-        .legend-dot.mine { background: var(--blue); }
-        .legend-dot.past { background: #55605b; }
-
-        .slot-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-        .slot {
-            min-height: 54px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-            padding: 7px 8px; border-radius: 10px; border: 1px solid transparent;
-            font-size: 13px; font-weight: 700; text-align: center; white-space: nowrap; transition: .15s ease;
-        }
-        .slot small { font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; opacity: .85; }
-
-        .slot-available { color: var(--lime); background: rgba(184,255,0,.05); border-color: rgba(184,255,0,.30); cursor: pointer; }
-        .slot-available:hover { background: rgba(184,255,0,.16); }
-        .slot-available.selected { color: #071000; background: var(--lime); border-color: var(--lime); }
-
-        .slot-pending { color: #ffd45c; background: rgba(255,196,0,.06); border-color: rgba(255,196,0,.28); cursor: not-allowed; }
-        .slot-booked  { color: #ff9a9a; background: rgba(255,92,92,.07); border-color: rgba(255,92,92,.28); cursor: not-allowed; }
-        .slot-mine    { color: #a9d0ff; background: rgba(92,168,255,.09); border-color: rgba(92,168,255,.40); cursor: not-allowed; }
-        .slot-past    { color: #55605b; background: rgba(255,255,255,.02); border-color: rgba(255,255,255,.05); cursor: not-allowed; text-decoration: line-through; }
-        .slot-past small { text-decoration: none; }
-        .slot-blocked { color: #ff9aa6; background: repeating-linear-gradient(135deg, rgba(216,35,61,.10) 0 6px, rgba(216,35,61,.04) 6px 12px); border-color: rgba(216,35,61,.35); cursor: not-allowed; }
-        .legend-dot.blocked { background: #d8233d; }
-
-        /* YOUR BOOKING */
-        .your-booking { margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.07); }
-        .your-booking-title { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; font-size: 16px; font-weight: 800; }
-        .your-booking-title svg { width: 19px; height: 19px; stroke: var(--lime); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-        .empty-status { padding: 12px 14px; color: #7d8883; border: 1px dashed rgba(255,255,255,.10); border-radius: 9px; font-size: 13px; }
-
-        .booking-card { margin-bottom: 10px; padding: 14px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06); border-radius: 11px; }
-        .booking-card:last-child { margin-bottom: 0; }
-        .booking-card-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr .9fr; gap: 10px; }
-        .booking-meta-label { margin-bottom: 4px; color: #7d8883; font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
-        .booking-meta-value { color: #edf2ef; font-size: 13px; font-weight: 700; }
-        .booking-status { display: flex; align-items: center; gap: 7px; margin-top: 11px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.06); font-size: 12px; font-weight: 700; }
-        .booking-status.pending { color: #ffd45c; }
-        .booking-status.booked { color: var(--lime); }
-        .booking-status-dot { width: 8px; height: 8px; border-radius: 50%; }
-        .booking-status.pending .booking-status-dot { background: var(--yellow); }
-        .booking-status.booked .booking-status-dot { background: var(--lime); }
-
-        .booking-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
-        .action-button { width: 100%; min-height: 40px; border-radius: 8px; font-size: 11px; font-weight: 800; letter-spacing: .3px; cursor: pointer; transition: .16s ease; }
-        .cancel-button { color: #ff9c9c; background: rgba(255,92,92,.05); border: 1px solid rgba(255,92,92,.25); }
-        .cancel-button:hover { color: #fff; background: rgba(255,92,92,.16); border-color: rgba(255,92,92,.45); }
-        .reschedule-button { color: #b9d9ff; background: rgba(92,168,255,.05); border: 1px solid rgba(92,168,255,.25); }
-        .reschedule-button:hover { color: #fff; background: rgba(92,168,255,.14); border-color: rgba(92,168,255,.45); }
-        .action-locked { margin-top: 10px; padding-top: 9px; color: #7d8883; border-top: 1px solid rgba(255,255,255,.06); font-size: 11px; line-height: 1.5; }
-
-        .reschedule-box { display: none; margin-top: 12px; padding: 13px; background: rgba(0,0,0,.20); border: 1px solid rgba(92,168,255,.18); border-radius: 10px; }
-        .reschedule-box.active { display: block; }
-        .reschedule-title { margin-bottom: 10px; color: #b9d9ff; font-size: 11px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; }
-        .reschedule-grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 8px; }
-        .reschedule-field label { display: block; margin-bottom: 4px; color: #7d8883; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-        .reschedule-field input { width: 100%; height: 40px; padding: 0 8px; color: #fff; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.09); border-radius: 7px; outline: none; font-size: 12px; font-weight: 600; }
-        .reschedule-field input:focus { border-color: rgba(92,168,255,.5); }
-        .reschedule-submit { width: 100%; height: 40px; margin-top: 9px; border: 0; border-radius: 7px; color: #06111c; background: #8ec7ff; font-size: 11px; font-weight: 800; cursor: pointer; }
-        .reschedule-submit:hover { background: #b9dcff; }
-        .reschedule-cancel { width: 100%; height: 36px; margin-top: 6px; border: 1px solid rgba(255,255,255,.08); border-radius: 7px; color: #89948f; background: transparent; font-size: 11px; font-weight: 700; cursor: pointer; }
-        .reschedule-cancel:hover { color: #fff; }
-
-        /* RESPONSIVE */
-        @media (max-width: 1200px) { .nav-link { padding-left: 8px; padding-right: 8px; } }
-        @media (max-width: 1050px) {
-            .booking-layout { grid-template-columns: 1fr; }
-            .slot-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-        }
-        @media (max-width: 900px) { .nav-link { display: none; } }
-        @media (max-width: 760px) {
-            .navbar { padding: 10px 14px; }
-            .page { width: calc(100% - 20px); padding-top: 22px; }
-            .page-heading h1 { font-size: 28px; }
-            .slot-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-            .booking-card-grid { grid-template-columns: 1fr 1fr; }
-            .reschedule-grid { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 480px) {
-            .brand { font-size: 16px; }
-            .booking-nav { padding: 8px 12px; }
-            .logout-button { display: none; }
-            .panel { padding: 16px; }
-            .time-form-grid { grid-template-columns: 1fr; }
-            .calendar-day { min-height: 38px; font-size: 12px; }
-            .slot-list { grid-template-columns: 1fr 1fr; }
-            .booking-actions { grid-template-columns: 1fr; }
-        }
-    
-        /* ---------- Jenis lesson & lapangan ---------- */
-        .step-label { display: flex; align-items: center; gap: 9px; margin: 4px 0 10px; color: #cdd5d1; font-size: 13px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; }
-        .step-num { width: 22px; height: 22px; flex: 0 0 22px; display: grid; place-items: center; border-radius: 50%; background: var(--lime); color: #071000; font-size: 11px; font-weight: 900; letter-spacing: 0; }
-
-        .lesson-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 18px; }
-        .lesson-option input, .location-option input { position: absolute; opacity: 0; pointer-events: none; }
-        .lesson-card {
-            height: 100%; display: flex; flex-direction: column; gap: 6px; padding: 14px 15px;
-            border: 1px solid rgba(255,255,255,.10); border-radius: 13px; background: rgba(255,255,255,.03);
-            cursor: pointer; transition: border-color .15s ease, background .15s ease;
-        }
-        .lesson-card strong { font-size: 14px; font-weight: 800; }
-        .lesson-price { color: var(--lime); font-size: 19px; font-weight: 900; }
-        .lesson-price small { color: var(--muted); font-size: 11px; font-weight: 700; }
-        .lesson-desc { color: var(--muted); font-size: 12px; line-height: 1.45; }
-        .lesson-option:hover .lesson-card { border-color: rgba(184,255,0,.35); }
-        .lesson-option input:checked + .lesson-card { border-color: var(--lime); background: rgba(184,255,0,.08); box-shadow: inset 0 0 0 1px var(--lime); }
-        .lesson-option input:focus-visible + .lesson-card { outline: 2px solid var(--lime); outline-offset: 2px; }
-
-        .location-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 4px; }
-        .location-card {
-            display: flex; align-items: center; gap: 11px; padding: 12px 14px;
-            border: 1px solid rgba(255,255,255,.10); border-radius: 12px; background: rgba(255,255,255,.03); cursor: pointer;
-        }
-        .location-card strong { display: block; font-size: 13px; font-weight: 800; }
-        .location-card small { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
-        .location-pin { color: var(--lime); font-size: 16px; }
-        .location-option:hover .location-card { border-color: rgba(184,255,0,.35); }
-        .location-option input:checked + .location-card { border-color: var(--lime); background: rgba(184,255,0,.08); box-shadow: inset 0 0 0 1px var(--lime); }
-        .location-option input:focus-visible + .location-card { outline: 2px solid var(--lime); outline-offset: 2px; }
-        .venue-input {
-            width: 100%; padding: 13px 15px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px;
-            background: rgba(0,0,0,.25); color: #fff; font-size: 14px; outline: none;
-        }
-        .venue-input:focus { border-color: rgba(184,255,0,.55); }
-        .venue-input::placeholder { color: #6a756f; }
-        .venue-hint { display: block; margin-top: 7px; color: var(--muted); font-size: 12px; line-height: 1.45; }
-
-        .course-box {
-            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-            padding: 14px 16px; border: 1px solid rgba(184,255,0,.35); border-radius: 12px; background: rgba(184,255,0,.06);
-        }
-        .course-box strong { display: block; color: var(--lime); font-size: 20px; font-weight: 900; }
-        .course-box span { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
-        .course-box em { font-style: normal; font-size: 12px; font-weight: 800; }
-        .course-ok { color: var(--lime); }
-        .course-no { color: #ff9a9a; max-width: 260px; }
-        .course-box.unavailable { border-color: rgba(255,92,92,.35); background: rgba(255,92,92,.06); }
-        .lesson-note { display: block; margin-top: 4px; color: #ffd45c; font-size: 11px; font-weight: 700; }
-        .course-note { flex-basis: 100%; color: #ffd45c; font-size: 12px; font-weight: 700; }
-
-        .duration-box { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-
-        .booking-place { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 2px 0 10px; }
-        .booking-place-type { padding: 4px 10px; border-radius: 999px; background: rgba(184,255,0,.12); color: var(--lime); font-size: 11px; font-weight: 800; }
-        .booking-place-type.course { background: rgba(92,168,255,.14); color: #a9d0ff; }
-        .booking-place-name { color: #cdd5d1; font-size: 12px; font-weight: 700; }
-        .reschedule-fixed { padding: 10px 12px; border-radius: 9px; background: rgba(255,255,255,.04); color: #cdd5d1; font-size: 13px; font-weight: 700; }
-
-        .locked-help { display: flex; flex-direction: column; gap: 10px; }
-        .locked-help strong { display: block; margin-top: 4px; color: #ffd45c; font-weight: 700; }
-        .contact-admin {
-            align-self: flex-start; display: inline-flex; align-items: center; gap: 8px;
-            padding: 10px 16px; border-radius: 10px; background: #25d366; color: #04210f;
-            font-size: 13px; font-weight: 800;
-        }
-        .contact-admin:hover { background: #3fe07a; }
-        .slot-hold {
-            display: inline-flex; align-items: center; gap: 4px; margin-top: 3px;
-            padding: 2px 8px; border-radius: 999px; background: rgba(255, 196, 0, .12);
-            color: #ffd45c; font-size: 10px; font-weight: 800; letter-spacing: .2px;
-        }
-        .slot-hold b { font-variant-numeric: tabular-nums; }
-        .slot-hold.urgent { background: rgba(255, 92, 92, .14); color: #ff9a9a; }
-
-        [hidden] { display: none !important; }
-    </style>
-    @include('partials.brand-head')
-</head>
-
-<body>
-
-{{-- ============================ NAVBAR ============================ --}}
-@include('partials.site-navbar')
-
-
-{{-- ============================== PAGE ============================== --}}
-<main class="page">
-
-    <div class="page-heading">
-        <div class="eyebrow">Golf Booking Lesson</div>
-        <h1>Pesan Lesson Anda</h1>
-        <p>
-            Pilih tanggal dan jam lesson yang tersedia. Slot yang berstatus Pending
-            atau Booked tetap ditampilkan, tetapi tidak dapat dipilih.
-        </p>
+@section('content')
+    <div class="fw-pagehead">
+        <div class="fw-pagehead-title">
+            <a href="{{ route('dashboard') }}" class="fw-back" aria-label="Kembali">{!! $Icons::svg('back') !!}</a>
+            <div>
+                <h1 class="fw-h1">Booking Lesson</h1>
+                <p class="fw-sub">Pilih tanggal, jenis lesson, lokasi, lalu jam yang tersedia.</p>
+            </div>
+        </div>
+        @if (Route::has('jadwal'))
+            <a href="{{ route('jadwal') }}" class="fw-btn md ghost fw-nav-hide-m">{!! $Icons::svg('cal-check') !!} Jadwal Saya @if ($upcomingCount) ({{ $upcomingCount }}) @endif</a>
+        @endif
     </div>
 
     @if(session('booking_success'))
-        <div class="alert alert-success">{{ session('booking_success') }}</div>
+        <div class="fw-alert ok">{!! $Icons::svg('check-c') !!} {{ session('booking_success') }}</div>
     @endif
 
     @if($errors->any())
-        <div class="alert alert-error">
-            <strong>Booking belum dapat diproses:</strong>
-            <ul>
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+        <div class="fw-alert err">
+            <div>
+                <strong>Booking belum dapat diproses:</strong>
+                <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+            </div>
         </div>
     @endif
 
-
-    <div class="booking-layout">
-
-        {{-- ========================= KIRI ========================= --}}
-        <section class="panel">
-
-            <div class="section-title">
-                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
-                Booking Lesson
-            </div>
-
-            {{-- ---------- 1. TANGGAL ---------- --}}
-            <div class="step-label"><span class="step-num">1</span> Pilih tanggal</div>
-
-            <div class="calendar-top">
-                <div class="calendar-month">{{ $selected->format('F Y') }}</div>
-
-                <div class="month-actions">
-                    @if($previousAllowed)
-                        <a href="{{ route('booking', $linkFor($previousMonth->format('Y-m-d'))) }}"
-                           class="month-button" aria-label="Bulan sebelumnya">‹</a>
-                    @else
-                        <button type="button" class="month-button" disabled aria-label="Bulan sebelumnya">‹</button>
-                    @endif
-
-                    <a href="{{ route('booking', $linkFor($nextMonth->format('Y-m-d'))) }}"
-                       class="month-button" aria-label="Bulan berikutnya">›</a>
+    <div class="bk-layout">
+        <div>
+            {{-- 1. TANGGAL --}}
+            <section class="bk-step">
+                <div class="bk-step-title">
+                    <h2><b>1</b> Pilih tanggal</h2>
+                    <span class="bk-month">{{ $selected->locale('id')->translatedFormat('F Y') }}</span>
                 </div>
-            </div>
-
-            <div class="weekdays">
-                <div class="weekday">Min</div>
-                <div class="weekday">Sen</div>
-                <div class="weekday">Sel</div>
-                <div class="weekday">Rab</div>
-                <div class="weekday">Kam</div>
-                <div class="weekday">Jum</div>
-                <div class="weekday">Sab</div>
-            </div>
-
-            <div class="calendar-grid">
-
-                @for($i = 0; $i < $startWeekday; $i++)
-                    <div class="calendar-day empty"></div>
-                @endfor
-
-                @for($day = 1; $day <= $monthEnd->day; $day++)
-                    @php
-                        $date         = $monthStart->copy()->day($day);
-                        $dateString   = $date->format('Y-m-d');
-                        $isPast       = $date->lt($today);
-                        $isSelected   = $dateString === $selectedDateString;
-                        $isTodayCell  = $date->isSameDay($today);
-                    @endphp
-
-                    @if($isPast)
-                        <div class="calendar-day disabled {{ $isTodayCell ? 'today' : '' }}">{{ $day }}</div>
-                    @else
-                        <a href="{{ route('booking', $linkFor($dateString)) }}"
-                           class="calendar-day {{ $isSelected ? 'selected' : '' }} {{ $isTodayCell ? 'today' : '' }}">
-                            {{ $day }}
+                <div class="bk-days" id="bkDays">
+                    @foreach ($stripDays as $d)
+                        @php $ds = $d->format('Y-m-d'); @endphp
+                        <a href="{{ route('booking', $linkFor($ds)) }}"
+                           class="bk-day calendar-day {{ $ds === $selectedDateString ? 'selected' : '' }} {{ $d->isSameDay($today) ? 'today' : '' }}"
+                           @if ($ds === $selectedDateString) aria-current="date" @endif>
+                            <span>{{ $d->isSameDay($today) ? 'Hari ini' : $d->locale('id')->translatedFormat('D') }}</span>
+                            <strong>{{ $d->format('d') }}</strong>
+                            <span>{{ $d->locale('id')->translatedFormat('M') }}</span>
                         </a>
-                    @endif
-                @endfor
-
-            </div>
-
-            <div class="divider"></div>
-
-            {{-- ---------- 2. JENIS LESSON ---------- --}}
-            <div class="step-label"><span class="step-num">2</span> Jenis lesson</div>
-
-            <div class="lesson-options">
-                @foreach($lessonTypes as $typeKey => $typeLabel)
-                    <label class="lesson-option">
-                        <input type="radio" name="lesson_type" value="{{ $typeKey }}" form="bookingForm"
-                               {{ $lessonType === $typeKey ? 'checked' : '' }}>
-                        <span class="lesson-card">
-                            <strong>{{ $typeLabel }}</strong>
-                            <span class="lesson-price">
-                                {{ $typeKey === 'course' ? $rp($coursePrice) : $rp($pricePerHour) }}
-                                <small>{{ $typeKey === 'course' ? '/ sesi' : '/ jam' }}</small>
-                            </span>
-                            <span class="lesson-desc">
-                                @if($typeKey === 'course')
-                                    Sesi tetap {{ $courseStart }} – {{ $courseEnd }} di lapangan golf
-                                    @if(\App\Support\BookingRules::courseNote())
-                                        <span class="lesson-note">* {{ \App\Support\BookingRules::courseNote() }}</span>
-                                    @endif
-                                @else
-                                    Latihan di driving range, per jam bersama coach
-                                @endif
-                            </span>
-                        </span>
+                    @endforeach
+                    <label class="bk-more" title="Pilih tanggal lain">
+                        {!! $Icons::svg('calendar') !!} Lainnya
+                        <input type="date" id="bkPickDate" min="{{ $today->format('Y-m-d') }}" value="{{ $selectedDateString }}" aria-label="Pilih tanggal lain">
                     </label>
-                @endforeach
-            </div>
-
-            {{-- ---------- 3. LAPANGAN ---------- --}}
-            @if($locations->isEmpty())
-                <div id="locationStep" class="course-box unavailable" style="margin-bottom: 4px">
-                    <em class="course-no">Belum ada lapangan driving range yang aktif. Silakan hubungi admin.</em>
                 </div>
-            @else
-                <div id="locationStep">
-                    <div class="step-label"><span class="step-num">3</span> Pilih lapangan driving range</div>
+            </section>
 
-                    <div class="location-options">
-                        @foreach($locations as $location)
-                            <label class="location-option">
-                                <input type="radio" name="location_id" value="{{ $location->id }}" form="bookingForm"
-                                       {{ $locationId === (string) $location->id ? 'checked' : '' }}>
-                                <span class="location-card">
-                                    <span class="location-pin">◉</span>
-                                    <span>
-                                        <strong>{{ $location->name }}</strong>
-                                        @if($location->area)
-                                            <small>{{ $location->area }}</small>
+            {{-- 2. JENIS LESSON --}}
+            <section class="bk-step">
+                <div class="bk-step-title"><h2><b>2</b> Jenis lesson</h2></div>
+                <div class="bk-opts">
+                    @foreach($lessonTypes as $typeKey => $typeLabel)
+                        <label class="bk-opt">
+                            <input type="radio" name="lesson_type" value="{{ $typeKey }}" form="bookingForm" {{ $lessonType === $typeKey ? 'checked' : '' }}>
+                            <span class="bk-opt-card">
+                                <span class="bk-opt-ic">{!! $Icons::svg($typeKey === 'course' ? 'flag' : 'target') !!}</span>
+                                <span>
+                                    <strong>{{ $typeLabel }}</strong>
+                                    <span class="price">{{ $typeKey === 'course' ? $rp($coursePrice) . ' / sesi' : $rp($pricePerHour) . ' / jam' }}</span>
+                                    <span class="desc">
+                                        @if($typeKey === 'course')
+                                            Sesi tetap {{ $courseStart }}–{{ $courseEnd }} di lapangan golf pilihan Anda.
+                                            @if(\App\Support\BookingRules::courseNote())<br>* {{ \App\Support\BookingRules::courseNote() }}@endif
+                                        @else
+                                            Latihan di driving range bersama coach, dihitung per jam.
                                         @endif
                                     </span>
                                 </span>
-                            </label>
-                        @endforeach
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+            </section>
+
+            {{-- 3. LOKASI --}}
+            <section class="bk-step">
+                @if($locations->isEmpty())
+                    <div id="locationStep" class="fw-alert warn">Belum ada lapangan driving range yang aktif. Silakan hubungi admin.</div>
+                @else
+                    <div id="locationStep">
+                        <div class="bk-step-title"><h2><b>3</b> Pilih lokasi driving range</h2></div>
+                        <div class="bk-opts">
+                            @foreach($locations as $location)
+                                <label class="bk-opt">
+                                    <input type="radio" name="location_id" value="{{ $location->id }}" form="bookingForm" {{ $locationId === (string) $location->id ? 'checked' : '' }}>
+                                    <span class="bk-opt-card">
+                                        <span class="bk-opt-ic">{!! $Icons::svg('pin') !!}</span>
+                                        <span>
+                                            <strong>{{ $location->name }}</strong>
+                                            @if($location->area)<span class="desc">{{ $location->area }}</span>@endif
+                                        </span>
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                <div id="courseLocation" class="bk-venue" hidden>
+                    <div class="bk-step-title"><h2><b>3</b> Lapangan golf pilihan Anda</h2></div>
+                    <div class="fw-field">
+                        <input type="text" name="course_venue" id="courseVenue" form="bookingForm" maxlength="150"
+                               value="{{ old('course_venue') }}" placeholder="Contoh: Padang Golf Pondok Indah">
+                        <small>Admin akan mengonfirmasi ketersediaan lapangan golf yang Anda tulis.</small>
                     </div>
                 </div>
-            @endif
+            </section>
 
-            <div id="courseLocation" class="course-location" hidden>
-                <div class="step-label"><span class="step-num">3</span> Lapangan golf pilihan Anda</div>
-                <input type="text" name="course_venue" id="courseVenue" form="bookingForm"
-                       class="venue-input" maxlength="150"
-                       value="{{ old('course_venue') }}"
-                       placeholder="Contoh: Padang Golf Pondok Indah">
-                <small class="venue-hint">Tulis lapangan golf tempat Anda ingin Course Lesson. Admin akan mengonfirmasi ketersediaannya.</small>
-            </div>
+            {{-- 4. JAM --}}
+            <section class="bk-step" id="timeStep">
+                <div class="bk-step-title">
+                    <h2><b>4</b> <span id="timeStepTitle">Pilih jam</span></h2>
+                    <small>{{ $selected->locale('id')->translatedFormat('l, d M') }} · {{ $slotHint }}</small>
+                </div>
 
-            <div class="divider"></div>
+                <div class="bk-legend">
+                    <span><i></i>Tersedia ({{ $counts['available'] }})</span>
+                    @if ($counts['pending'])<span><i class="pending"></i>Pending ({{ $counts['pending'] }})</span>@endif
+                    @if ($counts['booked'])<span><i class="booked"></i>Booked ({{ $counts['booked'] }})</span>@endif
+                    @if ($counts['mine'])<span><i class="mine"></i>Booking Anda ({{ $counts['mine'] }})</span>@endif
+                    @if ($counts['blocked'] || $counts['past'])<span><i class="off"></i>Tidak tersedia ({{ $counts['blocked'] + $counts['past'] }})</span>@endif
+                </div>
 
-            <div class="step-label"><span class="step-num">4</span> <span id="timeStepTitle">Jam lesson</span></div>
+                <div class="bk-slots">
+                    @foreach($slotMap as $slot)
+                        @if($slot['status'] === 'available')
+                            <button type="button" class="bk-slot available-slot" data-start="{{ $slot['start'] }}" data-end="{{ $slot['end'] }}">
+                                <span class="dot"></span>
+                                <span class="tm"><strong>{{ $slot['start'] }} - {{ $slot['end'] }}</strong><small>★ Tersedia</small></span>
+                                <span class="act">Booking</span>
+                            </button>
+                        @else
+                            <div class="bk-slot slot-{{ $slot['status'] }}">
+                                <span class="dot"></span>
+                                <span class="tm"><strong>{{ $slot['start'] }} - {{ $slot['end'] }}</strong><small>{{ $statusLabels[$slot['status']] }}</small></span>
+                                @if(! empty($slot['hold']))
+                                    <span class="slot-hold" data-hold-deadline="{{ $slot['hold'] }}">
+                                        {{ $slot['status'] === 'mine' ? 'Bayar' : 'Tersedia lagi' }} <b>--:--</b>
+                                    </span>
+                                @endif
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+            </section>
+        </div>
 
-            <form action="{{ route('booking.store') }}" method="POST" id="bookingForm">
+        {{-- RINGKASAN --}}
+        <aside>
+            <form action="{{ route('booking.store') }}" method="POST" id="bookingForm" class="fw-card bk-summary">
                 @csrf
-
                 <input type="hidden" name="booking_date" value="{{ $selectedDateString }}">
 
-                <div class="time-form-grid" id="timeFields">
+                <h2>Ringkasan</h2>
+                <div class="bk-sum-row"><span>Tanggal</span><span>{{ $selected->locale('id')->translatedFormat('D, d M Y') }}</span></div>
+                <div class="bk-sum-row"><span>Coach</span><span>{{ \App\Models\Coach::chatName() }}</span></div>
+                <div class="bk-sum-row"><span>Durasi</span><span id="durationText">-</span></div>
 
-                    <div class="field">
-                        <label for="start_time">Jam Mulai</label>
-
+                <div class="bk-times" id="timeFields">
+                    <div class="fw-field">
+                        <label for="start_time">Jam mulai</label>
                         <select name="start_time" id="start_time" required>
-                            <option value="">Pilih jam mulai</option>
-
+                            <option value="">Pilih</option>
                             @foreach($slotMap as $slot)
-                                <option value="{{ $slot['start'] }}"
-                                        {{ $slot['status'] !== 'available' ? 'disabled' : '' }}
-                                        {{ $oldStart === $slot['start'] ? 'selected' : '' }}>
-                                    {{ $slot['start'] }}
-                                    @if($slot['status'] !== 'available')
-                                        — {{ $statusLabels[$slot['status']] }}
-                                    @endif
+                                <option value="{{ $slot['start'] }}" {{ $slot['status'] !== 'available' ? 'disabled' : '' }} {{ $oldStart === $slot['start'] ? 'selected' : '' }}>
+                                    {{ $slot['start'] }}@if($slot['status'] !== 'available') — {{ $statusLabels[$slot['status']] }}@endif
                                 </option>
                             @endforeach
                         </select>
                     </div>
-
-                    <div class="field">
-                        <label for="end_time">Jam Selesai</label>
-
+                    <div class="fw-field">
+                        <label for="end_time">Jam selesai</label>
                         <select name="end_time" id="end_time" required disabled>
-                            <option value="">Pilih jam selesai</option>
+                            <option value="">Pilih</option>
                         </select>
                     </div>
-
                 </div>
 
-                <div class="course-box {{ $courseAvailable ? '' : 'unavailable' }}" id="courseBox" hidden>
-                    <div>
-                        <strong>{{ $courseStart }} – {{ $courseEnd }}</strong>
-                        <span>Sesi Course Lesson · {{ $selected->locale('id')->translatedFormat('l, d M Y') }}</span>
-                    </div>
+                <div class="course-box" id="courseBox" hidden>
+                    <div><strong>{{ $courseStart }} – {{ $courseEnd }}</strong> <span>· Sesi Course Lesson</span></div>
                     @if($courseAvailable)
-                        <em class="course-ok">✓ Tersedia</em>
+                        <em class="course-ok">✓ Tersedia di tanggal ini</em>
                     @else
                         <em class="course-no">Tidak tersedia. {{ $courseReason }} Pilih tanggal lain.</em>
                     @endif
@@ -737,259 +527,33 @@
                     <input type="hidden" name="end_time" value="{{ $courseEnd }}" id="courseEndInput" disabled>
                 </div>
 
-                <div class="duration-box">
-                    <span>Durasi: <strong id="durationText">-</strong></span>
-                    <span>Total: <strong id="priceText">-</strong></span>
-                </div>
+                <div class="bk-sum-total"><span class="fw-muted">Total</span><strong id="priceText">-</strong></div>
 
-                <button type="submit" class="book-button" id="bookButton" disabled>
-                    Pilih jam lesson dulu
-                </button>
+                <button type="submit" class="fw-btn block" id="bookButton" disabled>Pilih jam lesson dulu</button>
 
-                <div class="booking-note">
-                    Diharapkan hadir 30 menit sebelum lesson dimulai.
-                    Booking baru berstatus <strong>Pending</strong> sampai disetujui Admin.
-                    Jadwal coach berlaku untuk semua lapangan.
-                </div>
-
+                <p class="bk-note">
+                    Booking baru berstatus <b>Pending</b> sampai pembayaran selesai & disetujui. Mohon hadir 15–30 menit sebelum lesson dimulai.
+                </p>
             </form>
 
-        </section>
-
-
-        {{-- ========================= KANAN ========================= --}}
-        <section class="panel">
-
-            <div class="section-title">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-                Jadwal Lesson
-                <span class="sub">{{ $selected->locale('id')->translatedFormat('l, d F Y') }}</span>
-            </div>
-
-            <div class="legend">
-                <span class="legend-item"><span class="legend-dot available"></span>Tersedia ({{ $counts['available'] }})</span>
-                <span class="legend-item"><span class="legend-dot pending"></span>Pending ({{ $counts['pending'] }})</span>
-                <span class="legend-item"><span class="legend-dot booked"></span>Booked ({{ $counts['booked'] }})</span>
-                @if($counts['blocked'] > 0)
-                    <span class="legend-item"><span class="legend-dot blocked"></span>Ditutup ({{ $counts['blocked'] }})</span>
-                @endif
-                <span class="legend-item"><span class="legend-dot mine"></span>Booking Anda ({{ $counts['mine'] }})</span>
-                @if($selectedIsToday)
-                    <span class="legend-item"><span class="legend-dot past"></span>Lewat ({{ $counts['past'] }})</span>
-                @endif
-            </div>
-
-            <div class="slot-list">
-                @foreach($slotMap as $slot)
-                    @if($slot['status'] === 'available')
-                        <button type="button"
-                                class="slot slot-available available-slot"
-                                data-start="{{ $slot['start'] }}"
-                                data-end="{{ $slot['end'] }}">
-                            {{ $slot['start'] }} - {{ $slot['end'] }}
-                        </button>
-                    @else
-                        <div class="slot slot-{{ $slot['status'] }}">
-                            {{ $slot['start'] }} - {{ $slot['end'] }}
-                            <small>{{ $statusLabels[$slot['status']] }}</small>
-                            @if(! empty($slot['hold']))
-                                <span class="slot-hold" data-hold-deadline="{{ $slot['hold'] }}"
-                                      title="{{ $slot['status'] === 'mine' ? 'Bayar sebelum waktu habis' : 'Tersedia lagi jika tidak dibayar' }}">
-                                    {{ $slot['status'] === 'mine' ? 'Bayar' : 'Tersedia lagi' }} <b>--:--</b>
-                                </span>
-                            @endif
-                        </div>
-                    @endif
-                @endforeach
-            </div>
-
-
-            {{-- ===================== BOOKING ANDA ===================== --}}
-            <div class="your-booking">
-
-                <div class="your-booking-title">
-                    <svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
-                    Booking Anda
-                </div>
-
-                @forelse($yourBookings as $booking)
-
-                    @php
-                        $yourStart   = Carbon::parse($booking->start_time);
-                        $yourEnd     = Carbon::parse($booking->end_time);
-                        $minutes     = $yourStart->diffInMinutes($yourEnd);
-                        $hours       = intdiv($minutes, 60);
-                        $remaining   = $minutes % 60;
-                        $bookingDate = Carbon::parse($booking->booking_date);
-                        $canModify   = $canModifyBooking($booking);
-                    @endphp
-
-                    <div class="booking-card">
-
-                        <div class="booking-card-grid">
-                            <div>
-                                <div class="booking-meta-label">Tanggal</div>
-                                <div class="booking-meta-value">{{ $bookingDate->format('d M Y') }}</div>
-                            </div>
-
-                            <div>
-                                <div class="booking-meta-label">Mulai</div>
-                                <div class="booking-meta-value">{{ $yourStart->format('H:i') }}</div>
-                            </div>
-
-                            <div>
-                                <div class="booking-meta-label">Selesai</div>
-                                <div class="booking-meta-value">{{ $yourEnd->format('H:i') }}</div>
-                            </div>
-
-                            <div>
-                                <div class="booking-meta-label">Durasi</div>
-                                <div class="booking-meta-value">
-                                    @if($hours > 0){{ $hours }} Jam @endif
-                                    @if($remaining > 0){{ $remaining }} Menit @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="booking-place">
-                            <span class="booking-place-type {{ $booking->isCourse() ? 'course' : '' }}">{{ $booking->lesson_label }}</span>
-                            @if($booking->place_label)
-                                <span class="booking-place-name">◉ {{ $booking->place_label }}</span>
-                            @endif
-                        </div>
-
-                        <div class="booking-status {{ $booking->status === 'pending' ? 'pending' : 'booked' }}">
-                            <span class="booking-status-dot"></span>
-
-                            @if($booking->status === 'pending')
-                                PENDING (Menunggu persetujuan Admin)
-                            @else
-                                BOOKED (Disetujui Admin)
-                            @endif
-                        </div>
-
-                        @include('payments._booking-status', ['booking' => $booking])
-
-                        @if($canModify)
-
-                            <div class="booking-actions">
-                                <form action="{{ route('booking.cancel', $booking) }}" method="POST" class="cancel-form">
-                                    @csrf
-                                    <button type="submit" class="action-button cancel-button">BATALKAN BOOKING</button>
-                                </form>
-
-                                <button type="button"
-                                        class="action-button reschedule-button reschedule-toggle"
-                                        data-target="reschedule-{{ $booking->id }}">
-                                    UBAH JADWAL
-                                </button>
-                            </div>
-
-                            <div class="reschedule-box" id="reschedule-{{ $booking->id }}">
-
-                                <div class="reschedule-title">Ubah Jadwal Lesson</div>
-
-                                <form action="{{ route('booking.reschedule', $booking) }}" method="POST" class="reschedule-form">
-                                    @csrf
-
-                                    <div class="reschedule-grid">
-                                        <div class="reschedule-field">
-                                            <label>Tanggal</label>
-                                            <input type="date" name="booking_date"
-                                                   min="{{ \App\Support\BookingRules::minRescheduleDate()->format('Y-m-d') }}"
-                                                   value="{{ $bookingDate->format('Y-m-d') }}" required>
-                                        </div>
-
-                                        @if($booking->isCourse())
-                                        <div class="reschedule-field" style="grid-column: span 2">
-                                            <label>Jam</label>
-                                            <div class="reschedule-fixed">{{ $courseStart }} – {{ $courseEnd }} (Course Lesson)</div>
-                                        </div>
-                                        @else
-                                        <div class="reschedule-field">
-                                            <label>Mulai</label>
-                                            <input type="time" name="start_time"
-                                                   value="{{ $yourStart->format('H:i') }}"
-                                                   min="{{ \App\Support\BookingRules::openTime() }}" max="{{ \App\Support\BookingRules::closeTime() }}" step="{{ \App\Support\BookingRules::slotMinutes() * 60 }}" required>
-                                        </div>
-
-                                        <div class="reschedule-field">
-                                            <label>Selesai</label>
-                                            <input type="time" name="end_time"
-                                                   value="{{ $yourEnd->format('H:i') }}"
-                                                   min="{{ \App\Support\BookingRules::openTime() }}" max="{{ \App\Support\BookingRules::closeTime() }}" step="{{ \App\Support\BookingRules::slotMinutes() * 60 }}" required>
-                                        </div>
-                                        @endif
-                                    </div>
-
-                                    <button type="submit" class="reschedule-submit">AJUKAN JADWAL BARU</button>
-
-                                    <button type="button" class="reschedule-cancel"
-                                            data-target="reschedule-{{ $booking->id }}">
-                                        TUTUP
-                                    </button>
-                                </form>
-
-                            </div>
-
-                            <div class="action-locked">
-                                {{ \App\Support\BookingRules::cancelRuleText() }}
-                            </div>
-
-                        @else
-
-                            @php
-                                $waNumber = class_exists(\App\Models\ContactSetting::class)
-                                    ? preg_replace('/\D+/', '', (string) \App\Models\ContactSetting::query()->value('whatsapp'))
-                                    : '';
-                                $waNumber = str_starts_with($waNumber, '0') ? '62' . substr($waNumber, 1) : $waNumber;
-                                $waText   = 'Halo Admin, saya ' . auth()->user()->name . ' ingin mengubah booking '
-                                    . $booking->lesson_label . ' tanggal ' . $bookingDate->locale('id')->translatedFormat('d M Y')
-                                    . ' jam ' . $yourStart->format('H:i') . '–' . $yourEnd->format('H:i')
-                                    . ($booking->place_label ? ' di ' . $booking->place_label : '')
-                                    . '. Apakah ada jadwal lain yang tersedia?';
-                            @endphp
-
-                            <div class="action-locked locked-help">
-                                <span>
-                                    @if($bookingDate->isSameDay($today))
-                                        Pembatalan dan perubahan jadwal sudah ditutup karena lesson berlangsung hari ini.
-                                    @else
-                                        Pembatalan dan perubahan jadwal sudah ditutup. {{ \App\Support\BookingRules::cancelRuleText() }}
-                                    @endif
-                                    <strong>Jika ada perubahan, silakan hubungi admin untuk melihat ketersediaan jadwal.</strong>
-                                </span>
-
-                                @if($waNumber)
-                                    <a href="https://wa.me/{{ $waNumber }}?text={{ rawurlencode($waText) }}"
-                                       target="_blank" rel="noopener" class="contact-admin">
-                                        Hubungi Admin via WhatsApp
-                                    </a>
-                                @else
-                                    <a href="{{ route('contact') }}" class="contact-admin">Hubungi Admin</a>
-                                @endif
-                            </div>
-
-                        @endif
-
-                    </div>
-
-                @empty
-
-                    <div class="empty-status">Anda belum memiliki booking aktif.</div>
-
-                @endforelse
-
-            </div>
-
-        </section>
-
+            @if (Route::has('jadwal'))
+                <a href="{{ route('jadwal') }}" class="fw-card bk-mine">
+                    <span class="fw-av sm">{!! $Icons::svg('cal-check') !!}</span>
+                    <span style="flex:1"><strong style="display:block;font-size:14px">Jadwal Saya</strong><small class="fw-muted">{{ $upcomingCount }} booking aktif</small></span>
+                    {!! $Icons::svg('chev', 'fw-chev') !!}
+                </a>
+            @endif
+        </aside>
     </div>
 
-</main>
+    {{-- Bar ringkas di HP --}}
+    <div class="bk-bar" id="bkBar">
+        <div><small id="bkBarInfo">Pilih jam lesson</small><strong id="bkBarPrice">-</strong></div>
+        <button type="button" class="fw-btn lime" id="bkBarBtn">Pesan</button>
+    </div>
+@endsection
 
-
-{{-- ============================ JAVASCRIPT ============================ --}}
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -1104,7 +668,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return text;
     }
 
-    function updateSummary() {
+    function updateSummaryCore() {
         highlight();
 
         /* Course Lesson: jam & harga tetap */
@@ -1147,6 +711,38 @@ document.addEventListener('DOMContentLoaded', function () {
         bookButton.textContent = 'Pesan Lesson Ini';
     }
 
+    /* Ringkasan juga tampil di bar bawah HP */
+    const bar = document.getElementById('bkBar');
+    const barInfo = document.getElementById('bkBarInfo');
+    const barPrice = document.getElementById('bkBarPrice');
+    function updateSummary() {
+        updateSummaryCore();
+        if (!bar) return;
+        const ready = !bookButton.disabled;
+        const start = isCourse() ? config.courseStart : startSelect.value;
+        const end = isCourse() ? config.courseEnd : endSelect.value;
+        barPrice.textContent = priceText.textContent;
+        barInfo.textContent = (start && end) ? (start + ' – ' + end + ' · ' + durationText.textContent) : bookButton.textContent;
+        bar.classList.toggle('show', !!(start && (end || isCourse())));
+        document.body.classList.toggle('bk-has-bar', bar.classList.contains('show'));
+        document.getElementById('bkBarBtn').disabled = !ready;
+    }
+    document.getElementById('bkBarBtn')?.addEventListener('click', function () {
+        if (!bookButton.disabled) { form.requestSubmit ? form.requestSubmit(bookButton) : bookButton.click(); }
+        else { form.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    });
+
+    /* Pilih tanggal lain dari kalender */
+    document.getElementById('bkPickDate')?.addEventListener('change', function () {
+        if (!this.value) return;
+        const url = new URL(window.location.href);
+        url.searchParams.set('date', this.value);
+        url.searchParams.set('type', lessonType());
+        if (locationValue()) url.searchParams.set('location', locationValue());
+        window.location.href = url.toString();
+    });
+    document.querySelector('.bk-day.selected')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+
     /* Tampilan sesuai jenis lesson */
     function syncLessonType() {
         const course = isCourse();
@@ -1161,7 +757,8 @@ document.addEventListener('DOMContentLoaded', function () {
         courseLocation.hidden = !course;
         courseVenue.disabled = !course;
         courseVenue.required = course;
-        timeStepTitle.textContent = course ? 'Jam course' : 'Jam lesson';
+        timeStepTitle.textContent = course ? 'Jam course' : 'Pilih jam';
+        document.querySelector('.bk-slots').style.opacity = course ? '.55' : '';
 
         updateLinks();
         updateSummary();
@@ -1169,7 +766,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* Link kalender & bulan membawa pilihan jenis lesson & lapangan */
     function updateLinks() {
-        document.querySelectorAll('a.calendar-day, a.month-button').forEach(function (link) {
+        document.querySelectorAll('a.calendar-day').forEach(function (link) {
             const url = new URL(link.href, window.location.origin);
             url.searchParams.set('type', lessonType());
             if (locationValue()) url.searchParams.set('location', locationValue());
@@ -1214,7 +811,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             updateSummary();
 
-            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (window.matchMedia('(min-width: 1001px)').matches === false && !bar) form.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
     });
 
@@ -1322,5 +919,4 @@ document.addEventListener('DOMContentLoaded', function () {
         setInterval(tick, 1000);
     })();
 </script>
-</body>
-</html>
+@endpush

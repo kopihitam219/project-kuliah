@@ -13,7 +13,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background: #eef1ef;
+            background: #f3f1ea;
             color: #18211c;
             font-family: Arial, Helvetica, sans-serif;
             padding: 30px 16px;
@@ -30,12 +30,12 @@
 
         .receipt-head {
             padding: 24px 28px;
-            background: #07130f;
+            background: #1f4d33;
             color: #ffffff;
         }
 
         .brand { font-size: 18px; font-weight: 900; }
-        .brand span { color: #9cff38; }
+        .brand span { color: #cde8a3; }
         .receipt-head p { margin-top: 4px; color: rgba(255, 255, 255, .6); font-size: 12px; }
 
         .status {
@@ -92,7 +92,7 @@
             align-items: center;
             border: 0;
             border-radius: 8px;
-            background: #07130f;
+            background: #1f4d33;
             color: #ffffff;
             font-size: 13px;
             font-weight: 700;

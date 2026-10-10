@@ -7,9 +7,25 @@
         .stat-row { grid-template-columns: repeat(5, minmax(0, 1fr)); }
         .alert-warning { padding: 11px 14px; border: 1px solid rgba(255, 198, 45, .4); border-radius: 9px; background: rgba(255, 198, 45, .08); color: #ffd56a; font-size: 12px; line-height: 1.5; }
         .btn-danger { border-color: rgba(216, 35, 61, .7); background: rgba(216, 35, 61, .12); color: #ff8a9a; }
-        .btn-danger:hover { background: #d8233d; color: #fff; }
+        .btn-danger:hover { background: #d8233d; color: #17261d; }
         @media (max-width: 1100px) { .stat-row { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         @media (max-width: 760px) { .stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .m-only { display: none !important; }
+        @media (max-width: 700px) {
+            .data-table thead { display: none; }
+            .data-table, .data-table tbody { display: block; width: 100% !important; min-width: 0 !important; }
+            .data-table tr { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+            .data-table td { display: none; padding: 0 !important; border: 0 !important; }
+            .data-table td:first-child { display: block; flex: 1; min-width: 0; }
+            .data-table tr > td:last-child { display: block !important; }
+            .data-table .row-actions a[target] { display: none; }
+            .data-table .person small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .data-table .person small:not(.m-only) { display: none; }
+            .m-only { display: block !important; }
+            .data-table .row-actions { flex-direction: column; gap: 6px; }
+            .data-table .row-actions a { height: 30px; padding: 0 12px; }
+            .table-wrap, .table-scroll { overflow: visible !important; }
+        }
     </style>
 @endpush
 
@@ -156,6 +172,7 @@
                                             <div>
                                                 <strong>{{ $customer->name }}</strong>
                                                 <small>{{ $customer->email }}</small>
+                                                <small class="m-only">{{ $phone ?: 'No. HP belum diisi' }} · {{ $customer->bookings_count }} booking</small>
                                             </div>
                                         </div>
                                     </td>
@@ -165,7 +182,7 @@
                                     <td>
                                         {{ $formatDate($customer->last_active_at) }}
                                         @if ($customer->last_active_at && $customer->last_active_at->lt(now()->subMonths(6)))
-                                            <small style="display: block; color: #ffc62d; font-size: 10px">Tidak aktif {{ $customer->last_active_at->locale('id')->diffForHumans(null, true) }}</small>
+                                            <small style="display: block; color: #a2650c; font-size: 10px">Tidak aktif {{ $customer->last_active_at->locale('id')->diffForHumans(null, true) }}</small>
                                         @endif
                                     </td>
                                     <td>
@@ -188,6 +205,7 @@
                                             <div>
                                                 <strong>{{ $customer->name ?: 'Customer offline' }}</strong>
                                                 <small>{{ $customer->email ?: 'Tanpa email' }}</small>
+                                                <small class="m-only">{{ $customer->phone }} · {{ $customer->bookings_count }} booking</small>
                                             </div>
                                         </div>
                                     </td>

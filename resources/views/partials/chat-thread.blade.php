@@ -5,31 +5,31 @@
 --}}
 @once
 <style>
-    .ct { display: flex; flex-direction: column; min-height: 0; height: 100%; border: 1px solid rgba(156, 255, 0, .14); border-radius: 18px; background: rgba(2, 18, 12, .82); overflow: hidden; font-family: Arial, Helvetica, sans-serif; color: #f2f7f3; }
-    .ct-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, .07); background: rgba(4, 22, 15, .9); }
-    .ct-avatar { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border-radius: 14px; background: #9cff38; color: #062010; font-weight: 900; font-size: 17px; }
-    .ct-head strong { display: block; font-size: 15px; }
-    .ct-head small { display: flex; align-items: center; gap: 6px; color: rgba(242, 247, 243, .55); font-size: 11.5px; }
-    .ct-head small i { width: 7px; height: 7px; border-radius: 50%; background: #65ec65; }
-    .ct-body { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; overscroll-behavior: contain; }
-    .ct-body::-webkit-scrollbar { width: 6px; } .ct-body::-webkit-scrollbar-thumb { background: rgba(156, 255, 0, .2); border-radius: 9px; }
-    .ct-date { align-self: center; margin: 8px 0 4px; padding: 4px 10px; border-radius: 99px; background: rgba(255, 255, 255, .06); color: rgba(242, 247, 243, .55); font-size: 11px; font-weight: 700; }
-    .ct-msg { max-width: min(78%, 520px); padding: 9px 12px 6px; border-radius: 16px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
-    .ct-msg.them { align-self: flex-start; background: #10261a; border: 1px solid rgba(255, 255, 255, .06); border-bottom-left-radius: 5px; }
-    .ct-msg.mine { align-self: flex-end; background: #9cff38; color: #062010; border-bottom-right-radius: 5px; }
-    .ct-meta { display: block; margin-top: 3px; font-size: 10.5px; text-align: right; opacity: .6; }
-    .ct-bc { align-self: stretch; max-width: none; padding: 12px 14px; border-radius: 16px; background: linear-gradient(120deg, rgba(156, 255, 56, .14), rgba(156, 255, 56, .04)); border: 1px solid rgba(156, 255, 56, .35); color: #f2f7f3; }
-    .ct-bc b { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; color: #9cff38; font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; }
+    .ct { display: flex; flex-direction: column; min-height: 0; height: 100%; border: 1px solid rgba(23, 46, 33, .09); border-radius: 22px; background: #fff; overflow: hidden; font-family: var(--fw-sans, Inter, system-ui, Arial, sans-serif); color: #17261d; box-shadow: 0 1px 2px rgba(23, 46, 33, .04), 0 8px 24px rgba(23, 46, 33, .06); }
+    .ct-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid rgba(23, 46, 33, .08); background: #fff; }
+    .ct-avatar { width: 44px; height: 44px; flex: 0 0 44px; display: grid; place-items: center; border-radius: 50%; background: #e5eee6; color: #1f4d33; font-weight: 700; font-size: 17px; }
+    .ct-head strong { display: block; font-size: 15px; font-weight: 600; }
+    .ct-head small { display: flex; align-items: center; gap: 6px; color: #77837b; font-size: 12px; }
+    .ct-head small i { width: 7px; height: 7px; border-radius: 50%; background: #3d9a5f; }
+    .ct-body { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; overscroll-behavior: contain; background: #f8f7f2; }
+    .ct-body::-webkit-scrollbar { width: 6px; } .ct-body::-webkit-scrollbar-thumb { background: rgba(23, 46, 33, .15); border-radius: 9px; }
+    .ct-date { align-self: center; margin: 8px 0 4px; padding: 4px 12px; border-radius: 99px; background: #ecebe3; color: #6b776f; font-size: 11.5px; font-weight: 600; }
+    .ct-msg { max-width: min(78%, 520px); padding: 10px 13px 6px; border-radius: 18px; font-size: 14.5px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .ct-msg.them { align-self: flex-start; background: #fff; border: 1px solid rgba(23, 46, 33, .08); border-bottom-left-radius: 6px; }
+    .ct-msg.mine { align-self: flex-end; background: #1f4d33; color: #fff; border-bottom-right-radius: 6px; }
+    .ct-meta { display: block; margin-top: 3px; font-size: 10.5px; text-align: right; opacity: .65; }
+    .ct-bc { align-self: stretch; max-width: none; padding: 14px 16px; border-radius: 18px; background: #fdf6e8; border: 1px solid rgba(233, 162, 59, .35); color: #17261d; }
+    .ct-bc b { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; color: #a2650c; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; }
     .ct-bc strong { display: block; margin-bottom: 4px; font-size: 15px; }
-    .ct-empty { margin: auto; max-width: 300px; text-align: center; color: rgba(242, 247, 243, .55); font-size: 13.5px; line-height: 1.6; }
+    .ct-empty { margin: auto; max-width: 300px; text-align: center; color: #77837b; font-size: 14px; line-height: 1.6; }
     .ct-empty span { display: block; margin-bottom: 8px; font-size: 34px; }
-    .ct-form { display: flex; align-items: flex-end; gap: 8px; padding: 10px; border-top: 1px solid rgba(255, 255, 255, .07); background: rgba(4, 22, 15, .95); }
-    .ct-form textarea { flex: 1; min-height: 46px; max-height: 140px; resize: none; padding: 12px 14px; border: 1px solid rgba(255, 255, 255, .1); border-radius: 14px; background: rgba(255, 255, 255, .05); color: #f2f7f3; font: 16px/1.4 Arial, Helvetica, sans-serif; outline: none; }
-    .ct-form textarea:focus { border-color: rgba(156, 255, 0, .55); }
-    .ct-form button { width: 46px; height: 46px; flex: 0 0 46px; display: grid; place-items: center; border: 0; border-radius: 14px; background: #9cff38; color: #062010; cursor: pointer; }
+    .ct-form { display: flex; align-items: flex-end; gap: 8px; padding: 10px 12px; border-top: 1px solid rgba(23, 46, 33, .08); background: #fff; }
+    .ct-form textarea { flex: 1; min-height: 46px; max-height: 140px; resize: none; padding: 12px 16px; border: 1px solid rgba(23, 46, 33, .14); border-radius: 23px; background: #f8f7f2; color: #17261d; font: 16px/1.4 var(--fw-sans, Inter, Arial, sans-serif); outline: none; }
+    .ct-form textarea:focus { border-color: #1f4d33; background: #fff; }
+    .ct-form button { width: 46px; height: 46px; flex: 0 0 46px; display: grid; place-items: center; border: 0; border-radius: 50%; background: #1f4d33; color: #fff; cursor: pointer; }
     .ct-form button:disabled { opacity: .5; cursor: wait; }
     .ct-form button svg { width: 20px; height: 20px; }
-    .ct-error { padding: 6px 14px 0; color: #ff8a8a; font-size: 12px; }
+    .ct-error { padding: 6px 14px 0; color: #c9413a; font-size: 12px; }
 </style>
 @endonce
 

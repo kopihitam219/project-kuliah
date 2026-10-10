@@ -1,375 +1,229 @@
+@extends('layouts.fw')
+
+@section('title', 'Program Latihan')
+
 @php
+    use App\Support\Icons;
+    use App\Support\BookingRules;
+
     $isCustomer = auth()->check() && auth()->user()->role === 'customer';
-
-    $homeUrl    = $isCustomer ? route('dashboard') : route('home');
-    $bookingUrl = $isCustomer ? route('booking') : route('login');
-
-    // Program diambil dari database (dikelola admin di menu Program)
-    $programs = \App\Models\Program::active()->ordered()->get();
+    $programs   = \App\Models\Program::active()->ordered()->get();
+    $levels     = $programs->pluck('level')->filter()->map(fn ($l) => ucfirst(strtolower($l)))->unique()->values();
+    $coach      = \App\Models\Coach::main();
+    $rp         = fn ($n) => 'Rp' . number_format((int) $n, 0, ',', '.');
+    $bookUrl    = fn ($type = 'driving') => $isCustomer ? route('booking', ['type' => $type]) : route('login');
+    $locations  = BookingRules::activeLocations();
 @endphp
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ \App\Support\Brand::name() }} - Program</title>
 
-    <style>
-        /* ================= TOKENS ================= */
-        :root {
-            --lime:       #8cf238;
-            --ink-dark:   #07150e;
-            --text-soft:  rgba(255, 255, 255, .88);
-            --text-muted: rgba(255, 255, 255, .66);
-        }
+@push('head')
+<style>
+    .pg-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    .pg-tools .fw-search { flex: 1; max-width: 360px; }
+    .pg-card { display: flex; flex-direction: column; overflow: hidden; cursor: pointer; text-align: left; padding: 0; font: inherit; color: inherit; transition: transform .2s, box-shadow .2s; }
+    .pg-card:hover { transform: translateY(-3px); box-shadow: var(--fw-shadow-lg); }
+    .pg-img { position: relative; aspect-ratio: 16 / 10; background: #cfd8c9 center / cover no-repeat; }
+    .pg-img .fw-badge { position: absolute; left: 12px; top: 12px; }
+    .pg-body { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 16px 18px 18px; }
+    .pg-body h2 { font-family: var(--fw-serif); font-size: 21px; font-weight: 600; line-height: 1.2; }
+    .pg-body p { color: var(--fw-muted); font-size: 14px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .pg-meta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: auto; padding-top: 8px; color: var(--fw-muted); font-size: 12.5px; }
+    .pg-meta span { display: inline-flex; align-items: center; gap: 5px; }
+    .pg-meta svg { width: 15px; height: 15px; }
 
-        /* ================= RESET ================= */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+    .pg-price { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 24px; overflow: hidden; }
+    .pg-price.dark { background: var(--fw-green); color: #fff; border-color: transparent; }
+    .pg-price .tag { align-self: flex-start; }
+    .pg-price h3 { font-family: var(--fw-serif); font-size: 24px; font-weight: 600; }
+    .pg-price .amount { font-family: var(--fw-serif); font-size: 34px; font-weight: 600; color: var(--fw-green); }
+    .pg-price.dark .amount { color: var(--fw-lime); }
+    .pg-price .amount small { font-family: var(--fw-sans); font-size: 14px; color: var(--fw-muted); font-weight: 500; }
+    .pg-price.dark .amount small { color: rgba(255, 255, 255, .7); }
+    .pg-price ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+    .pg-price li { display: flex; gap: 10px; }
+    .pg-price li::before { content: "✓"; flex: 0 0 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-tint); color: var(--fw-green); font-size: 11px; font-weight: 700; }
+    .pg-price.dark li::before { background: rgba(255, 255, 255, .14); color: var(--fw-lime); }
+    .pg-price .fw-btn { margin-top: auto; align-self: flex-start; }
 
-        html, body {
-            width: 100%;
-            min-height: 100%;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #06140e;
-            color: #ffffff;
-        }
+    /* Detail program (sheet) */
+    .pd { position: fixed; inset: 0; z-index: 320; display: none; }
+    .pd.open { display: block; }
+    .pd-back { position: absolute; inset: 0; background: rgba(23, 38, 29, .45); }
+    .pd-box { position: absolute; left: 50%; top: 50%; width: min(560px, calc(100% - 32px)); max-height: calc(100vh - 48px); transform: translate(-50%, -50%); overflow-y: auto; border-radius: 26px; background: var(--fw-surface); box-shadow: var(--fw-shadow-lg); }
+    .pd-img { position: relative; aspect-ratio: 16 / 10; background: #cfd8c9 center / cover no-repeat; }
+    .pd-top { position: absolute; left: 14px; right: 14px; top: 14px; display: flex; justify-content: space-between; }
+    .pd-top button { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .92); color: var(--fw-text); cursor: pointer; }
+    .pd-top svg { width: 19px; height: 19px; }
+    .pd-body { padding: 20px 22px 22px; }
+    .pd-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .pd-title h2 { font-family: var(--fw-serif); font-size: 26px; font-weight: 600; }
+    .pd-body > p { margin-top: 10px; color: var(--fw-text-2); font-size: 14.5px; line-height: 1.7; }
+    .pd-feat { display: grid; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; font-size: 14px; }
+    .pd-feat li { display: flex; gap: 10px; }
+    .pd-feat li::before { content: "✓"; flex: 0 0 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-tint); color: var(--fw-green); font-size: 11px; font-weight: 700; }
+    .pd-coach { display: flex; gap: 12px; margin-top: 18px; padding: 14px; border-radius: 16px; background: var(--fw-surface-2); }
+    .pd-coach strong { display: block; font-size: 14.5px; }
+    .pd-coach small { color: var(--fw-muted); font-size: 12.5px; }
+    .pd-coach p { margin-top: 6px; color: var(--fw-text-2); font-size: 13px; line-height: 1.55; }
+    .pd-body .fw-btn { margin-top: 18px; }
+    @media (max-width: 820px) {
+        .pg-tools .fw-search { max-width: none; flex-basis: 100%; }
+        .pd-box { left: 0; right: 0; top: auto; bottom: 0; width: 100%; max-height: 92vh; transform: none; border-radius: 26px 26px 0 0; }
+    }
+</style>
+@endpush
 
-        /* ================= PAGE ================= */
-        .page {
-            position: relative;
-            width: 100%;
-            min-height: 100vh;
-            background:
-                linear-gradient(rgba(2, 16, 10, .80), rgba(2, 16, 10, .91)),
-                url('{{ \App\Support\Brand::background('public') }}') center / cover no-repeat;
-        }
+@section('content')
+    <div class="fw-pagehead">
+        <div class="fw-pagehead-title">
+            <a href="{{ $isCustomer ? route('dashboard') : route('home') }}" class="fw-back" aria-label="Kembali">{!! Icons::svg('back') !!}</a>
+            <div>
+                <h1 class="fw-h1">Program Latihan</h1>
+                <p class="fw-sub">Program terstruktur bersama coach profesional, sesuai level permainan Anda.</p>
+            </div>
+        </div>
+    </div>
 
-        /* ================= NAVBAR ================= */
-        .navbar {
-            position: relative;
-            z-index: 20;
-            width: 100%;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 5%;
-            background: rgba(1, 13, 8, .88);
-            border-bottom: 1px solid rgba(255, 255, 255, .08);
-        }
-
-        .brand {
-            color: #ffffff;
-            text-decoration: none;
-            font-size: 21px;
-            font-weight: 800;
-            letter-spacing: -1px;
-            white-space: nowrap;
-        }
-
-        .brand span { color: var(--lime); }
-
-        .nav-menu { display: flex; align-items: center; gap: 30px; }
-
-        .nav-menu a {
-            position: relative;
-            color: var(--text-soft);
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 700;
-            transition: .2s ease;
-        }
-
-        .nav-menu a:hover,
-        .nav-menu a.active { color: var(--lime); }
-
-        .nav-menu a.active::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: -16px;
-            height: 3px;
-            border-radius: 10px;
-            background: var(--lime);
-        }
-
-        /* Tombol outline (BOOKING / ADMIN / LOGIN) */
-        .pill-button {
-            display: inline-flex !important;
-            align-items: center;
-            justify-content: center;
-            height: 34px;
-            padding: 0 18px;
-            border: 1px solid var(--lime);
-            border-radius: 18px;
-            color: var(--lime) !important;
-            text-decoration: none;
-            font-size: 12px !important;
-            font-weight: 800 !important;
-            letter-spacing: .4px;
-            transition: .2s ease;
-        }
-
-        .pill-button:hover { background: var(--lime); color: var(--ink-dark) !important; }
-
-        .user-area { display: flex; align-items: center; gap: 12px; }
-
-        .user-name {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: rgba(255, 255, 255, .90);
-            font-size: 13px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .user-dot { width: 15px; height: 15px; border: 3px solid var(--lime); border-radius: 50%; }
-
-        .logout-button {
-            height: 36px;
-            padding: 0 20px;
-            border: 1px solid var(--lime);
-            border-radius: 20px;
-            background: transparent;
-            color: #ffffff;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: .2s ease;
-        }
-
-        .logout-button:hover { background: var(--lime); color: var(--ink-dark); }
-
-        /* ================= CONTENT ================= */
-        .content {
-            position: relative;
-            z-index: 5;
-            width: 90%;
-            max-width: 1500px;
-            margin: 0 auto;
-            padding: 34px 0 40px;
-        }
-
-        .section-label {
-            color: var(--lime);
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 4px;
-            margin-bottom: 9px;
-        }
-
-        .title {
-            font-size: clamp(32px, 3vw, 44px);
-            line-height: .98;
-            font-weight: 900;
-            letter-spacing: -1.5px;
-            margin-bottom: 10px;
-        }
-
-        .title span { color: var(--lime); }
-
-        .description {
-            max-width: 850px;
-            color: rgba(255, 255, 255, .72);
-            font-size: 12px;
-            line-height: 1.45;
-            margin-bottom: 18px;
-        }
-
-        /* ================= PROGRAM CARDS ================= */
-        .program-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 18px;
-        }
-
-        .program-card {
-            position: relative;
-            min-height: 260px;
-            overflow: hidden;
-            border: 1px solid rgba(140, 242, 56, .42);
-            border-radius: 15px;
-            background: rgba(5, 19, 13, .96);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, .30);
-            transition: .2s ease;
-        }
-
-        .program-card:hover { transform: translateY(-4px); border-color: var(--lime); }
-
-        .card-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 105px;
-            background-image:
-                linear-gradient(to bottom, rgba(0, 0, 0, .02), rgba(4, 18, 11, .98)),
-                var(--card-img);
-            background-position: center, var(--card-pos, center);
-            background-size: cover;
-        }
-
-        .card-content {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            padding: 91px 18px 20px;
-        }
-
-        .level {
-            color: var(--lime);
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-        }
-
-        .program-name {
-            font-size: 19px;
-            font-weight: 800;
-            line-height: 1.05;
-            margin-bottom: 7px;
-        }
-
-        .program-description {
-            color: var(--text-muted);
-            font-size: 11px;
-            line-height: 1.35;
-            min-height: 30px;
-            margin-bottom: 10px;
-        }
-
-        .features { list-style: none; display: flex; flex-direction: column; gap: 5px; }
-
-        .features li {
-            position: relative;
-            padding-left: 12px;
-            color: rgba(255, 255, 255, .82);
-            font-size: 10px;
-            line-height: 1.3;
-        }
-
-        .features li::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 4px;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: var(--lime);
-        }
-
-        .empty-programs {
-            padding: 50px 20px;
-            text-align: center;
-            border: 1px dashed rgba(140, 242, 56, .3);
-            border-radius: 15px;
-            color: var(--text-muted);
-            font-size: 13px;
-        }
-
-        /* ================= RESPONSIVE ================= */
-        @media (max-width: 1200px) {
-            .navbar { padding: 0 3%; }
-            .nav-menu { gap: 18px; }
-            .program-grid { gap: 12px; }
-            .card-content { padding-left: 15px; padding-right: 15px; }
-        }
-
-        @media (max-width: 850px) {
-
-            .navbar {
-                height: auto;
-                min-height: 64px;
-                padding: 12px 20px;
-                flex-wrap: wrap;
-                gap: 12px;
-            }
-
-            .nav-menu { order: 3; width: 100%; justify-content: center; gap: 16px; }
-            .nav-menu a.active::after { bottom: -6px; }
-            .user-area { margin-left: auto; }
-
-            .content { padding-top: 30px; padding-bottom: 35px; }
-            .program-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 560px) {
-            .brand { font-size: 18px; }
-            .user-name { display: none; }
-            .nav-menu { gap: 12px; }
-            .nav-menu a { font-size: 11px; }
-            .pill-button { padding: 0 12px; }
-            .content { width: 92%; }
-            .title { font-size: 29px; }
-            .program-grid { grid-template-columns: 1fr; }
-        }
-    </style>
-    @include('partials.brand-head')
-</head>
-
-<body>
-
-<div class="page">
-
-    {{-- ================= NAVBAR ================= --}}
-    @include('partials.site-navbar')
-
-    {{-- ================= CONTENT ================= --}}
-    <main class="content">
-
-        <div class="section-label">OUR GOLF PROGRAMS</div>
-
-        <h1 class="title">
-            PILIH PROGRAM LATIHAN
-            <br>
-            <span>SESUAI LEVEL PERMAINAN ANDA</span>
-        </h1>
-
-        <p class="description">
-            Dapatkan pengalaman belajar golf yang terstruktur dan profesional bersama
-            pelatih berpengalaman, sesuai dengan kebutuhan dan target permainan Anda.
-        </p>
-
-        @if ($programs->isEmpty())
-            <div class="empty-programs">Program latihan akan segera tersedia.</div>
-        @else
-            <div class="program-grid">
-                @foreach ($programs as $program)
-                    <article class="program-card">
-                        <div class="card-image"
-                             style="--card-img: url('{{ $program->image_url }}'); --card-pos: {{ $program->image_css_position }};"></div>
-
-                        <div class="card-content">
-                            <div class="level">{{ $program->level }}</div>
-                            <h2 class="program-name">{{ $program->name }}</h2>
-
-                            @if ($program->description)
-                                <p class="program-description">{{ $program->description }}</p>
-                            @endif
-
-                            @if (! empty($program->features))
-                                <ul class="features">
-                                    @foreach ($program->features as $feature)
-                                        <li>{{ $feature }}</li>
-                                    @endforeach
-                                </ul>
-                            @endif
-                        </div>
-                    </article>
+    @if ($programs->isEmpty())
+        <div class="fw-empty"><b>Program segera tersedia</b>Silakan cek kembali nanti.</div>
+    @else
+        <div class="pg-tools">
+            <label class="fw-search">{!! Icons::svg('search') !!}<input type="search" id="pgSearch" placeholder="Cari program..."></label>
+            <div class="fw-pills" id="pgFilter">
+                <button type="button" class="fw-pill on" data-level="">Semua</button>
+                @foreach ($levels as $lv)
+                    <button type="button" class="fw-pill" data-level="{{ strtolower($lv) }}">{{ $lv }}</button>
                 @endforeach
             </div>
-        @endif
+        </div>
 
-    @include('partials.lesson-pricing')
+        <div class="fw-grid c3" id="pgGrid">
+            @foreach ($programs as $p)
+                <a href="#program-{{ $p->id }}" class="fw-card pg-card" id="program-{{ $p->id }}" data-pd="{{ $p->id }}"
+                        data-level="{{ strtolower($p->level) }}" data-q="{{ strtolower($p->name . ' ' . $p->description) }}">
+                    <span class="pg-img" style="background-image:url('{{ $p->image_url }}');background-position:{{ $p->image_css_position }}">
+                        <span class="fw-badge green">{{ ucfirst(strtolower($p->level)) }}</span>
+                    </span>
+                    <span class="pg-body">
+                        <h2>{{ $p->name }}</h2>
+                        @if ($p->description)<p>{{ $p->description }}</p>@endif
+                        <span class="pg-meta">
+                            <span>{!! Icons::svg('clock') !!} 60 Menit</span>
+                            <span>{!! Icons::svg('user') !!} 1 Orang</span>
+                            <span>{!! Icons::svg('layers') !!} {{ ucfirst(strtolower($p->level)) }}</span>
+                        </span>
+                    </span>
+                </a>
 
-    </main>
+                <template id="pd-{{ $p->id }}">
+                    <div class="pd-img" style="background-image:url('{{ $p->image_url }}');background-position:{{ $p->image_css_position }}">
+                        <div class="pd-top"><button type="button" data-pd-close aria-label="Tutup">{!! Icons::svg('back') !!}</button></div>
+                    </div>
+                    <div class="pd-body">
+                        <div class="pd-title"><h2>{{ $p->name }}</h2><span class="fw-badge green">{{ ucfirst(strtolower($p->level)) }}</span></div>
+                        <div class="pg-meta" style="margin-top:8px;padding:0">
+                            <span>{!! Icons::svg('clock') !!} 60 Menit</span>
+                            <span>{!! Icons::svg('user') !!} 1 Orang</span>
+                            <span>{!! Icons::svg('tag') !!} {{ $rp(BookingRules::pricePerHour()) }}/jam</span>
+                        </div>
+                        @if ($p->description)<p>{{ $p->description }}</p>@endif
+                        @if (! empty($p->features))
+                            <ul class="pd-feat">@foreach ($p->features as $f)<li>{{ $f }}</li>@endforeach</ul>
+                        @endif
+                        @if ($coach)
+                            <div class="pd-coach">
+                                @if ($coach->photo_url)<span class="fw-av" style="background-image:url('{{ $coach->photo_url }}')"></span>@else<span class="fw-av">{{ Icons::initials($coach->name) }}</span>@endif
+                                <div>
+                                    <small>Tentang Coach</small>
+                                    <strong>{{ $coach->name }}</strong>
+                                    <small>{{ $coach->role }}</small>
+                                    @if ($coach->bio)<p>{{ \Illuminate\Support\Str::limit($coach->bio, 160) }}</p>@endif
+                                </div>
+                            </div>
+                        @endif
+                        <a href="{{ $bookUrl('driving') }}" class="fw-btn block">Booking Sekarang</a>
+                    </div>
+                </template>
+            @endforeach
+        </div>
+        <div class="fw-empty" id="pgEmpty" hidden><b>Program tidak ditemukan</b>Coba kata kunci lain.</div>
+    @endif
 
-</div>
+    {{-- Harga --}}
+    <section class="fw-section" style="margin-top:44px">
+        <div class="fw-section-head">
+            <div>
+                <span class="fw-eyebrow">Harga lesson</span>
+                <h2 class="fw-h2" style="margin-top:6px">Pilih jenis lesson</h2>
+            </div>
+        </div>
+        <div class="fw-grid c2">
+            <article class="fw-card pg-price">
+                <span class="fw-badge tag">Driving Range</span>
+                <h3>Lesson Driving Range</h3>
+                <div class="amount">{{ $rp(BookingRules::pricePerHour()) }} <small>/ jam</small></div>
+                <ul>
+                    <li>Pilih jam antara {{ BookingRules::openTime() }} – {{ BookingRules::closeTime() }}</li>
+                    @if ($locations->isNotEmpty())<li>Lokasi: {{ $locations->pluck('name')->join(', ', ' atau ') }}</li>@endif
+                    <li>Didampingi coach profesional</li>
+                </ul>
+                <a href="{{ $bookUrl('driving') }}" class="fw-btn">Booking Lesson</a>
+            </article>
+            @if (BookingRules::courseEnabled())
+                <article class="fw-card pg-price dark">
+                    <span class="fw-badge lime tag">On Course</span>
+                    <h3>Course Lesson</h3>
+                    <div class="amount">{{ $rp(BookingRules::coursePrice()) }} <small>/ sesi</small></div>
+                    <ul>
+                        <li>Sesi {{ BookingRules::courseStart() }} – {{ BookingRules::courseEnd() }}</li>
+                        <li>Lapangan golf pilihan Anda sendiri</li>
+                        <li>Praktik langsung di lapangan bersama coach</li>
+                    </ul>
+                    @if (BookingRules::courseNote())<p style="font-size:12.5px;color:rgba(255,255,255,.7)">* {{ BookingRules::courseNote() }}</p>@endif
+                    <a href="{{ $bookUrl('course') }}" class="fw-btn lime">Booking Course Lesson</a>
+                </article>
+            @endif
+        </div>
+    </section>
 
-</body>
-</html>
+    <div class="pd" id="pd" role="dialog" aria-modal="true">
+        <div class="pd-back" data-pd-close></div>
+        <div class="pd-box" id="pdBox"></div>
+    </div>
+@endsection
+
+@push('scripts')
+<script>
+(function () {
+    var grid = document.getElementById('pgGrid');
+    if (!grid) return;
+    var level = '', q = '';
+    function apply() {
+        var shown = 0;
+        grid.querySelectorAll('.pg-card').forEach(function (c) {
+            var ok = (!level || c.dataset.level === level) && (!q || c.dataset.q.indexOf(q) !== -1);
+            c.hidden = !ok; if (ok) shown++;
+        });
+        document.getElementById('pgEmpty').hidden = shown > 0;
+    }
+    document.querySelectorAll('#pgFilter .fw-pill').forEach(function (b) {
+        b.addEventListener('click', function () {
+            document.querySelectorAll('#pgFilter .fw-pill').forEach(function (x) { x.classList.remove('on'); });
+            b.classList.add('on'); level = b.dataset.level; apply();
+        });
+    });
+    document.getElementById('pgSearch').addEventListener('input', function () { q = this.value.trim().toLowerCase(); apply(); });
+
+    var pd = document.getElementById('pd'), box = document.getElementById('pdBox');
+    function open(id) {
+        var t = document.getElementById('pd-' + id); if (!t) return;
+        box.innerHTML = ''; box.appendChild(t.content.cloneNode(true));
+        pd.classList.add('open'); document.body.style.overflow = 'hidden';
+    }
+    function close() { pd.classList.remove('open'); document.body.style.overflow = ''; history.replaceState(null, '', location.pathname); }
+    grid.querySelectorAll('[data-pd]').forEach(function (c) { c.addEventListener('click', function (e) { e.preventDefault(); open(c.dataset.pd); history.replaceState(null, '', '#program-' + c.dataset.pd); }); });
+    pd.addEventListener('click', function (e) { if (e.target.closest('[data-pd-close]')) close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    var m = location.hash.match(/^#program-(\d+)$/); if (m) open(m[1]);
+})();
+</script>
+@endpush

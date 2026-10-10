@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminChatController;
 use App\Http\Controllers\AdminCoachController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\CustomerPageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,10 +17,16 @@ Route::middleware(['auth', 'verified', 'role:customer'])->group(function () {
     Route::get('/chat', [ChatController::class, 'index'])->name('chat');
     Route::get('/chat/messages', [ChatController::class, 'poll'])->name('chat.poll');
     Route::post('/chat', [ChatController::class, 'send'])->name('chat.send');
+
+    Route::get('/jadwal-saya', [CustomerPageController::class, 'jadwal'])->name('jadwal');
 });
+
+// Menu (HP): akun, halaman lain, keluar. Bisa dibuka visitor & customer.
+Route::get('/menu', [CustomerPageController::class, 'menu'])->name('menu');
 
 // Admin: kotak masuk chat, broadcast, kelola coach
 Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
+    Route::view('/admin/menu', 'admin.menu')->name('admin.menu');
     Route::get('/admin/chat', [AdminChatController::class, 'index'])->name('admin.chat.index');
     Route::get('/admin/chat/{member}/messages', [AdminChatController::class, 'poll'])->name('admin.chat.poll');
     Route::post('/admin/chat/{member}', [AdminChatController::class, 'send'])->name('admin.chat.send');

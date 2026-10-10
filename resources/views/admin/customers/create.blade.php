@@ -58,7 +58,7 @@
         <label class="checkbox" style="height: auto; padding: 12px; align-items: flex-start">
             <input type="checkbox" name="verified" value="1" @checked(old('verified', '1') === '1') style="margin-top: 2px">
             <span>
-                <strong style="display: block; color: #fff">Tandai email sudah terverifikasi</strong>
+                <strong style="display: block; color: #17261d">Tandai email sudah terverifikasi</strong>
                 <small style="color: var(--text-muted)">Customer bisa langsung booking. Jika tidak dicentang, customer harus membuka link verifikasi yang dikirim ke emailnya.</small>
             </span>
         </label>

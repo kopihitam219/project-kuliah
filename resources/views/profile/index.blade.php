@@ -1,51 +1,52 @@
 @extends('notifications.customer-layout')
 
 @section('title', 'Profil saya')
+@section('no_footer', true)
 
 @section('content')
 <style>
-    html { background: #04100b; scroll-padding-bottom: 110px; }
-    .pf { display: grid; gap: 16px; }
-    .pf h1 { font-size: clamp(26px, 5vw, 34px); font-weight: 900; letter-spacing: -1px; }
-    .pf h1 span { color: #9cff38; }
-    .pf-sub { margin-top: 4px; color: rgba(244, 247, 244, .6); font-size: 13.5px; }
-    .pf-alert { padding: 12px 14px; border-radius: 14px; font-size: 13.5px; font-weight: 600; }
-    .pf-alert.ok { background: rgba(156, 255, 56, .12); border: 1px solid rgba(156, 255, 56, .35); color: #c9ff94; }
-    .pf-alert.err { background: rgba(255, 90, 90, .1); border: 1px solid rgba(255, 90, 90, .35); color: #ffb3b3; }
-    .pf-card { padding: 18px; border: 1px solid rgba(156, 255, 56, .14); border-radius: 20px; background: rgba(8, 26, 18, .82); backdrop-filter: blur(8px); }
+    html { scroll-padding-bottom: 110px; }
+    .pf { display: grid; gap: 16px; max-width: 760px; margin: 0 auto; }
+    .pf h1 { font-family: var(--fw-serif); font-size: clamp(26px, 4vw, 36px); font-weight: 600; letter-spacing: -.4px; }
+    .pf h1 span { font-style: italic; color: var(--fw-green-3); }
+    .pf-sub { margin-top: 4px; color: var(--fw-muted); font-size: 14px; }
+    .pf-alert { padding: 12px 16px; border-radius: 14px; font-size: 14px; font-weight: 500; }
+    .pf-alert.ok { background: var(--fw-tint); border: 1px solid rgba(31, 77, 51, .2); color: var(--fw-green); }
+    .pf-alert.err { background: var(--fw-red-tint); border: 1px solid rgba(201, 65, 58, .3); color: #8f2a24; }
+    .pf-card { padding: 20px; border: 1px solid var(--fw-line); border-radius: 20px; background: var(--fw-surface); box-shadow: var(--fw-shadow); }
     .pf-hero { display: flex; align-items: center; gap: 14px; }
-    .pf-av { flex: 0 0 64px; height: 64px; display: grid; place-items: center; border-radius: 20px; background: linear-gradient(135deg, #b8ff3a, #5fc21b); color: #07120c; font-size: 24px; font-weight: 900; box-shadow: 0 10px 26px rgba(156, 255, 56, .25); }
+    .pf-av { flex: 0 0 68px; height: 68px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-green); color: #fff; font-size: 24px; font-weight: 700; }
     .pf-who { min-width: 0; }
-    .pf-who strong { display: block; font-size: 19px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .pf-who span { display: block; color: rgba(244, 247, 244, .6); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .pf-tag { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; padding: 3px 9px; border-radius: 99px; background: rgba(156, 255, 56, .12); color: #9cff38; font-size: 11px; font-weight: 700; }
-    .pf-tag.warn { background: rgba(255, 196, 0, .12); color: #ffd25a; }
+    .pf-who strong { display: block; font-size: 19px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pf-who span { display: block; color: var(--fw-muted); font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pf-tag { display: inline-flex !important; align-items: center; gap: 6px; margin-top: 6px; padding: 3px 10px; border-radius: 99px; background: var(--fw-tint); color: var(--fw-green) !important; font-size: 11.5px !important; font-weight: 600; }
+    .pf-tag.warn { background: var(--fw-orange-tint); color: #a2650c !important; }
     .pf-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
-    .pf-stats div { padding: 10px; border-radius: 14px; background: rgba(255, 255, 255, .04); text-align: center; }
-    .pf-stats strong { display: block; font-size: 20px; font-weight: 900; color: #9cff38; }
-    .pf-stats span { color: rgba(244, 247, 244, .55); font-size: 11.5px; }
+    .pf-stats div { padding: 12px; border-radius: 14px; background: var(--fw-surface-2); text-align: center; }
+    .pf-stats strong { display: block; font-family: var(--fw-serif); font-size: 24px; font-weight: 600; color: var(--fw-green); }
+    .pf-stats span { color: var(--fw-muted); font-size: 12px; }
     .pf-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
-    .pf-links a { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, .07); color: rgba(244, 247, 244, .85); font-size: 12px; font-weight: 700; text-align: center; }
-    .pf-links a:hover { border-color: rgba(156, 255, 56, .4); color: #9cff38; }
-    .pf-links i { font-style: normal; font-size: 18px; }
-    .pf-card h2 { font-size: 16px; font-weight: 800; }
-    .pf-card h2 + p { margin: 3px 0 14px; color: rgba(244, 247, 244, .55); font-size: 12.5px; }
+    .pf-links a { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px; border-radius: 14px; border: 1px solid var(--fw-line); color: var(--fw-text-2); font-size: 12.5px; font-weight: 600; text-align: center; }
+    .pf-links a:hover { border-color: rgba(31, 77, 51, .35); color: var(--fw-green); }
+    .pf-links i { font-style: normal; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: var(--fw-tint); color: var(--fw-green); }
+    .pf-links i svg { width: 19px; height: 19px; }
+    .pf-card h2 { font-size: 16px; font-weight: 700; }
+    .pf-card h2 + p { margin: 3px 0 14px; color: var(--fw-muted); font-size: 13px; }
     .pf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .pf-field { display: grid; gap: 6px; }
-    .pf-field label { color: rgba(244, 247, 244, .75); font-size: 12.5px; font-weight: 700; }
-    .pf-field input { width: 100%; height: 46px; padding: 0 14px; border: 1px solid rgba(255, 255, 255, .12); border-radius: 12px; background: rgba(255, 255, 255, .04); color: #f4f7f4; font-size: 16px; outline: none; }
-    .pf-field input:focus { border-color: #9cff38; box-shadow: 0 0 0 3px rgba(156, 255, 56, .15); }
-    .pf-field small { color: #ff9b9b; font-size: 12px; }
+    .pf-field label { color: var(--fw-text-2); font-size: 13px; font-weight: 600; }
+    .pf-field input { width: 100%; height: 48px; padding: 0 16px; border: 1px solid var(--fw-line-2); border-radius: 14px; background: var(--fw-surface); color: var(--fw-text); font-size: 16px; outline: none; }
+    .pf-field input:focus { border-color: var(--fw-green); box-shadow: 0 0 0 4px rgba(31, 77, 51, .1); }
+    .pf-field small { color: var(--fw-red); font-size: 12px; }
     .pf-actions { display: flex; justify-content: flex-end; margin-top: 14px; }
-    .pf-btn { height: 46px; padding: 0 20px; border: 0; border-radius: 12px; background: #9cff38; color: #07120c; font-size: 14px; font-weight: 800; cursor: pointer; }
-    .pf-btn:hover { background: #b4ff66; }
-    .pf-out { width: 100%; height: 48px; border: 1px solid rgba(255, 90, 90, .4); border-radius: 14px; background: transparent; color: #ff8a8a; font-size: 14px; font-weight: 800; cursor: pointer; }
-    .pf-out:hover { background: rgba(255, 90, 90, .08); }
+    .pf-btn { height: 46px; padding: 0 22px; border: 0; border-radius: 99px; background: var(--fw-green); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .pf-btn:hover { background: var(--fw-green-2); }
+    .pf-out { width: 100%; height: 48px; border: 1px solid rgba(201, 65, 58, .35); border-radius: 99px; background: var(--fw-surface); color: var(--fw-red); font-size: 14px; font-weight: 600; cursor: pointer; }
+    .pf-out:hover { background: var(--fw-red-tint); }
     @media (max-width: 600px) {
-        .pf-card { padding: 16px; border-radius: 18px; }
+        .pf-card { padding: 16px; }
         .pf-grid { grid-template-columns: 1fr; }
         .pf-btn { width: 100%; }
-        .pf { padding-bottom: 90px; }
     }
 </style>
 
@@ -55,7 +56,7 @@
 
 <div class="pf">
     <div>
-        <h1>Profil <span>saya</span></h1>
+        <div class="fw-pagehead-title"><a href="{{ Route::has('menu') ? route('menu') : route('home') }}" class="fw-back" aria-label="Kembali">{!! \App\Support\Icons::svg('back') !!}</a><h1>Profil <span>saya</span></h1></div>
         <p class="pf-sub">Kelola data akun dan password Anda.</p>
     </div>
 
@@ -84,9 +85,9 @@
         </div>
 
         <div class="pf-links">
-            @if (Route::has('booking'))<a href="{{ route('booking') }}"><i>📅</i>Booking</a>@endif
-            @if (Route::has('chat'))<a href="{{ route('chat') }}"><i>💬</i>Chat coach</a>@endif
-            @if (Route::has('notifications.index'))<a href="{{ route('notifications.index') }}"><i>🔔</i>Notifikasi</a>@endif
+            @if (Route::has('booking'))<a href="{{ route('booking') }}"><i>{!! \App\Support\Icons::svg('calendar') !!}</i>Booking</a>@endif
+            @if (Route::has('chat'))<a href="{{ route('chat') }}"><i>{!! \App\Support\Icons::svg('chat') !!}</i>Chat coach</a>@endif
+            @if (Route::has('notifications.index'))<a href="{{ route('notifications.index') }}"><i>{!! \App\Support\Icons::svg('bell') !!}</i>Notifikasi</a>@endif
         </div>
     </section>
 

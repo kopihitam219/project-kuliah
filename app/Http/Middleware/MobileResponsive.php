@@ -59,7 +59,7 @@ class MobileResponsive
         $jsVersion  = @filemtime(public_path('js/mobile.js')) ?: 1;
         $version    = substr(md5($cssVersion . '|' . @filesize(public_path('css/mobile.css'))), 0, 8);
 
-        $inject .= '    <meta name="theme-color" content="#04100b">' . "\n";
+        $inject .= '    <meta name="theme-color" content="#f3f1ea">' . "\n";
         $inject .= '    <link rel="stylesheet" href="' . e(asset('css/mobile.css')) . '?v=' . $version . '" data-mobile-kit>' . "\n";
         $inject .= '    <script src="' . e(asset('js/mobile.js')) . '?v=' . $jsVersion . '" defer data-mobile-kit></script>' . "\n";
 

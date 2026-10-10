@@ -184,7 +184,7 @@ class AdminBookingRescheduleController extends Controller
      * Status setiap jam (07:00–20:00) pada tanggal tertentu.
      * available | booked | pending | blocked | current | past
      */
-    private function slots(Carbon $date, Booking $booking): array
+    private function slots(\Carbon\CarbonInterface $date, Booking $booking): array
     {
         $others = Booking::query()
             ->whereDate('booking_date', $date->toDateString())

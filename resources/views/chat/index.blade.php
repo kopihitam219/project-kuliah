@@ -1,25 +1,26 @@
 @extends('notifications.customer-layout')
 
 @section('title', 'Chat Coach')
+@section('no_footer', true)
+@section('main_class', 'narrow')
 
 @section('content')
     <style>
-        .chat-page { display: flex; flex-direction: column; gap: 14px; }
-        .chat-page h1 { font-size: clamp(26px, 4vw, 34px); font-weight: 900; letter-spacing: -.8px; }
-        .chat-page h1 span { color: #9cff38; }
-        .chat-page > p { color: rgba(242, 247, 243, .62); font-size: 14px; line-height: 1.6; max-width: 60ch; }
-        .chat-box { height: min(68vh, 640px); }
+        .chat-box { height: min(70vh, 660px); }
         @media (max-width: 820px) {
-            .chat-box { height: calc(100vh - 64px - 150px - 96px); min-height: 380px; }
-            .chat-page > p { display: none; }
+            .chat-box { height: calc(100svh - 62px - 78px - 100px); min-height: 380px; }
         }
     </style>
 
-    <div class="chat-page">
-        <div>
-            <h1>Chat <span>Coach</span></h1>
+    <div class="fw-pagehead">
+        <div class="fw-pagehead-title">
+            <a href="{{ route('dashboard') }}" class="fw-back" aria-label="Kembali">{!! \App\Support\Icons::svg('back') !!}</a>
+            <div>
+                <h1 class="fw-h1">Chat Coach</h1>
+                <p class="fw-sub">Tanya jadwal, teknik, pembayaran, atau perubahan booking langsung ke {{ $coachName }}.</p>
+            </div>
         </div>
-        <p>Tanya jadwal, teknik, pembayaran, atau perubahan booking langsung ke {{ $coachName }}. Pengumuman penting juga muncul di sini.</p>
+    </div>
 
         <div class="chat-box">
             @include('partials.chat-thread', [
@@ -33,5 +34,4 @@
                 'emptyText' => 'Belum ada pesan. Kirim pertanyaan Anda, coach akan membalas di sini.',
             ])
         </div>
-    </div>
 @endsection

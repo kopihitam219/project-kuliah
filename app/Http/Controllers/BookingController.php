@@ -472,6 +472,12 @@ class BookingController extends Controller
             ]);
         });
 
+        if ($request->input('from') === 'jadwal' && \Illuminate\Support\Facades\Route::has('jadwal')) {
+            return redirect()
+                ->route('jadwal')
+                ->with('booking_success', 'Jadwal berhasil diubah. Booking kembali berstatus PENDING dan menunggu approval admin.');
+        }
+
         return redirect()
             ->route('booking', [
                 'date' => $validated['booking_date'],
