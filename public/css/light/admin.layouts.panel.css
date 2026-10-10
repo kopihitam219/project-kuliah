@@ -1,0 +1,488 @@
+/* Tema terang otomatis untuk view: admin.layouts.panel */
+html[data-theme="light"] {
+    --bg: rgb(245, 243, 236);
+    --bg-deep: rgb(245, 243, 236);
+    --panel: rgba(255, 255, 255, 0.92);
+    --lime: rgb(31, 81, 55);
+    --lime-strong: rgb(31, 81, 55);
+    --ink-dark: rgb(255, 255, 255);
+    --text: rgb(22, 36, 27);
+    --text-soft: rgba(22, 36, 27, 0.819);
+    --text-muted: rgba(22, 36, 27, 0.546);
+    --line: rgba(22, 36, 27, 0.096);
+    --border: rgba(31, 81, 55, 0.196);
+    --radius: 11px
+}
+html[data-theme="light"] body {
+    background: var(--bg);
+    color: var(--text)
+}
+html[data-theme="light"] .thin-scroll::-webkit-scrollbar-thumb {
+    background: rgba(31, 81, 55, 0.16);
+    border-radius: 10px
+}
+html[data-theme="light"] .admin-page {
+    background: linear-gradient(135deg, rgb(245, 243, 236) 0%, rgb(245, 243, 236) 45%, rgb(245, 243, 236) 100%)
+}
+html[data-theme="light"] .topbar {
+    background: rgb(255, 255, 255);
+    border-bottom: 1px solid rgba(31, 81, 55, 0.168)
+}
+html[data-theme="light"] .brand {
+    color: var(--text)
+}
+html[data-theme="light"] .brand .accent {
+    color: var(--lime)
+}
+html[data-theme="light"] .menu-toggle {
+    border: 0;
+    background: transparent;
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .admin-avatar {
+    border-radius: 50%;
+    background: var(--lime-strong);
+    color: var(--ink-dark)
+}
+html[data-theme="light"] .admin-name small {
+    color: rgba(22, 36, 27, 0.504)
+}
+html[data-theme="light"] .sidebar {
+    background: rgb(255, 255, 255);
+    border-right: 1px solid rgba(31, 81, 55, 0.12)
+}
+html[data-theme="light"] .sidebar-title {
+    color: var(--lime)
+}
+html[data-theme="light"] .sidebar-link {
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-soft)
+}
+html[data-theme="light"] .sidebar-link:hover {
+    background: rgba(31, 81, 55, 0.077);
+    color: var(--lime)
+}
+html[data-theme="light"] .sidebar-link.active {
+    background: linear-gradient(90deg, rgba(31, 81, 55, 0.16), rgba(70, 167, 62, 0.2));
+    border: 1px solid rgba(31, 81, 55, 0.322);
+    color: var(--text)
+}
+html[data-theme="light"] .sidebar-icon {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .sidebar-link.active .sidebar-icon {
+    color: var(--lime)
+}
+html[data-theme="light"] .sidebar-badge {
+    border-radius: 50%;
+    background: var(--lime);
+    color: var(--ink-dark)
+}
+html[data-theme="light"] .sidebar-divider {
+    background: var(--line)
+}
+html[data-theme="light"] .page-head p {
+    color: rgba(22, 36, 27, 0.672)
+}
+html[data-theme="light"] .btn-primary {
+    background: var(--lime);
+    color: var(--ink-dark)
+}
+html[data-theme="light"] .btn-primary:hover {
+    background: var(--lime-strong)
+}
+html[data-theme="light"] .btn-outline {
+    border-color: rgba(31, 81, 55, 0.35);
+    background: rgba(31, 81, 55, 0.05);
+    color: var(--lime)
+}
+html[data-theme="light"] .btn-outline:hover {
+    background: rgba(31, 81, 55, 0.132)
+}
+html[data-theme="light"] .btn-ghost {
+    border-color: var(--line);
+    background: transparent;
+    color: var(--text-soft)
+}
+html[data-theme="light"] .btn-ghost:hover {
+    border-color: rgba(22, 36, 27, 0.16)
+}
+html[data-theme="light"] .tab {
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--text-soft)
+}
+html[data-theme="light"] .tab span {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .tab.active {
+    background: var(--lime);
+    border-color: var(--lime);
+    color: var(--ink-dark)
+}
+html[data-theme="light"] .tab.active span {
+    color: rgba(255, 255, 255, 0.6)
+}
+html[data-theme="light"] .item-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel)
+}
+html[data-theme="light"] .item-thumb {
+    background: rgb(255, 255, 255)
+}
+html[data-theme="light"] .no-thumb {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .play-icon {
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--text)
+}
+html[data-theme="light"] .badge.type {
+    background: rgba(255, 255, 255, 0.75);
+    color: var(--text)
+}
+html[data-theme="light"] .badge.active {
+    background: rgba(31, 81, 55, 0.9);
+    color: var(--ink-dark)
+}
+html[data-theme="light"] .badge.inactive {
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--ink-dark)
+}
+html[data-theme="light"] .item-body small {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .item-meta {
+    color: rgba(22, 36, 27, 0.5)
+}
+html[data-theme="light"] .item-actions a, html[data-theme="light"] .item-actions button {
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--text-soft)
+}
+html[data-theme="light"] .item-actions a:hover, html[data-theme="light"] .item-actions button:hover {
+    border-color: rgba(31, 81, 55, 0.35);
+    color: var(--lime)
+}
+html[data-theme="light"] .item-actions .danger:hover {
+    border-color: rgba(184, 30, 52, 0.7);
+    color: rgb(161, 23, 42)
+}
+html[data-theme="light"] .empty-state {
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    color: var(--text-muted)
+}
+html[data-theme="light"] .form-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel)
+}
+html[data-theme="light"] .field > label, html[data-theme="light"] .field-label {
+    color: var(--text-soft)
+}
+html[data-theme="light"] .field-hint {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .field-error {
+    color: rgb(161, 23, 23)
+}
+html[data-theme="light"] .input {
+    border: 1px solid rgba(63, 151, 108, 0.25);
+    border-radius: 7px;
+    outline: none;
+    background: rgba(245, 243, 236, 0.5);
+    color: var(--text)
+}
+html[data-theme="light"] .input:focus {
+    border-color: rgba(31, 81, 55, 0.35)
+}
+html[data-theme="light"] .input.is-invalid {
+    border-color: rgba(187, 27, 27, 0.6)
+}
+html[data-theme="light"] input[type="file"].input {
+    color: var(--text-soft)
+}
+html[data-theme="light"] .segmented {
+    border: 1px solid var(--line);
+    border-radius: 9px
+}
+html[data-theme="light"] .segmented label {
+    border-radius: 6px;
+    color: var(--text-soft)
+}
+html[data-theme="light"] .segmented input:checked + label {
+    background: var(--lime);
+    color: var(--ink-dark)
+}
+html[data-theme="light"] .segmented input:focus-visible + label {
+    outline: 2px solid var(--lime);
+    outline-offset: 2px
+}
+html[data-theme="light"] .checkbox {
+    color: var(--text-soft)
+}
+html[data-theme="light"] .checkbox input {
+    accent-color: var(--lime)
+}
+html[data-theme="light"] .preview {
+    border-radius: 8px;
+    border: 1px solid var(--line)
+}
+html[data-theme="light"] .current-file {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .form-actions {
+    border-top: 1px solid var(--line)
+}
+html[data-theme="light"] .error-box {
+    border: 1px solid rgba(187, 27, 27, 0.5);
+    border-radius: 8px;
+    background: rgb(255, 255, 255);
+    color: rgb(161, 23, 23)
+}
+html[data-theme="light"] .event-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel)
+}
+html[data-theme="light"] .event-poster {
+    background: rgb(255, 255, 255)
+}
+html[data-theme="light"] .badge.open {
+    background: rgba(31, 81, 55, 0.9);
+    color: var(--ink-dark)
+}
+html[data-theme="light"] .badge.closed {
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--ink-dark)
+}
+html[data-theme="light"] .badge.full {
+    background: rgba(187, 141, 27, 0.95);
+    color: var(--ink-dark)
+}
+html[data-theme="light"] .badge.past {
+    background: rgba(255, 255, 255, 0.8);
+    color: rgba(22, 36, 27, 0.84)
+}
+html[data-theme="light"] .event-facts {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .event-facts b {
+    color: var(--text-soft)
+}
+html[data-theme="light"] .event-price {
+    color: var(--lime)
+}
+html[data-theme="light"] select.input option {
+    background: rgb(255, 255, 255);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .poster-preview {
+    border-radius: 8px;
+    border: 1px solid var(--line)
+}
+html[data-theme="light"] .program-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel)
+}
+html[data-theme="light"] .program-banner {
+    background-image: linear-gradient(to bottom, rgba(245, 243, 236, 0.02), rgb(255, 255, 255)), var(--card-img);
+    background-position: center, var(--card-pos, center);
+    background-size: cover
+}
+html[data-theme="light"] .program-level {
+    color: var(--lime)
+}
+html[data-theme="light"] .program-desc {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .feature-list li {
+    color: var(--text-soft)
+}
+html[data-theme="light"] .feature-list li::before {
+    border-radius: 50%;
+    background: var(--lime)
+}
+html[data-theme="light"] .banner-preview {
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background-image: linear-gradient(to bottom, rgba(245, 243, 236, 0.02), rgb(255, 255, 255)), var(--card-img);
+    background-position: center, var(--card-pos, center);
+    background-size: cover
+}
+html[data-theme="light"] .section-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel)
+}
+html[data-theme="light"] .section-card-head p {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .location-row {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(245, 243, 236, 0.18)
+}
+html[data-theme="light"] .location-index {
+    border-radius: 50%;
+    border: 1px solid rgba(31, 81, 55, 0.35);
+    color: var(--lime)
+}
+html[data-theme="light"] .location-row .meta {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .location-row .note {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .location-row .actions a, html[data-theme="light"] .location-row .actions button {
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--text-soft)
+}
+html[data-theme="light"] .location-row .actions a:hover, html[data-theme="light"] .location-row .actions button:hover {
+    border-color: rgba(31, 81, 55, 0.35);
+    color: var(--lime)
+}
+html[data-theme="light"] .location-row .actions .danger:hover {
+    border-color: rgba(184, 30, 52, 0.7);
+    color: rgb(161, 23, 42)
+}
+html[data-theme="light"] .map-preview {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    filter: grayscale(.3)
+}
+html[data-theme="light"] .stat-box {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel)
+}
+html[data-theme="light"] .stat-box span {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .stat-box small {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .table-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel)
+}
+html[data-theme="light"] .data-table th {
+    background: rgba(245, 243, 236, 0.22);
+    color: var(--text-muted)
+}
+html[data-theme="light"] .data-table td {
+    border-top: 1px solid rgba(22, 36, 27, 0.08);
+    color: var(--text-soft)
+}
+html[data-theme="light"] .data-table tbody tr:hover {
+    background: rgba(64, 166, 63, 0.1)
+}
+html[data-theme="light"] .person-avatar {
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgb(35, 92, 179), rgb(75, 58, 157));
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .person-avatar.offline {
+    background: linear-gradient(135deg, rgb(187, 141, 27), rgb(187, 94, 27))
+}
+html[data-theme="light"] .person strong {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .person small {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .row-actions a {
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    color: var(--text-soft)
+}
+html[data-theme="light"] .row-actions a:hover {
+    border-color: rgba(31, 81, 55, 0.35);
+    color: var(--lime)
+}
+html[data-theme="light"] .status-pill.pending {
+    background: rgba(201, 151, 29, 0.18);
+    color: rgb(161, 123, 23)
+}
+html[data-theme="light"] .status-pill.booked {
+    background: rgba(31, 81, 55, 0.16);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .status-pill.cancelled, html[data-theme="light"] .status-pill.rejected {
+    background: rgba(197, 32, 56, 0.18);
+    color: rgb(161, 23, 42)
+}
+html[data-theme="light"] .status-pill.neutral {
+    background: rgba(22, 36, 27, 0.072);
+    color: var(--text-soft)
+}
+html[data-theme="light"] .muted {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .pager {
+    border-top: 1px solid var(--line);
+    color: var(--text-muted)
+}
+html[data-theme="light"] .pager-links a, html[data-theme="light"] .pager-links span {
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    color: var(--text-soft)
+}
+html[data-theme="light"] .pager-links a:hover {
+    border-color: rgba(31, 81, 55, 0.35);
+    color: var(--lime)
+}
+html[data-theme="light"] .profile-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel)
+}
+html[data-theme="light"] .profile-head {
+    border-bottom: 1px solid var(--line)
+}
+html[data-theme="light"] .profile-list {
+    border-bottom: 1px solid var(--line)
+}
+html[data-theme="light"] .profile-list span:first-child {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .profile-list span:last-child {
+    color: var(--text-soft)
+}
+html[data-theme="light"] .upcoming-card {
+    border: 1px solid rgba(31, 81, 55, 0.35);
+    border-radius: var(--radius);
+    background: rgba(31, 81, 55, 0.055)
+}
+html[data-theme="light"] .upcoming-card span {
+    color: var(--lime)
+}
+html[data-theme="light"] .upcoming-card small {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .table-title {
+    border-bottom: 1px solid var(--line)
+}
+html[data-theme="light"] .toast {
+    border: 1px solid rgba(31, 81, 55, 0.35);
+    border-radius: 9px;
+    background: rgb(255, 255, 255);
+    color: var(--lime);
+    box-shadow: 0 10px 30px rgba(16, 40, 25, 0.088)
+}
+html[data-theme="light"] .toast.error {
+    border-color: rgba(187, 27, 27, 0.5);
+    background: rgb(255, 255, 255);
+    color: rgb(161, 23, 23)
+}

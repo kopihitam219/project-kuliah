@@ -1,0 +1,256 @@
+/* Tema terang otomatis untuk view: admin.dashboard */
+html[data-theme="light"] .db-welcome p {
+    color: rgba(22, 36, 27, 0.672)
+}
+html[data-theme="light"] .db-clock {
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.74);
+    color: rgba(22, 36, 27, 0.861)
+}
+html[data-theme="light"] .db-alert {
+    border-radius: 9px;
+    border: 1px solid rgba(184, 30, 52, 0.4);
+    background: rgba(197, 32, 56, 0.1);
+    color: rgb(161, 23, 39)
+}
+html[data-theme="light"] .db-alert a {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .db-stat {
+    border: 1px solid rgba(31, 81, 55, 0.21);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.88)
+}
+html[data-theme="light"] .db-stat-icon.pending {
+    background: rgba(201, 156, 29, 0.16);
+    color: rgb(161, 123, 23)
+}
+html[data-theme="light"] .db-stat-icon.booked {
+    background: rgba(59, 170, 72, 0.16);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .db-stat-icon.customer {
+    background: rgba(29, 146, 201, 0.16);
+    color: rgb(23, 114, 161)
+}
+html[data-theme="light"] .db-stat-icon.gallery {
+    background: rgba(89, 29, 201, 0.16);
+    color: rgb(70, 23, 161)
+}
+html[data-theme="light"] .db-stat span {
+    color: rgba(22, 36, 27, 0.672)
+}
+html[data-theme="light"] .db-stat small {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .db-filter {
+    border: 1px solid rgba(31, 81, 55, 0.168);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.85)
+}
+html[data-theme="light"] .db-filter select.input option {
+    background: rgb(255, 255, 255)
+}
+html[data-theme="light"] .db-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel)
+}
+html[data-theme="light"] .db-card-head {
+    border-bottom: 1px solid var(--line)
+}
+html[data-theme="light"] .db-card-head small {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .db-card-head .modal-close {
+    border: 0;
+    background: transparent;
+    color: rgba(22, 36, 27, 0.63)
+}
+html[data-theme="light"] .db-table th {
+    background: rgba(245, 243, 236, 0.2);
+    color: var(--text-muted)
+}
+html[data-theme="light"] .db-table td {
+    border-top: 1px solid rgba(22, 36, 27, 0.08);
+    color: var(--text-soft)
+}
+html[data-theme="light"] .db-row:hover, html[data-theme="light"] .db-row.selected {
+    background: rgba(64, 166, 63, 0.16)
+}
+html[data-theme="light"] .db-row td strong {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .db-row td small {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .db-pill.pending {
+    background: rgba(201, 151, 29, 0.18);
+    color: rgb(161, 123, 23)
+}
+html[data-theme="light"] .db-pill.booked {
+    background: rgba(31, 81, 55, 0.16);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .db-pill.paid {
+    background: rgba(31, 81, 55, 0.16);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .db-pill.unpaid {
+    background: rgba(201, 29, 45, 0.16);
+    color: rgb(161, 23, 37)
+}
+html[data-theme="light"] .db-pill.waiting {
+    background: rgba(201, 151, 29, 0.16);
+    color: rgb(161, 123, 23)
+}
+html[data-theme="light"] .db-pill.offline {
+    background: rgba(22, 36, 27, 0.072);
+    color: rgba(22, 36, 27, 0.819)
+}
+html[data-theme="light"] .db-pill.verify {
+    background: rgba(29, 109, 201, 0.18);
+    color: rgb(23, 91, 161)
+}
+html[data-theme="light"] .db-pill.cash {
+    background: rgba(201, 161, 29, 0.16);
+    color: rgb(161, 124, 23)
+}
+html[data-theme="light"] .db-cash {
+    border-radius: 9px;
+    border: 1px solid rgba(187, 150, 27, 0.3);
+    background: rgba(201, 161, 29, 0.08)
+}
+html[data-theme="light"] .db-cash strong {
+    color: rgb(161, 124, 23)
+}
+html[data-theme="light"] .db-cash small {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .db-btn.cash {
+    background: rgb(187, 144, 27);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .db-btn.verify {
+    background: rgb(27, 102, 187);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .db-btn.verify-no {
+    background: transparent;
+    border: 1px solid rgba(187, 27, 39, 0.5);
+    color: rgb(161, 23, 39)
+}
+html[data-theme="light"] .db-verify-alert {
+    border-radius: 9px;
+    border: 1px solid rgba(27, 102, 187, 0.4);
+    background: rgba(29, 109, 201, 0.1);
+    color: rgb(23, 92, 161)
+}
+html[data-theme="light"] .db-pill.online {
+    background: rgba(29, 109, 201, 0.14);
+    color: rgb(23, 92, 161)
+}
+html[data-theme="light"] .db-empty {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .db-detail-person {
+    border-bottom: 1px solid var(--line)
+}
+html[data-theme="light"] .db-detail-person p {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .db-section {
+    border-bottom: 1px solid var(--line)
+}
+html[data-theme="light"] .db-section h4 {
+    color: var(--lime)
+}
+html[data-theme="light"] .db-row-info span:first-child {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .db-row-info span:last-child {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .db-pay-note {
+    border-radius: 8px;
+    background: rgba(22, 36, 27, 0.045);
+    color: var(--text-muted)
+}
+html[data-theme="light"] .db-proof {
+    border: 1px solid var(--line);
+    border-radius: 8px
+}
+html[data-theme="light"] .db-btn.approve {
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .db-btn.reject {
+    background: rgb(184, 30, 52);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .db-btn.receipt {
+    background: transparent;
+    border: 1px solid rgba(31, 81, 55, 0.35);
+    color: var(--lime)
+}
+html[data-theme="light"] .db-btn.resched {
+    background: transparent;
+    border: 1px solid rgba(187, 141, 27, 0.45);
+    color: rgb(161, 123, 23)
+}
+html[data-theme="light"] .db-btn.resched:hover {
+    background: rgba(201, 151, 29, 0.12)
+}
+html[data-theme="light"] .db-modal {
+    background: rgba(255, 255, 255, 0.82)
+}
+html[data-theme="light"] .db-modal-box {
+    border-radius: 14px;
+    background: rgb(255, 255, 255);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .db-modal-head {
+    background: rgb(255, 255, 255);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .db-modal-head button {
+    border: 0;
+    background: transparent;
+    color: rgba(22, 36, 27, 0.735)
+}
+html[data-theme="light"] .db-receipt-status {
+    border-bottom: 1px dashed rgba(22, 36, 27, 0.16)
+}
+html[data-theme="light"] .db-receipt-status span {
+    border-radius: 50%;
+    background: rgb(48, 166, 61);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .db-receipt-amount {
+    border-bottom: 1px dashed rgba(22, 36, 27, 0.16)
+}
+html[data-theme="light"] .db-receipt-amount small {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .db-receipt-rows span:first-child {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .db-receipt-proof small {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .db-receipt-proof img {
+    border: 1px solid rgba(22, 36, 27, 0.16);
+    border-radius: 8px;
+    background: rgb(255, 255, 255)
+}
+html[data-theme="light"] .db-modal-foot a {
+    background: rgb(255, 255, 255);
+    color: rgb(22, 36, 27);
+    border: 0
+}
+html[data-theme="light"] .db-modal-foot button {
+    background: rgb(255, 255, 255);
+    color: rgb(22, 36, 27);
+    border: 1px solid rgba(22, 36, 27, 0.16)
+}

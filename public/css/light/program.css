@@ -1,0 +1,103 @@
+/* Tema terang otomatis untuk view: program */
+html[data-theme="light"] {
+    --lime: rgb(31, 81, 55);
+    --ink-dark: rgb(255, 255, 255);
+    --text-soft: rgba(22, 36, 27, 0.924);
+    --text-muted: rgba(22, 36, 27, 0.693)
+}
+html[data-theme="light"], html[data-theme="light"] body {
+    background: rgb(245, 243, 236);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .page {
+    background: linear-gradient(rgba(245, 243, 236, 0.95), rgba(245, 243, 236, 0.95)),
+                none center / cover no-repeat
+}
+html[data-theme="light"] .navbar {
+    background: rgba(255, 255, 255, 0.98);
+    border-bottom: 1px solid rgba(22, 36, 27, 0.096)
+}
+html[data-theme="light"] .brand {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .brand span {
+    color: var(--lime)
+}
+html[data-theme="light"] .nav-menu a {
+    color: var(--text-soft)
+}
+html[data-theme="light"] .nav-menu a:hover, html[data-theme="light"] .nav-menu a.active {
+    color: var(--lime)
+}
+html[data-theme="light"] .nav-menu a.active::after {
+    border-radius: 10px;
+    background: var(--lime)
+}
+html[data-theme="light"] .pill-button {
+    border: 1px solid var(--lime);
+    border-radius: 18px;
+    color: var(--lime) !important
+}
+html[data-theme="light"] .pill-button:hover {
+    background: var(--lime);
+    color: var(--ink-dark) !important
+}
+html[data-theme="light"] .user-name {
+    color: rgba(22, 36, 27, 0.945)
+}
+html[data-theme="light"] .user-dot {
+    border: 3px solid var(--lime);
+    border-radius: 50%
+}
+html[data-theme="light"] .logout-button {
+    border: 1px solid var(--lime);
+    border-radius: 20px;
+    background: transparent;
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .logout-button:hover {
+    background: var(--lime);
+    color: var(--ink-dark)
+}
+html[data-theme="light"] .section-label {
+    color: var(--lime)
+}
+html[data-theme="light"] .title span {
+    color: var(--lime)
+}
+html[data-theme="light"] .description {
+    color: rgba(22, 36, 27, 0.756)
+}
+html[data-theme="light"] .program-card {
+    border: 1px solid rgba(31, 81, 55, 0.35);
+    border-radius: 15px;
+    background: rgb(255, 255, 255);
+    box-shadow: 0 10px 25px rgba(16, 40, 25, 0.066)
+}
+html[data-theme="light"] .program-card:hover {
+    border-color: var(--lime)
+}
+html[data-theme="light"] .card-image {
+    background-image: linear-gradient(to bottom, rgba(245, 243, 236, 0.02), rgb(255, 255, 255)),
+                var(--card-img);
+    background-position: center, var(--card-pos, center);
+    background-size: cover
+}
+html[data-theme="light"] .level {
+    color: var(--lime)
+}
+html[data-theme="light"] .program-description {
+    color: var(--text-muted)
+}
+html[data-theme="light"] .features li {
+    color: rgba(22, 36, 27, 0.861)
+}
+html[data-theme="light"] .features li::before {
+    border-radius: 50%;
+    background: var(--lime)
+}
+html[data-theme="light"] .empty-programs {
+    border: 1px dashed rgba(31, 81, 55, 0.35);
+    border-radius: 15px;
+    color: var(--text-muted)
+}

@@ -1,0 +1,342 @@
+/* Tema terang otomatis untuk view: admin.offline-booking */
+html[data-theme="light"] body {
+    color: rgb(22, 36, 27);
+    background: linear-gradient(
+                    rgba(245, 243, 236, 0.95),
+                    rgba(245, 243, 236, 0.96)
+                ),
+                none
+                center center / cover fixed
+}
+html[data-theme="light"] .page {
+    background: radial-gradient(
+                    circle at 70% 10%,
+                    rgba(31, 81, 55, 0.088),
+                    transparent 30%
+                )
+}
+html[data-theme="light"] .navbar {
+    background: rgb(255, 255, 255);
+    border-bottom: 1px solid rgba(31, 81, 55, 0.182)
+}
+html[data-theme="light"] .brand {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .brand-icon {
+    border-radius: 10px;
+    background: linear-gradient(
+                    145deg,
+                    rgb(31, 81, 55),
+                    rgb(31, 81, 55)
+                );
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .brand span {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .admin-avatar {
+    border-radius: 50%;
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .admin-name strong {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .admin-name span {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .breadcrumb {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .breadcrumb a {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .eyebrow {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] h1 {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .heading-description {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .back-button {
+    border: 1px solid rgba(22, 36, 27, 0.108);
+    border-radius: 8px;
+    color: rgb(22, 36, 27);
+    background: rgba(22, 36, 27, 0.025)
+}
+html[data-theme="light"] .back-button:hover {
+    color: rgb(22, 36, 27);
+    border-color: rgba(31, 81, 55, 0.35)
+}
+html[data-theme="light"] .alert-success {
+    border: 1px solid rgba(52, 162, 75, 0.3);
+    background: rgba(74, 155, 93, 0.1);
+    color: rgb(44, 140, 64)
+}
+html[data-theme="light"] .alert-error {
+    border: 1px solid rgba(187, 27, 27, 0.25);
+    background: rgba(176, 54, 54, 0.08);
+    color: rgb(161, 23, 23)
+}
+html[data-theme="light"] .card {
+    border: 1px solid rgba(22, 36, 27, 0.084);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 20px 55px rgba(16, 40, 25, 0.044)
+}
+html[data-theme="light"] .card-header {
+    border-bottom: 1px solid rgba(22, 36, 27, 0.08)
+}
+html[data-theme="light"] .card-icon {
+    border-radius: 9px;
+    background: rgba(31, 81, 55, 0.121);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .card-title strong {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .card-title span {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .section-title {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .customer-type-label {
+    border: 1px solid rgba(22, 36, 27, 0.096);
+    border-radius: 10px;
+    background: rgba(22, 36, 27, 0.025)
+}
+html[data-theme="light"] .customer-type-label:hover {
+    border-color: rgba(31, 81, 55, 0.35);
+    background: rgba(31, 81, 55, 0.05)
+}
+html[data-theme="light"] .customer-type-option input:checked + .customer-type-label {
+    border-color: rgba(31, 81, 55, 0.35);
+    background: rgba(31, 81, 55, 0.088);
+    box-shadow: inset 0 0 0 1px rgba(31, 81, 55, 0.06)
+}
+html[data-theme="light"] .type-icon {
+    border-radius: 9px;
+    background: rgba(31, 81, 55, 0.088);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .type-text strong {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .type-text span {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .customer-search input {
+    border: 1px solid rgba(22, 36, 27, 0.096);
+    border-radius: 9px;
+    outline: none;
+    background: rgba(22, 36, 27, 0.025);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .customer-search input:focus {
+    border-color: rgba(31, 81, 55, 0.35)
+}
+html[data-theme="light"] .search-icon {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .customer-list {
+    border: 1px solid rgba(22, 36, 27, 0.08);
+    border-radius: 10px
+}
+html[data-theme="light"] .customer-item {
+    border: 0;
+    border-bottom: 1px solid rgba(22, 36, 27, 0.08);
+    background: rgba(22, 36, 27, 0.025);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .customer-item:hover {
+    background: rgba(31, 81, 55, 0.05)
+}
+html[data-theme="light"] .customer-item.selected {
+    background: rgba(31, 81, 55, 0.099)
+}
+html[data-theme="light"] .customer-avatar {
+    border-radius: 50%;
+    background: rgb(255, 255, 255);
+    color: rgb(47, 137, 67)
+}
+html[data-theme="light"] .customer-info strong {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .customer-info span {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .customer-check {
+    border-radius: 50%;
+    color: transparent;
+    background: rgba(22, 36, 27, 0.032)
+}
+html[data-theme="light"] .customer-item.selected .customer-check {
+    color: rgb(255, 255, 255);
+    background: rgb(31, 81, 55)
+}
+html[data-theme="light"] .selected-customer {
+    border: 1px solid rgba(31, 81, 55, 0.252);
+    border-radius: 10px;
+    background: rgba(31, 81, 55, 0.061)
+}
+html[data-theme="light"] .selected-customer-info strong {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .selected-customer-info span {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .offline-notice {
+    border: 1px solid rgba(31, 81, 55, 0.196);
+    border-radius: 9px;
+    background: rgba(31, 81, 55, 0.05);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .offline-notice strong {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .booking-section {
+    border-top: 1px solid rgba(22, 36, 27, 0.08)
+}
+html[data-theme="light"] .form-group label {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .required {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .form-control {
+    border: 1px solid rgba(22, 36, 27, 0.096);
+    border-radius: 9px;
+    outline: none;
+    background: rgba(22, 36, 27, 0.025);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .form-control:focus {
+    border-color: rgba(31, 81, 55, 0.35)
+}
+html[data-theme="light"] select.form-control option {
+    color: rgb(22, 36, 27);
+    background: rgb(255, 255, 255)
+}
+html[data-theme="light"] .status-box {
+    border: 1px solid rgba(31, 81, 55, 0.35);
+    border-radius: 9px;
+    background: rgba(31, 81, 55, 0.077);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .status-dot {
+    border-radius: 50%;
+    background: rgb(31, 81, 55);
+    box-shadow: 0 0 10px rgba(31, 81, 55, 0.2)
+}
+html[data-theme="light"] .help-text {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .actions {
+    border-top: 1px solid rgba(22, 36, 27, 0.08)
+}
+html[data-theme="light"] .button-secondary {
+    border: 1px solid rgba(22, 36, 27, 0.108);
+    background: rgba(22, 36, 27, 0.025);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .button-secondary:hover {
+    color: rgb(22, 36, 27);
+    background: rgba(22, 36, 27, 0.05)
+}
+html[data-theme="light"] .button-primary {
+    border: 0;
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255);
+    box-shadow: 0 8px 22px rgba(31, 81, 55, 0.06)
+}
+html[data-theme="light"] .button-primary:hover {
+    background: rgb(31, 81, 55)
+}
+html[data-theme="light"] .info-title {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .info-icon {
+    border-radius: 8px;
+    background: rgba(31, 81, 55, 0.11);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .info-item {
+    border-bottom: 1px solid rgba(22, 36, 27, 0.08)
+}
+html[data-theme="light"] .info-item-icon {
+    border-radius: 50%;
+    background: rgba(31, 81, 55, 0.077);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .info-item-text strong {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .info-item-text span {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .preview-title {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .preview-status {
+    border-radius: 9px;
+    background: rgba(31, 81, 55, 0.055);
+    border: 1px solid rgba(31, 81, 55, 0.168)
+}
+html[data-theme="light"] .preview-status span:first-child {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .preview-status strong {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .preview-row {
+    border-bottom: 1px solid rgba(22, 36, 27, 0.08)
+}
+html[data-theme="light"] .preview-row span {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .preview-row strong {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .ob-card {
+    border: 1px solid rgba(22, 36, 27, 0.144);
+    border-radius: 12px;
+    background: rgba(22, 36, 27, 0.027)
+}
+html[data-theme="light"] .ob-price {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .ob-price small, html[data-theme="light"] .ob-card small {
+    color: rgba(22, 36, 27, 0.63)
+}
+html[data-theme="light"] .ob-note {
+    color: rgb(161, 124, 23) !important
+}
+html[data-theme="light"] .ob-option:hover .ob-card {
+    border-color: rgba(31, 81, 55, 0.35)
+}
+html[data-theme="light"] .ob-option input:checked + .ob-card {
+    border-color: rgb(31, 81, 55);
+    background: rgba(31, 81, 55, 0.088);
+    box-shadow: inset 0 0 0 1px rgba(31, 81, 55, 0.2)
+}
+html[data-theme="light"] .ob-option input:focus-visible + .ob-card {
+    outline: 2px solid rgb(31, 81, 55);
+    outline-offset: 2px
+}
+html[data-theme="light"] .ob-pin {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .ob-total {
+    border-radius: 12px;
+    border: 1px solid rgba(31, 81, 55, 0.35);
+    background: rgba(31, 81, 55, 0.066)
+}
+html[data-theme="light"] .ob-total strong {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .ob-total small {
+    color: rgba(22, 36, 27, 0.63)
+}

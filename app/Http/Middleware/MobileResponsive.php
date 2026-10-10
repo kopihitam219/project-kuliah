@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Support\ThemeAssets;
+use App\Support\ThemeViews;
 use Throwable;
 
 /**
@@ -49,23 +51,8 @@ class MobileResponsive
             return $response;
         }
 
-        $inject = '';
-
-        if (! preg_match('/<meta[^>]+name=["\']viewport["\']/i', $html)) {
-            $inject .= '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' . "\n";
-        }
-
-        $cssVersion = @filemtime(public_path('css/mobile.css')) ?: 1;
-        $jsVersion  = @filemtime(public_path('js/mobile.js')) ?: 1;
-        $version    = substr(md5($cssVersion . '|' . @filesize(public_path('css/mobile.css'))), 0, 8);
-
-        $inject .= '    <meta name="theme-color" content="#04100b">' . "\n";
-        $inject .= '    <link rel="stylesheet" href="' . e(asset('css/mobile.css')) . '?v=' . $version . '" data-mobile-kit>' . "\n";
-        $inject .= '    <script src="' . e(asset('js/mobile.js')) . '?v=' . $jsVersion . '" defer data-mobile-kit></script>' . "\n";
-
-        $html = substr_replace($html, $inject, $headEnd, 0);
-
         // Menu bawah ala aplikasi (hanya halaman biasa yang berhasil dimuat).
+        // Dirender lebih dulu supaya view-nya ikut tercatat untuk tema.
         if ($response->getStatusCode() === 200 && ! $request->routeIs(...self::NO_TABBAR)) {
             $bodyEnd = strripos($html, '</body>');
 
@@ -79,9 +66,69 @@ class MobileResponsive
             }
         }
 
+        $inject = '';
+
+        // Tema: terang (bawaan) atau gelap, disimpan di browser pengunjung.
+        $inject .= '    <script data-mobile-kit>(function(){var t="light";try{t=localStorage.getItem("gbl-theme")||"light";}catch(e){}document.documentElement.setAttribute("data-theme",t==="dark"?"dark":"light");})();</script>' . "\n";
+
+        if (! preg_match('/<meta[^>]+name=["\']viewport["\']/i', $html)) {
+            $inject .= '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' . "\n";
+        }
+
+        $inject .= '    <meta name="theme-color" content="#f5f3ec" media="(prefers-color-scheme: light)">' . "\n";
+        $inject .= '    <meta name="theme-color" content="#04100b" media="(prefers-color-scheme: dark)">' . "\n";
+        $inject .= '    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
+        $inject .= '    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">' . "\n";
+        $inject .= $this->backgroundVars();
+        $inject .= $this->css('css/mobile.css');
+        $inject .= $this->css('css/theme.css');
+        $inject .= $this->css('css/light/_mobile.css');
+
+        foreach (ThemeViews::all() as $view) {
+            if (isset(ThemeAssets::VIEWS[$view])) {
+                $inject .= $this->css('css/light/' . ThemeAssets::VIEWS[$view]);
+            }
+        }
+
+        $inject .= '    <script src="' . e(asset('js/mobile.js')) . '?v=' . $this->version('js/mobile.js') . '" defer data-mobile-kit></script>' . "\n";
+        $inject .= '    <script src="' . e(asset('js/theme.js')) . '?v=' . $this->version('js/theme.js') . '" defer data-mobile-kit></script>' . "\n";
+
+        $html = substr_replace($html, $inject, $headEnd, 0);
+
         $response->setContent($html);
         $response->headers->remove('Content-Length');
 
         return $response;
+    }
+
+    /** Foto latar dari Settings dipakai ulang oleh CSS tema terang. */
+    private function backgroundVars(): string
+    {
+        if (! class_exists(\App\Support\Brand::class) || ! method_exists(\App\Support\Brand::class, 'background')) {
+            return '';
+        }
+
+        $vars = [];
+
+        foreach (['public', 'auth', 'admin'] as $area) {
+            try {
+                $url    = (string) \App\Support\Brand::background($area);
+                $vars[] = '--gbl-photo-' . $area . ":url('" . str_replace(["'", '"', '<', '>'], ['%27', '%22', '', ''], $url) . "')";
+            } catch (Throwable $e) {
+                // abaikan
+            }
+        }
+
+        return $vars ? '    <style data-mobile-kit>:root{' . implode(';', $vars) . '}</style>' . "\n" : '';
+    }
+
+    private function version(string $file): string
+    {
+        return ThemeAssets::VERSION;
+    }
+
+    private function css(string $file): string
+    {
+        return '    <link rel="stylesheet" href="' . e(asset($file)) . '?v=' . $this->version($file) . '" data-mobile-kit>' . "\n";
     }
 }

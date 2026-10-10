@@ -8,4 +8,5 @@ return [
     FortifyServiceProvider::class,
     App\Providers\SecurityServiceProvider::class,
     App\Providers\CloudServiceProvider::class,
+    App\Providers\ThemeServiceProvider::class,
 ];

@@ -1,0 +1,64 @@
+/* Tema terang otomatis untuk view: admin.payments.receipt */
+html[data-theme="light"] body {
+    background: rgb(255, 255, 255);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .receipt {
+    background: rgb(255, 255, 255);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(16, 40, 25, 0.04)
+}
+html[data-theme="light"] .receipt-head {
+    background: rgb(255, 255, 255);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .brand span {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .receipt-head p {
+    color: rgba(22, 36, 27, 0.63)
+}
+html[data-theme="light"] .status {
+    border-bottom: 1px dashed rgba(22, 36, 27, 0.16)
+}
+html[data-theme="light"] .status-icon {
+    border-radius: 50%;
+    background: rgb(48, 166, 61);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .status small {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .amount {
+    border-bottom: 1px dashed rgba(22, 36, 27, 0.16)
+}
+html[data-theme="light"] .amount span {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .row span:first-child {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .section {
+    color: rgb(41, 142, 52)
+}
+html[data-theme="light"] .note {
+    border-radius: 8px;
+    background: rgb(187, 146, 27);
+    color: rgb(161, 123, 23)
+}
+html[data-theme="light"] .actions button, html[data-theme="light"] .actions a {
+    border: 0;
+    border-radius: 8px;
+    background: rgb(255, 255, 255);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .actions a {
+    background: rgb(255, 255, 255);
+    color: rgb(22, 36, 27);
+    border: 1px solid rgba(22, 36, 27, 0.16)
+}
+@media print {
+    html[data-theme="light"] body {
+        background: rgb(255, 255, 255)
+    }
+}

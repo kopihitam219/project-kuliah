@@ -1,0 +1,27 @@
+/* Tema terang otomatis untuk view: payments._booking-status */
+html[data-theme="light"] .pay-status.unpaid {
+    background: rgba(201, 161, 29, 0.08);
+    border: 1px solid rgba(187, 150, 27, 0.25);
+    color: rgb(161, 124, 23)
+}
+html[data-theme="light"] .pay-status.paid {
+    background: rgba(31, 81, 55, 0.066);
+    border: 1px solid rgba(31, 81, 55, 0.308);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .pay-status a {
+    border-radius: 7px;
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .pay-status.paid a {
+    background: transparent;
+    border: 1px solid rgba(31, 81, 55, 0.35);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .pay-deadline {
+    color: rgb(161, 124, 23)
+}
+html[data-theme="light"] .pay-deadline.urgent {
+    color: rgb(161, 23, 23)
+}

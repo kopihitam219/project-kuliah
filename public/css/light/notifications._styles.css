@@ -1,0 +1,124 @@
+/* Tema terang otomatis untuk view: notifications._styles */
+html[data-theme="light"] .nf-head p {
+    color: rgba(22, 36, 27, 0.63)
+}
+html[data-theme="light"] .nf-btn-primary {
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .nf-btn-primary:hover {
+    background: rgb(31, 81, 55)
+}
+html[data-theme="light"] .nf-btn-outline {
+    border-color: rgba(31, 81, 55, 0.35);
+    background: transparent;
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .nf-btn-outline:hover {
+    background: rgba(31, 81, 55, 0.11)
+}
+html[data-theme="light"] .nf-btn-ghost {
+    border-color: rgba(22, 36, 27, 0.16);
+    background: transparent;
+    color: rgba(22, 36, 27, 0.819)
+}
+html[data-theme="light"] .nf-btn-ghost:hover {
+    border-color: rgba(187, 27, 27, 0.6);
+    color: rgb(161, 23, 37)
+}
+html[data-theme="light"] .nf-tab {
+    border-radius: 999px;
+    border: 1px solid rgba(31, 81, 55, 0.252);
+    color: rgba(22, 36, 27, 0.819)
+}
+html[data-theme="light"] .nf-tab.active {
+    background: rgb(31, 81, 55);
+    border-color: rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .nf-flash {
+    border-radius: 9px;
+    border: 1px solid rgba(31, 81, 55, 0.35);
+    background: rgba(31, 81, 55, 0.077);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .nf-card {
+    border: 1px solid rgba(22, 36, 27, 0.096);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.92)
+}
+html[data-theme="light"] .nf-card.unread {
+    border-color: rgba(31, 81, 55, 0.35);
+    background: rgba(31, 81, 55, 0.055)
+}
+html[data-theme="light"] .nf-icon.created {
+    background: rgba(29, 109, 201, 0.16);
+    color: rgb(23, 92, 161)
+}
+html[data-theme="light"] .nf-icon.rescheduled {
+    background: rgba(201, 151, 29, 0.16);
+    color: rgb(161, 123, 23)
+}
+html[data-theme="light"] .nf-icon.cancelled, html[data-theme="light"] .nf-icon.rejected {
+    background: rgba(201, 29, 45, 0.16);
+    color: rgb(161, 23, 37)
+}
+html[data-theme="light"] .nf-icon.approved {
+    background: rgba(31, 81, 55, 0.16);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .nf-icon.paid {
+    background: rgba(31, 81, 55, 0.16);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .nf-title {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .nf-badge {
+    border-radius: 999px;
+    background: rgba(22, 36, 27, 0.072);
+    color: rgba(22, 36, 27, 0.735)
+}
+html[data-theme="light"] .nf-new {
+    border-radius: 999px;
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .nf-message {
+    color: rgba(22, 36, 27, 0.84)
+}
+html[data-theme="light"] .nf-time {
+    color: rgba(22, 36, 27, 0.5)
+}
+html[data-theme="light"] .nf-empty {
+    border: 1px dashed rgba(31, 81, 55, 0.35);
+    border-radius: 12px;
+    color: rgba(22, 36, 27, 0.578)
+}
+html[data-theme="light"] .nf-pager {
+    color: rgba(22, 36, 27, 0.525)
+}
+html[data-theme="light"] .nf-detail {
+    border: 1px solid rgba(31, 81, 55, 0.28);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.96)
+}
+html[data-theme="light"] .nf-detail-head {
+    border-bottom: 1px solid rgba(22, 36, 27, 0.096)
+}
+html[data-theme="light"] .nf-detail-message {
+    color: rgba(22, 36, 27, 0.924);
+    border-bottom: 1px solid rgba(22, 36, 27, 0.096)
+}
+html[data-theme="light"] .nf-section-title {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .nf-row span:first-child {
+    color: rgba(22, 36, 27, 0.525)
+}
+html[data-theme="light"] .nf-row span:last-child {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .nf-detail-actions {
+    border-top: 1px solid rgba(22, 36, 27, 0.096)
+}

@@ -1,0 +1,59 @@
+/* Tema terang otomatis untuk view: partials.lesson-pricing */
+html[data-theme="light"] .lp-section {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .lp-kicker {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .lp-head p {
+    color: rgba(22, 36, 27, 0.735)
+}
+html[data-theme="light"] .lp-card {
+    border: 1px solid rgba(31, 81, 55, 0.28);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.98)
+}
+html[data-theme="light"] .lp-card.course {
+    border-color: rgba(27, 102, 187, 0.35)
+}
+html[data-theme="light"] .lp-tag {
+    border-radius: 999px;
+    background: rgba(31, 81, 55, 0.154);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .lp-card.course .lp-tag {
+    background: rgba(29, 109, 201, 0.16);
+    color: rgb(23, 85, 161)
+}
+html[data-theme="light"] .lp-price {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .lp-price small {
+    color: rgba(22, 36, 27, 0.63)
+}
+html[data-theme="light"] .lp-list li {
+    color: rgba(22, 36, 27, 0.892)
+}
+html[data-theme="light"] .lp-list li::before {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .lp-note {
+    color: rgb(161, 124, 23)
+}
+html[data-theme="light"] .lp-btn {
+    border-radius: 12px;
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .lp-btn:hover {
+    background: rgb(31, 81, 55)
+}
+html[data-theme="light"] .lp-card.course .lp-btn {
+    background: transparent;
+    border: 1px solid rgb(31, 81, 55);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .lp-card.course .lp-btn:hover {
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}

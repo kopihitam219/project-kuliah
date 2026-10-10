@@ -1,0 +1,83 @@
+/* Tema terang otomatis untuk view: auth.register */
+html[data-theme="light"] .register-page {
+    background-image: linear-gradient(
+                    rgba(245, 243, 236, 0.95),
+                    rgba(245, 243, 236, 0.95)
+                ),
+                none;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat
+}
+html[data-theme="light"] .register-card {
+    background: rgb(255, 255, 255);
+    border: 1px solid rgba(22, 36, 27, 0.144);
+    border-radius: 18px;
+    box-shadow: 0 25px 70px rgba(16, 40, 25, 0.12),
+                inset 0 1px 0 rgba(16, 40, 25, 0.04);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .logo-title {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .logo-title span {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .logo-subtitle {
+    color: rgba(22, 36, 27, 0.578)
+}
+html[data-theme="light"] .register-title {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .title-line {
+    background: rgb(31, 81, 55);
+    border-radius: 999px
+}
+html[data-theme="light"] .error-message {
+    border-radius: 8px;
+    background: rgba(198, 32, 32, 0.18);
+    border: 1px solid rgba(187, 27, 27, 0.35);
+    color: rgb(161, 23, 23)
+}
+html[data-theme="light"] .form-label {
+    color: rgba(22, 36, 27, 0.924)
+}
+html[data-theme="light"] .form-input {
+    border: 1px solid rgba(22, 36, 27, 0.16);
+    border-radius: 8px;
+    outline: none;
+    background: rgba(22, 36, 27, 0.072);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .form-input::placeholder {
+    color: rgba(22, 36, 27, 0.5)
+}
+html[data-theme="light"] .form-input:focus {
+    border-color: rgb(31, 81, 55);
+    background: rgba(22, 36, 27, 0.09);
+    box-shadow: 0 0 0 3px rgba(31, 81, 55, 0.06)
+}
+html[data-theme="light"] .password-button {
+    border: 0;
+    background: transparent;
+    color: rgba(22, 36, 27, 0.578)
+}
+html[data-theme="light"] .password-button:hover {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .register-button {
+    border: 0;
+    border-radius: 8px;
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .register-button:hover {
+    background: rgb(31, 81, 55);
+    box-shadow: 0 8px 25px rgba(31, 81, 55, 0.125)
+}
+html[data-theme="light"] .login-link {
+    color: rgba(22, 36, 27, 0.578)
+}
+html[data-theme="light"] .login-link a {
+    color: rgb(36, 104, 64)
+}

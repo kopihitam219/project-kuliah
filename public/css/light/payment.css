@@ -1,0 +1,181 @@
+/* Tema terang otomatis untuk view: payment */
+html[data-theme="light"] body {
+    background: radial-gradient(
+                    circle at top left,
+                    rgb(245, 243, 236) 0%,
+                    rgb(245, 243, 236) 38%,
+                    rgb(245, 243, 236) 75%
+                );
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .page {
+    background: linear-gradient(
+                    180deg,
+                    rgba(245, 243, 236, 0.35),
+                    rgb(245, 243, 236)
+                )
+}
+html[data-theme="light"] .navbar {
+    border-bottom: 1px solid
+                rgba(22, 36, 27, 0.096);
+    background: rgba(255, 255, 255, 0.98)
+}
+html[data-theme="light"] .brand span {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .nav-menu {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .nav-menu a:hover {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .nav-menu .booking-btn {
+    border: 1px solid
+                rgb(31, 81, 55);
+    color: rgb(36, 104, 64);
+    border-radius: 5px
+}
+html[data-theme="light"] .nav-menu .booking-btn:hover {
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .user-name {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .logout-btn {
+    border: 0;
+    background: transparent;
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .logout-btn:hover {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .eyebrow {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .page-heading h1 span {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .page-heading p {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .panel {
+    border: 1px solid
+                rgba(22, 36, 27, 0.108);
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 10px;
+    box-shadow: 0 15px 45px
+                rgba(16, 40, 25, 0.048)
+}
+html[data-theme="light"] .poster-wrap {
+    background: rgb(255, 255, 255)
+}
+html[data-theme="light"] .poster-wrap img {
+    border-radius: 6px;
+    box-shadow: 0 12px 35px
+                rgba(16, 40, 25, 0.088)
+}
+html[data-theme="light"] .section-label {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .info-row {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .info-icon {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .price-box {
+    border: 1px solid
+                rgba(31, 81, 55, 0.252);
+    background: rgba(31, 81, 55, 0.066);
+    border-radius: 7px
+}
+html[data-theme="light"] .price-label {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .price {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .panel-icon {
+    border-radius: 7px;
+    background: rgba(31, 81, 55, 0.11);
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .panel-heading p {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .qr-section {
+    border: 1px solid
+                rgba(22, 36, 27, 0.096);
+    border-radius: 8px;
+    background: rgba(245, 243, 236, 0.55)
+}
+html[data-theme="light"] .qr-box {
+    background: rgb(255, 255, 255);
+    border-radius: 7px
+}
+html[data-theme="light"] .dummy-warning {
+    border-radius: 100px;
+    background: rgba(201, 158, 29, 0.09);
+    border: 1px solid
+                rgba(187, 147, 27, 0.25);
+    color: rgb(156, 121, 27)
+}
+html[data-theme="light"] .other-title {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .method {
+    border: 1px solid
+                rgba(22, 36, 27, 0.084);
+    background: rgba(22, 36, 27, 0.025);
+    border-radius: 6px
+}
+html[data-theme="light"] .method-logo {
+    border-radius: 4px;
+    background: rgb(255, 255, 255);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .method-name {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .method-number {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .pay-button {
+    border: 0;
+    border-radius: 6px;
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .pay-button:hover {
+    background: rgb(31, 81, 55)
+}
+html[data-theme="light"] .back-button {
+    border: 1px solid
+                rgba(22, 36, 27, 0.12);
+    border-radius: 6px;
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .back-button:hover {
+    color: rgb(22, 36, 27);
+    border-color: rgba(22, 36, 27, 0.16)
+}
+html[data-theme="light"] .trust-row {
+    border-top: 1px solid
+                rgba(22, 36, 27, 0.084)
+}
+html[data-theme="light"] .trust-item {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .trust-item strong {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .toast {
+    border-radius: 7px;
+    background: rgb(255, 255, 255);
+    border: 1px solid
+                rgba(31, 81, 55, 0.35);
+    color: rgb(22, 36, 27);
+    box-shadow: 0 12px 35px
+                rgba(16, 40, 25, 0.077)
+}

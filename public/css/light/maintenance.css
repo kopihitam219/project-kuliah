@@ -1,0 +1,25 @@
+/* Tema terang otomatis untuk view: maintenance */
+html[data-theme="light"] body {
+    color: rgb(22, 36, 27);
+    background: linear-gradient(rgba(245, 243, 236, 0.95), rgba(245, 243, 236, 0.95)),
+                none center / cover no-repeat
+}
+html[data-theme="light"] .card {
+    border: 1px solid rgba(31, 81, 55, 0.35);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.88)
+}
+html[data-theme="light"] .brand .accent {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .icon {
+    border-radius: 50%;
+    background: rgba(201, 166, 29, 0.14);
+    color: rgb(161, 123, 23)
+}
+html[data-theme="light"] p {
+    color: rgba(22, 36, 27, 0.788)
+}
+html[data-theme="light"] small {
+    color: rgba(22, 36, 27, 0.525)
+}

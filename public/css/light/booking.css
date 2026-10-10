@@ -1,0 +1,462 @@
+/* Tema terang otomatis untuk view: booking */
+html[data-theme="light"] {
+    --lime: rgb(31, 81, 55);
+    --yellow: rgb(187, 150, 27);
+    --red: rgb(187, 27, 27);
+    --blue: rgb(27, 102, 187);
+    --text: rgb(22, 36, 27);
+    --muted: rgb(22, 36, 27);
+    --border: rgba(31, 81, 55, 0.224)
+}
+html[data-theme="light"] body {
+    color: var(--text);
+    background: linear-gradient(rgba(245, 243, 236, 0.95), rgba(245, 243, 236, 0.95)),
+                none center / cover fixed no-repeat
+}
+html[data-theme="light"] .navbar {
+    background: rgb(255, 255, 255);
+    border-bottom: 1px solid rgba(31, 81, 55, 0.14)
+}
+html[data-theme="light"] .brand span {
+    color: var(--lime)
+}
+html[data-theme="light"] .nav-link {
+    border-radius: 8px;
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .nav-link:hover {
+    color: var(--lime);
+    background: rgba(31, 81, 55, 0.066)
+}
+html[data-theme="light"] .booking-nav {
+    border-radius: 9px;
+    background: var(--lime);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .user-name {
+    color: rgb(22, 36, 27);
+    background: rgba(22, 36, 27, 0.036);
+    border: 1px solid rgba(22, 36, 27, 0.084);
+    border-radius: 9px
+}
+html[data-theme="light"] .logout-button {
+    border: 0;
+    background: transparent;
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .logout-button:hover {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .eyebrow {
+    color: var(--lime)
+}
+html[data-theme="light"] .page-heading p {
+    color: var(--muted)
+}
+html[data-theme="light"] .alert-success {
+    color: rgb(36, 104, 64);
+    background: rgba(130, 201, 29, 0.2);
+    border: 1px solid rgba(31, 81, 55, 0.35)
+}
+html[data-theme="light"] .alert-error {
+    color: rgb(161, 23, 23);
+    background: rgba(245, 243, 236, 0.35);
+    border: 1px solid rgba(187, 27, 27, 0.35)
+}
+html[data-theme="light"] .panel {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgb(255, 255, 255), rgb(255, 255, 255));
+    box-shadow: 0 15px 45px rgba(16, 40, 25, 0.048), inset 0 1px 0 rgba(16, 40, 25, 0.04)
+}
+html[data-theme="light"] .section-title svg {
+    stroke: var(--lime);
+    fill: none
+}
+html[data-theme="light"] .section-title .sub {
+    color: var(--muted)
+}
+html[data-theme="light"] .month-button {
+    border: 1px solid rgba(22, 36, 27, 0.12);
+    border-radius: 10px;
+    background: rgba(22, 36, 27, 0.036);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .month-button:hover:not(:disabled) {
+    color: var(--lime);
+    border-color: rgba(31, 81, 55, 0.35)
+}
+html[data-theme="light"] .weekday {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .calendar-day {
+    border: 1px solid transparent;
+    border-radius: 9px;
+    background: rgba(22, 36, 27, 0.032);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] a.calendar-day:hover {
+    background: rgba(31, 81, 55, 0.077);
+    border-color: rgba(31, 81, 55, 0.35)
+}
+html[data-theme="light"] .calendar-day.disabled {
+    color: rgb(22, 36, 27);
+    background: rgba(22, 36, 27, 0.025)
+}
+html[data-theme="light"] .calendar-day.selected {
+    color: rgb(255, 255, 255);
+    background: var(--lime);
+    border-color: var(--lime)
+}
+html[data-theme="light"] .calendar-day.today {
+    border-color: rgba(31, 81, 55, 0.35)
+}
+html[data-theme="light"] .divider {
+    background: rgba(22, 36, 27, 0.063)
+}
+html[data-theme="light"] .form-title {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .field label {
+    color: var(--muted)
+}
+html[data-theme="light"] .field select {
+    color: rgb(22, 36, 27);
+    background: rgba(245, 243, 236, 0.25);
+    border: 1px solid rgba(22, 36, 27, 0.12);
+    border-radius: 9px;
+    outline: none
+}
+html[data-theme="light"] .field select:focus {
+    border-color: rgba(31, 81, 55, 0.35)
+}
+html[data-theme="light"] .field select option {
+    color: rgb(22, 36, 27);
+    background: rgb(255, 255, 255)
+}
+html[data-theme="light"] .field select option:disabled {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .duration-box {
+    color: var(--muted);
+    background: rgba(31, 81, 55, 0.05);
+    border: 1px solid rgba(31, 81, 55, 0.12);
+    border-radius: 9px
+}
+html[data-theme="light"] .duration-box strong {
+    color: var(--lime)
+}
+html[data-theme="light"] .book-button {
+    border: 0;
+    border-radius: 10px;
+    background: var(--lime);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .book-button:hover:not(:disabled) {
+    background: rgb(31, 81, 55)
+}
+html[data-theme="light"] .book-button:disabled {
+    background: rgba(22, 36, 27, 0.054);
+    color: rgb(22, 36, 27);
+    border: 1px dashed rgba(22, 36, 27, 0.16)
+}
+html[data-theme="light"] .booking-note {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .legend-item {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .legend-dot.available {
+    background: var(--lime)
+}
+html[data-theme="light"] .legend-dot.pending {
+    background: var(--yellow)
+}
+html[data-theme="light"] .legend-dot.booked {
+    background: var(--red)
+}
+html[data-theme="light"] .legend-dot.mine {
+    background: var(--blue)
+}
+html[data-theme="light"] .legend-dot.past {
+    background: rgb(255, 255, 255)
+}
+html[data-theme="light"] .slot-available {
+    color: var(--lime);
+    background: rgba(31, 81, 55, 0.055);
+    border-color: rgba(31, 81, 55, 0.35)
+}
+html[data-theme="light"] .slot-available:hover {
+    background: rgba(31, 81, 55, 0.16)
+}
+html[data-theme="light"] .slot-available.selected {
+    color: rgb(255, 255, 255);
+    background: var(--lime);
+    border-color: var(--lime)
+}
+html[data-theme="light"] .slot-pending {
+    color: rgb(161, 124, 23);
+    background: rgba(201, 161, 29, 0.08);
+    border-color: rgba(187, 150, 27, 0.28)
+}
+html[data-theme="light"] .slot-booked {
+    color: rgb(161, 23, 23);
+    background: rgba(201, 29, 29, 0.08);
+    border-color: rgba(187, 27, 27, 0.28)
+}
+html[data-theme="light"] .slot-mine {
+    color: rgb(23, 85, 161);
+    background: rgba(29, 109, 201, 0.09);
+    border-color: rgba(27, 102, 187, 0.4)
+}
+html[data-theme="light"] .slot-past {
+    color: rgb(22, 36, 27);
+    background: rgba(22, 36, 27, 0.025);
+    border-color: rgba(22, 36, 27, 0.08)
+}
+html[data-theme="light"] .slot-blocked {
+    color: rgb(161, 23, 39);
+    background: repeating-linear-gradient(135deg, rgba(197, 32, 56, 0.1) 0 6px, rgba(197, 32, 56, 0.08) 6px 12px);
+    border-color: rgba(184, 30, 52, 0.35)
+}
+html[data-theme="light"] .legend-dot.blocked {
+    background: rgb(184, 30, 52)
+}
+html[data-theme="light"] .your-booking {
+    border-top: 1px solid rgba(22, 36, 27, 0.084)
+}
+html[data-theme="light"] .your-booking-title svg {
+    stroke: var(--lime);
+    fill: none
+}
+html[data-theme="light"] .empty-status {
+    color: rgb(22, 36, 27);
+    border: 1px dashed rgba(22, 36, 27, 0.12);
+    border-radius: 9px
+}
+html[data-theme="light"] .booking-card {
+    background: rgba(22, 36, 27, 0.027);
+    border: 1px solid rgba(22, 36, 27, 0.08);
+    border-radius: 11px
+}
+html[data-theme="light"] .booking-meta-label {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .booking-meta-value {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .booking-status {
+    border-top: 1px solid rgba(22, 36, 27, 0.08)
+}
+html[data-theme="light"] .booking-status.pending {
+    color: rgb(161, 124, 23)
+}
+html[data-theme="light"] .booking-status.booked {
+    color: var(--lime)
+}
+html[data-theme="light"] .booking-status.pending .booking-status-dot {
+    background: var(--yellow)
+}
+html[data-theme="light"] .booking-status.booked .booking-status-dot {
+    background: var(--lime)
+}
+html[data-theme="light"] .cancel-button {
+    color: rgb(161, 23, 23);
+    background: rgba(201, 29, 29, 0.08);
+    border: 1px solid rgba(187, 27, 27, 0.25)
+}
+html[data-theme="light"] .cancel-button:hover {
+    color: rgb(22, 36, 27);
+    background: rgba(201, 29, 29, 0.16);
+    border-color: rgba(187, 27, 27, 0.45)
+}
+html[data-theme="light"] .reschedule-button {
+    color: rgb(23, 86, 161);
+    background: rgba(29, 109, 201, 0.08);
+    border: 1px solid rgba(27, 102, 187, 0.25)
+}
+html[data-theme="light"] .reschedule-button:hover {
+    color: rgb(22, 36, 27);
+    background: rgba(29, 109, 201, 0.14);
+    border-color: rgba(27, 102, 187, 0.45)
+}
+html[data-theme="light"] .action-locked {
+    color: rgb(22, 36, 27);
+    border-top: 1px solid rgba(22, 36, 27, 0.08)
+}
+html[data-theme="light"] .reschedule-box {
+    background: rgba(245, 243, 236, 0.2);
+    border: 1px solid rgba(27, 102, 187, 0.25);
+    border-radius: 10px
+}
+html[data-theme="light"] .reschedule-title {
+    color: rgb(23, 86, 161)
+}
+html[data-theme="light"] .reschedule-field label {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .reschedule-field input {
+    color: rgb(22, 36, 27);
+    background: rgba(22, 36, 27, 0.036);
+    border: 1px solid rgba(22, 36, 27, 0.108);
+    border-radius: 7px;
+    outline: none
+}
+html[data-theme="light"] .reschedule-field input:focus {
+    border-color: rgba(27, 102, 187, 0.5)
+}
+html[data-theme="light"] .reschedule-submit {
+    border: 0;
+    border-radius: 7px;
+    color: rgb(22, 36, 27);
+    background: rgb(27, 108, 187)
+}
+html[data-theme="light"] .reschedule-submit:hover {
+    background: rgb(27, 107, 187)
+}
+html[data-theme="light"] .reschedule-cancel {
+    border: 1px solid rgba(22, 36, 27, 0.096);
+    border-radius: 7px;
+    color: rgb(22, 36, 27);
+    background: transparent
+}
+html[data-theme="light"] .reschedule-cancel:hover {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .step-label {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .step-num {
+    border-radius: 50%;
+    background: var(--lime);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .lesson-card {
+    border: 1px solid rgba(22, 36, 27, 0.12);
+    border-radius: 13px;
+    background: rgba(22, 36, 27, 0.027)
+}
+html[data-theme="light"] .lesson-price {
+    color: var(--lime)
+}
+html[data-theme="light"] .lesson-price small {
+    color: var(--muted)
+}
+html[data-theme="light"] .lesson-desc {
+    color: var(--muted)
+}
+html[data-theme="light"] .lesson-option:hover .lesson-card {
+    border-color: rgba(31, 81, 55, 0.35)
+}
+html[data-theme="light"] .lesson-option input:checked + .lesson-card {
+    border-color: var(--lime);
+    background: rgba(31, 81, 55, 0.088);
+    box-shadow: inset 0 0 0 1px var(--lime)
+}
+html[data-theme="light"] .lesson-option input:focus-visible + .lesson-card {
+    outline: 2px solid var(--lime);
+    outline-offset: 2px
+}
+html[data-theme="light"] .location-card {
+    border: 1px solid rgba(22, 36, 27, 0.12);
+    border-radius: 12px;
+    background: rgba(22, 36, 27, 0.027)
+}
+html[data-theme="light"] .location-card small {
+    color: var(--muted)
+}
+html[data-theme="light"] .location-pin {
+    color: var(--lime)
+}
+html[data-theme="light"] .location-option:hover .location-card {
+    border-color: rgba(31, 81, 55, 0.35)
+}
+html[data-theme="light"] .location-option input:checked + .location-card {
+    border-color: var(--lime);
+    background: rgba(31, 81, 55, 0.088);
+    box-shadow: inset 0 0 0 1px var(--lime)
+}
+html[data-theme="light"] .location-option input:focus-visible + .location-card {
+    outline: 2px solid var(--lime);
+    outline-offset: 2px
+}
+html[data-theme="light"] .venue-input {
+    border: 1px solid rgba(22, 36, 27, 0.144);
+    border-radius: 12px;
+    background: rgba(245, 243, 236, 0.25);
+    color: rgb(22, 36, 27);
+    outline: none
+}
+html[data-theme="light"] .venue-input:focus {
+    border-color: rgba(31, 81, 55, 0.35)
+}
+html[data-theme="light"] .venue-input::placeholder {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .venue-hint {
+    color: var(--muted)
+}
+html[data-theme="light"] .course-box {
+    border: 1px solid rgba(31, 81, 55, 0.35);
+    border-radius: 12px;
+    background: rgba(31, 81, 55, 0.066)
+}
+html[data-theme="light"] .course-box strong {
+    color: var(--lime)
+}
+html[data-theme="light"] .course-box span {
+    color: var(--muted)
+}
+html[data-theme="light"] .course-ok {
+    color: var(--lime)
+}
+html[data-theme="light"] .course-no {
+    color: rgb(161, 23, 23)
+}
+html[data-theme="light"] .course-box.unavailable {
+    border-color: rgba(187, 27, 27, 0.35);
+    background: rgba(201, 29, 29, 0.08)
+}
+html[data-theme="light"] .lesson-note {
+    color: rgb(161, 124, 23)
+}
+html[data-theme="light"] .course-note {
+    color: rgb(161, 124, 23)
+}
+html[data-theme="light"] .booking-place-type {
+    border-radius: 999px;
+    background: rgba(31, 81, 55, 0.132);
+    color: var(--lime)
+}
+html[data-theme="light"] .booking-place-type.course {
+    background: rgba(29, 109, 201, 0.14);
+    color: rgb(23, 85, 161)
+}
+html[data-theme="light"] .booking-place-name {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .reschedule-fixed {
+    border-radius: 9px;
+    background: rgba(22, 36, 27, 0.036);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .locked-help strong {
+    color: rgb(161, 124, 23)
+}
+html[data-theme="light"] .contact-admin {
+    border-radius: 10px;
+    background: rgb(32, 182, 88);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .contact-admin:hover {
+    background: rgb(30, 184, 86)
+}
+html[data-theme="light"] .slot-hold {
+    border-radius: 999px;
+    background: rgba(201, 161, 29, 0.12);
+    color: rgb(161, 124, 23)
+}
+html[data-theme="light"] .slot-hold.urgent {
+    background: rgba(201, 29, 29, 0.14);
+    color: rgb(161, 23, 23)
+}

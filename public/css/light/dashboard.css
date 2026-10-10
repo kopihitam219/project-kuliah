@@ -1,0 +1,88 @@
+/* Tema terang otomatis untuk view: dashboard */
+html[data-theme="light"] body {
+    background: rgb(245, 243, 236)
+}
+html[data-theme="light"] .hero {
+    background-image: linear-gradient(
+                    90deg,
+                    rgba(245, 243, 236, 0.95) 0%,
+                    rgba(245, 243, 236, 0.95) 40%,
+                    rgba(245, 243, 236, 0.95) 75%,
+                    rgba(245, 243, 236, 0.95) 100%
+                ),
+                none;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .navbar {
+    border-bottom: 1px solid rgba(22, 36, 27, 0.12);
+    background: rgba(245, 243, 236, 0.45)
+}
+html[data-theme="light"] .brand {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .brand span {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .nav-menu a {
+    color: rgba(22, 36, 27, 0.945)
+}
+html[data-theme="light"] .nav-menu a:hover {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .booking-nav {
+    border: 1px solid rgb(31, 81, 55);
+    border-radius: 18px;
+    background: transparent;
+    color: rgb(36, 104, 64) !important
+}
+html[data-theme="light"] .booking-nav:hover {
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255) !important
+}
+html[data-theme="light"] .user-name {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .user-dot {
+    border: 3px solid rgb(31, 81, 55);
+    border-radius: 50%
+}
+html[data-theme="light"] .logout-button {
+    border: 1px solid rgb(31, 81, 55);
+    border-radius: 20px;
+    background: rgba(22, 36, 27, 0.027);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .logout-button:hover {
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .small-title {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .main-title .green {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .description {
+    color: rgba(22, 36, 27, 0.819)
+}
+html[data-theme="light"] .btn-primary {
+    background: rgb(31, 81, 55);
+    border: 1px solid rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .btn-primary:hover {
+    background: rgb(255, 255, 255);
+    border-color: rgba(22, 36, 27, 0.16)
+}
+html[data-theme="light"] .btn-secondary {
+    background: rgba(22, 36, 27, 0.054);
+    border: 1px solid rgba(22, 36, 27, 0.16);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .btn-secondary:hover {
+    background: rgb(255, 255, 255);
+    color: rgb(22, 36, 27)
+}

@@ -1,0 +1,16 @@
+/* Tema terang otomatis untuk view: admin.customers.show */
+html[data-theme="light"] .alert-warning {
+    border: 1px solid rgba(187, 144, 27, 0.4);
+    border-radius: 9px;
+    background: rgba(201, 154, 29, 0.08);
+    color: rgb(161, 122, 23)
+}
+html[data-theme="light"] .btn-danger {
+    border-color: rgba(184, 30, 52, 0.7);
+    background: rgba(197, 32, 56, 0.12);
+    color: rgb(161, 23, 42)
+}
+html[data-theme="light"] .btn-danger:hover {
+    background: rgb(184, 30, 52);
+    color: rgb(22, 36, 27)
+}

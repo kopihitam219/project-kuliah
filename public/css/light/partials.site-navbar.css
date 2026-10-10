@@ -1,0 +1,89 @@
+/* Tema terang otomatis untuk view: partials.site-navbar */
+html[data-theme="light"] .sn-nav {
+    background: rgb(255, 255, 255);
+    border-bottom: 1px solid rgba(31, 81, 55, 0.196);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .sn-brand {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .sn-brand-text span {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .sn-link {
+    border-radius: 8px;
+    color: rgba(22, 36, 27, 0.861)
+}
+html[data-theme="light"] .sn-link:hover {
+    color: rgb(36, 104, 64);
+    background: rgba(31, 81, 55, 0.066)
+}
+html[data-theme="light"] .sn-link.active {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .sn-link.active::after {
+    border-radius: 2px;
+    background: rgb(31, 81, 55)
+}
+html[data-theme="light"] .sn-booking {
+    border: 1px solid rgb(31, 81, 55);
+    border-radius: 8px;
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .sn-booking:hover, html[data-theme="light"] .sn-booking.active {
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .sn-clock {
+    border: 1px solid rgba(31, 81, 55, 0.196);
+    border-radius: 9px;
+    background: rgba(22, 36, 27, 0.027)
+}
+html[data-theme="light"] .sn-clock-time {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .sn-clock-date {
+    color: rgba(22, 36, 27, 0.63)
+}
+html[data-theme="light"] .sn-user {
+    border: 1px solid rgba(22, 36, 27, 0.12);
+    border-radius: 9px;
+    background: rgba(22, 36, 27, 0.036);
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .sn-user-dot {
+    border-radius: 50%;
+    background: rgb(31, 81, 55)
+}
+html[data-theme="light"] .sn-btn {
+    border: 1px solid rgba(31, 81, 55, 0.35);
+    border-radius: 9px;
+    background: transparent;
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .sn-btn:hover {
+    background: rgb(31, 81, 55);
+    color: rgb(255, 255, 255)
+}
+html[data-theme="light"] .sn-btn.lime {
+    color: rgb(36, 104, 64)
+}
+html[data-theme="light"] .sn-btn.lime:hover {
+    color: rgb(22, 36, 27)
+}
+html[data-theme="light"] .sn-toggle {
+    border: 1px solid rgba(22, 36, 27, 0.144);
+    border-radius: 9px;
+    background: transparent;
+    color: rgb(22, 36, 27)
+}
+@media (max-width: 1024px) {
+    html[data-theme="light"] .sn-links {
+        border-top: 1px solid rgba(22, 36, 27, 0.096)
+    }
+}
+@media (max-width: 1024px) {
+    html[data-theme="light"] .sn-link.active {
+        background: rgba(31, 81, 55, 0.088)
+    }
+}
