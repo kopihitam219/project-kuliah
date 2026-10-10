@@ -465,7 +465,7 @@
                     <span class="sidebar-icon">▤</span> Program
                 </a>
                 <a href="{{ route('admin.coaches.index') }}" class="sidebar-link {{ request()->routeIs('admin.coaches.*') ? 'active' : '' }}">
-                    <span class="sidebar-icon">☆</span> Coach
+                    <span class="sidebar-icon">☆</span> About Coach
                 </a>
                 <a href="{{ route('admin.contact.index') }}" class="sidebar-link {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}">
                     <span class="sidebar-icon">☎</span> Contact

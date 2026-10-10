@@ -10,63 +10,47 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
- * Kelola Coach: profil coach yang tampil di bagian "Kenali Coach Kami" di halaman Home.
+ * About Coach: satu profil coach yang tampil di halaman Home.
  * Hanya informasi. Customer tidak memilih coach saat booking.
  */
 class AdminCoachController extends Controller
 {
     public function index(): View
     {
-        $coaches = Coach::ordered()->get();
+        $coach = Coach::main() ?? new Coach(['name' => '', 'is_active' => true, 'skills' => []]);
 
-        return view('admin.coaches.index', compact('coaches'));
+        return view('admin.coaches.index', compact('coach'));
     }
 
-    public function create(): View
+    /** Link lama (tambah/edit coach) diarahkan ke halaman About Coach. */
+    public function create(): RedirectResponse
     {
-        $coach = new Coach(['sort_order' => (int) Coach::max('sort_order') + 1, 'is_active' => true, 'skills' => []]);
+        return redirect()->route('admin.coaches.index');
+    }
 
-        return view('admin.coaches.create', compact('coach'));
+    public function edit(Coach $coach): RedirectResponse
+    {
+        return redirect()->route('admin.coaches.index');
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $coach = new Coach($this->validatedData($request));
-        $this->handlePhoto($request, $coach);
-        $coach->save();
+        $coach = Coach::main() ?? new Coach(['sort_order' => 1]);
 
-        return redirect()->route('admin.coaches.index')->with('success', 'Coach berhasil ditambahkan.');
-    }
-
-    public function edit(Coach $coach): View
-    {
-        return view('admin.coaches.edit', compact('coach'));
+        return $this->save($request, $coach);
     }
 
     public function update(Request $request, Coach $coach): RedirectResponse
     {
-        if ($request->boolean('quick_toggle')) {
-            $coach->update(['is_active' => ! $coach->is_active]);
-
-            return back()->with('success', $coach->is_active ? 'Coach ditampilkan di Home.' : 'Coach disembunyikan dari Home.');
-        }
-
-        $coach->fill($this->validatedData($request));
-        $this->handlePhoto($request, $coach);
-        $coach->save();
-
-        return redirect()->route('admin.coaches.index')->with('success', 'Coach berhasil diperbarui.');
+        return $this->save($request, $coach);
     }
 
     public function destroy(Coach $coach): RedirectResponse
     {
-        $this->deletePhoto($coach->photo);
-        $coach->delete();
-
-        return redirect()->route('admin.coaches.index')->with('success', 'Coach berhasil dihapus.');
+        return redirect()->route('admin.coaches.index');
     }
 
-    private function validatedData(Request $request): array
+    private function save(Request $request, Coach $coach): RedirectResponse
     {
         $request->validate([
             'name'             => ['required', 'string', 'max:100'],
@@ -74,35 +58,43 @@ class AdminCoachController extends Controller
             'badge'            => ['nullable', 'string', 'max:40'],
             'years_experience' => ['nullable', 'integer', 'min:0', 'max:80'],
             'students'         => ['nullable', 'string', 'max:30'],
+            'bio'              => ['nullable', 'string', 'max:1500'],
             'skills'           => ['nullable', 'string', 'max:600'],
+            'experiences'      => ['nullable', 'string', 'max:2000'],
+            'certifications'   => ['nullable', 'string', 'max:1200'],
+            'achievements'     => ['nullable', 'string', 'max:1200'],
             'quote'            => ['nullable', 'string', 'max:200'],
             'photo_file'       => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
-            'sort_order'       => ['nullable', 'integer', 'min:0'],
             'is_active'        => ['nullable', 'boolean'],
         ], [
             'name.required'    => 'Nama coach wajib diisi.',
+            'bio.max'          => 'Tentang coach maksimal 1500 karakter.',
             'photo_file.image' => 'File harus berupa gambar.',
             'photo_file.max'   => 'Ukuran foto maksimal 4 MB.',
         ]);
 
-        $skills = collect(preg_split('/\r\n|\r|\n|,/', (string) $request->input('skills')))
-            ->map(fn ($s) => trim($s))->filter()->map(fn ($s) => Str::limit($s, 30, ''))->take(6)->values()->all();
+        $experiences = $this->lines($request->input('experiences'), 8, 120)
+            ->map(function ($line) {
+                [$period, $text] = array_pad(array_map('trim', explode('|', $line, 2)), 2, '');
 
-        return [
+                return $text === '' ? ['period' => '', 'text' => $period] : ['period' => Str::limit($period, 30, ''), 'text' => $text];
+            })->values()->all();
+
+        $coach->fill([
             'name'             => trim($request->input('name')),
             'role'             => $request->input('role'),
             'badge'            => $request->input('badge'),
             'years_experience' => $request->filled('years_experience') ? (int) $request->input('years_experience') : null,
             'students'         => $request->input('students'),
-            'skills'           => $skills,
+            'bio'              => $request->input('bio'),
+            'skills'           => $this->lines($request->input('skills'), 8, 30, true)->all(),
+            'experiences'      => $experiences,
+            'certifications'   => $this->lines($request->input('certifications'), 8, 100)->all(),
+            'achievements'     => $this->lines($request->input('achievements'), 8, 100)->all(),
             'quote'            => $request->input('quote'),
-            'sort_order'       => (int) $request->input('sort_order', 0),
             'is_active'        => $request->boolean('is_active'),
-        ];
-    }
+        ]);
 
-    private function handlePhoto(Request $request, Coach $coach): void
-    {
         if ($request->boolean('remove_photo')) {
             $this->deletePhoto($coach->photo);
             $coach->photo = null;
@@ -112,6 +104,19 @@ class AdminCoachController extends Controller
             $this->deletePhoto($coach->photo);
             $coach->photo = $request->file('photo_file')->store('coaches', 'public');
         }
+
+        $coach->save();
+
+        return redirect()->route('admin.coaches.index')->with('success', 'Profil coach berhasil disimpan.');
+    }
+
+    private function lines(?string $value, int $max, int $limit, bool $commas = false)
+    {
+        $pattern = $commas ? '/\r\n|\r|\n|,/' : '/\r\n|\r|\n/';
+
+        return collect(preg_split($pattern, (string) $value))
+            ->map(fn ($s) => Str::limit(trim(preg_replace('/^[\s\-•*]+/u', '', $s)), $limit, ''))
+            ->filter()->take($max)->values();
     }
 
     private function deletePhoto(?string $path): void

@@ -51,7 +51,7 @@
         ];
         $mtSheet = [
             ['Jadwal', route('admin.schedule-blocks.index'), 'clock'],
-            ['Coach', route('admin.coaches.index'), 'user'],
+            ['About Coach', route('admin.coaches.index'), 'user'],
             ['Galeri', route('admin.gallery.index'), 'image'],
             ['Event', route('admin.events.index'), 'flag'],
             ['Program', route('admin.programs.index'), 'star'],
