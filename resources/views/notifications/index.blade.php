@@ -13,6 +13,8 @@
             'rejected'    => ['icon' => '×',  'label' => 'Ditolak'],
             'approved'    => ['icon' => '✓',  'label' => 'Disetujui'],
             'paid'        => ['icon' => 'Rp', 'label' => 'Pembayaran'],
+            'chat'        => ['icon' => '✉',  'label' => 'Chat'],
+            'broadcast'   => ['icon' => '📢', 'label' => 'Pengumuman'],
         ];
     @endphp
 

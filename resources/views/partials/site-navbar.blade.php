@@ -18,6 +18,10 @@
         ['label' => 'Contact', 'url' => route('contact'),  'active' => request()->routeIs('contact')],
     ];
 
+    if ($snIsCustomer && \Illuminate\Support\Facades\Route::has('chat')) {
+        $snLinks[] = ['label' => 'Chat', 'url' => route('chat'), 'active' => request()->routeIs('chat')];
+    }
+
     $snBookingActive = request()->routeIs('booking', 'payment', 'payment.*');
     $snNow           = now();
 @endphp

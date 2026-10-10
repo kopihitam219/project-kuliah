@@ -182,6 +182,8 @@
             'rejected'    => '×',
             'approved'    => '✓',
             'paid'        => 'Rp',
+            'chat'        => '✉',
+            'broadcast'   => '📢',
         ];
     @endphp
 

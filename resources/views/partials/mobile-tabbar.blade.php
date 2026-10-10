@@ -20,6 +20,7 @@
         'users'    => '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/>',
         'clock'    => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
         'menu'     => '<path d="M4 7h16M4 12h16M4 17h16"/>',
+        'chat'     => '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/>',
         'bell'     => '<path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
         'logout'   => '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l5-5-5-5M15 12H4"/>',
         'login'    => '<path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M14 17l5-5-5-5M19 12H8"/>',
@@ -33,15 +34,24 @@
         try { $mtUnread = $mtUser->unreadNotifications()->count(); } catch (\Throwable $e) { $mtUnread = 0; }
     }
 
-    // [label, url, icon, aktif, utama]
+    $mtChat = 0;
+    if ($mtUser && class_exists(\App\Models\ChatMessage::class) && \Illuminate\Support\Facades\Route::has('chat')) {
+        try {
+            $mtChat = $mtRole === 'admin' ? \App\Models\ChatMessage::unreadForAdmin() : \App\Models\ChatMessage::unreadForMember($mtUser->id);
+        } catch (\Throwable $e) { $mtChat = 0; }
+    }
+
+    // [label, url, icon, aktif, utama, badge]
     if ($mtRole === 'admin') {
         $mtTabs = [
             ['Dashboard', route('admin.dashboard'), 'home', $mtIs('admin.dashboard', 'admin.bookings.*'), false],
-            ['Jadwal', route('admin.schedule-blocks.index'), 'clock', $mtIs('admin.schedule-blocks.*'), false],
+            ['Chat', route('admin.chat.index'), 'chat', $mtIs('admin.chat.*'), false, $mtChat],
             ['Booking', route('admin.offline-booking.create'), 'plus', $mtIs('admin.offline-booking.*'), true],
             ['Customer', route('admin.customers.index'), 'users', $mtIs('admin.customers.*'), false],
         ];
         $mtSheet = [
+            ['Jadwal', route('admin.schedule-blocks.index'), 'clock'],
+            ['Coach', route('admin.coaches.index'), 'user'],
             ['Galeri', route('admin.gallery.index'), 'image'],
             ['Event', route('admin.events.index'), 'flag'],
             ['Program', route('admin.programs.index'), 'star'],
@@ -53,11 +63,12 @@
     } elseif ($mtRole === 'customer') {
         $mtTabs = [
             ['Beranda', route('dashboard'), 'home', $mtIs('dashboard', 'home'), false],
-            ['Program', route('program'), 'star', $mtIs('program'), false],
+            ['Chat', route('chat'), 'chat', $mtIs('chat'), false, $mtChat],
             ['Booking', route('booking'), 'calendar', $mtIs('booking', 'payment', 'payment.*'), true],
             ['Event', route('event'), 'flag', $mtIs('event'), false],
         ];
         $mtSheet = [
+            ['Program', route('program'), 'star'],
             ['Notifikasi', route('notifications.index'), 'bell'],
             ['Galeri', route('galeri'), 'image'],
             ['Kontak', route('contact'), 'phone'],
@@ -194,7 +205,8 @@
 </div>
 
 <nav class="mt-bar" aria-label="Menu utama">
-    @foreach ($mtTabs as [$label, $url, $icon, $active, $main])
+    @foreach ($mtTabs as $mtTab)
+        @php [$label, $url, $icon, $active, $main] = $mtTab; $badge = (int) ($mtTab[5] ?? 0); @endphp
         <a href="{{ $url }}" class="mt-item {{ $active ? 'active' : '' }} {{ $main ? 'mt-main' : '' }}">
             @if ($main)
                 <span class="mt-fab">{!! $mtSvg($icon) !!}</span>
@@ -202,6 +214,7 @@
                 {!! $mtSvg($icon) !!}
             @endif
             {{ $label }}
+            @if ($badge > 0)<span class="mt-dot">{{ $badge > 9 ? '9+' : $badge }}</span>@endif
         </a>
     @endforeach
 

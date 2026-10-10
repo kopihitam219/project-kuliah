@@ -402,3 +402,7 @@ Route::middleware('auth')->group(function () {
 */
 
 require __DIR__ . '/settings.php';
+/*
+| Chat member & Kelola Coach
+*/
+require __DIR__ . '/chat-coach.php';

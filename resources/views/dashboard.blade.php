@@ -521,7 +521,10 @@
 
     </main>
 
+
 </div>
+
+@include('partials.home-coaches')
 
 </body>
 </html>

@@ -13,6 +13,8 @@
             'rejected'    => ['icon' => '×',  'label' => 'Ditolak'],
             'approved'    => ['icon' => '✓',  'label' => 'Disetujui'],
             'paid'        => ['icon' => 'Rp', 'label' => 'Pembayaran'],
+            'chat'        => ['icon' => '✉',  'label' => 'Chat'],
+            'broadcast'   => ['icon' => '📢', 'label' => 'Pengumuman'],
             'blocked'     => ['icon' => '⊘',  'label' => 'Jadwal ditutup'],
             'reopened'    => ['icon' => '↺',  'label' => 'Jadwal dibuka'],
         ];
@@ -103,6 +105,10 @@
                         @endif
                         <a href="{{ route('booking', ['date' => $booking->booking_date?->format('Y-m-d')]) }}" class="nf-btn nf-btn-outline">Lihat booking</a>
                     @endif
+                @endif
+
+                @if (in_array($item->data['event'] ?? '', ['chat', 'broadcast'], true) && ! empty($item->data['url']) && str_starts_with($item->data['url'], '/'))
+                    <a href="{{ $item->data['url'] }}" class="nf-btn nf-btn-primary">{{ ($item->data['event'] ?? '') === 'broadcast' ? 'Buka di Chat' : 'Balas di Chat' }}</a>
                 @endif
 
                 <form method="POST" action="{{ route('notifications.destroy', $item->id) }}" id="deleteForm" style="margin-left: auto;">

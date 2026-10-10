@@ -464,6 +464,9 @@
                 <a href="{{ route('admin.programs.index') }}" class="sidebar-link {{ request()->routeIs('admin.programs.*') ? 'active' : '' }}">
                     <span class="sidebar-icon">▤</span> Program
                 </a>
+                <a href="{{ route('admin.coaches.index') }}" class="sidebar-link {{ request()->routeIs('admin.coaches.*') ? 'active' : '' }}">
+                    <span class="sidebar-icon">☆</span> Coach
+                </a>
                 <a href="{{ route('admin.contact.index') }}" class="sidebar-link {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}">
                     <span class="sidebar-icon">☎</span> Contact
                 </a>
@@ -473,6 +476,11 @@
             <div class="sidebar-section">
                 <a href="{{ route('admin.customers.index') }}" class="sidebar-link {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
                     <span class="sidebar-icon">♟</span> Customer
+                </a>
+                @php $chatUnread = class_exists(\App\Models\ChatMessage::class) && \Illuminate\Support\Facades\Schema::hasTable('chat_messages') ? \App\Models\ChatMessage::unreadForAdmin() : 0; @endphp
+                <a href="{{ route('admin.chat.index') }}" class="sidebar-link {{ request()->routeIs('admin.chat.*') ? 'active' : '' }}">
+                    <span class="sidebar-icon">✉</span> Chat Member
+                    @if ($chatUnread > 0)<span class="sidebar-badge">{{ $chatUnread }}</span>@endif
                 </a>
             </div>
 
